@@ -14,11 +14,11 @@ class CompanyCacheType extends Model
 
     public function AvailableMethod()
     {
-        return $this->belongsto(AvailableMethod::class, 'available_method_id');
+        return $this->belongsTo(AvailableMethod::class, 'available_method_id');
     }
 
     public function Company()
     {
-        return $this->belongsto(Company::class, 'company_id');
+        return $this->belongsTo(Company::class, 'company_id');
     }
 }

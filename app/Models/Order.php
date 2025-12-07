@@ -94,8 +94,8 @@ class Order extends Model
     }
     public function Invoice()
     {
-        // return $this->Hasmany(Invoice::class, 'order_id');
-        return $this->HasOne(Invoice::class, 'order_id');
+        // return $this->hasMany(Invoice::class, 'order_id');
+        return $this->hasOne(Invoice::class, 'order_id');
     }
 
     public function User()
@@ -129,12 +129,12 @@ class Order extends Model
     }
     public function OrderLog()
     {
-        return $this->Hasmany(OrderLog::class, 'order_id');
+        return $this->hasMany(OrderLog::class, 'order_id');
     }
 
     public function Transfer()
     {
-        return $this->Hasmany(Transfer::class, 'order_id');
+        return $this->hasMany(Transfer::class, 'order_id');
     }
     public function BranchData()
     {

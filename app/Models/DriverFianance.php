@@ -39,11 +39,11 @@ class DriverFianance extends Model
     }
     public function Admin()
     {
-        return $this->belongsto(Admin::class, 'branch_id');
+        return $this->belongsTo(Admin::class, 'branch_id');
     }
     public function Driver()
     {
-        return $this->belongsto(Driver::class, 'driver_id');
+        return $this->belongsTo(Driver::class, 'driver_id');
     }
     public function OrdersNetProfit()
     {

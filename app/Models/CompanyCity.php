@@ -13,10 +13,10 @@ class CompanyCity extends Model
 
     public function Company()
     {
-        return $this->belongsto(Company::class, 'company_id');
+        return $this->belongsTo(Company::class, 'company_id');
     }
     public function City()
     {
-        return $this->belongsto(City::class, 'city_id');
+        return $this->belongsTo(City::class, 'city_id');
     }
 }

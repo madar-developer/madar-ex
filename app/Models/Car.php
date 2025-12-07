@@ -15,11 +15,11 @@ class Car extends Model
 
     public function Driver()
     {
-        return $this->Hasmany(Driver::class, 'car_id');
+        return $this->hasMany(Driver::class, 'car_id');
     }
     public function CarMaintenance()
     {
-        return $this->Hasmany(CarMaintenance::class, 'car_id');
+        return $this->hasMany(CarMaintenance::class, 'car_id');
     }
     public function BranchData()
     {

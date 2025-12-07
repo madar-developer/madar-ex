@@ -38,19 +38,19 @@ class Company extends Authenticatable implements JWTSubject
     }
     public function AvailableMethodCompany()
     {
-        return $this->Hasmany(AvailableMethodCompany::class, 'company_id');
+        return $this->hasMany(AvailableMethodCompany::class, 'company_id');
     }
     public function CompanyCacheType()
     {
-        return $this->Hasmany(CompanyCacheType::class, 'company_id');
+        return $this->hasMany(CompanyCacheType::class, 'company_id');
     }
     public function CompanyAddress()
     {
-        return $this->Hasmany(CompanyAddress::class, 'company_id');
+        return $this->hasMany(CompanyAddress::class, 'company_id');
     }
     public function Order()
     {
-        return $this->Hasmany(Order::class, 'company_id');
+        return $this->hasMany(Order::class, 'company_id');
     }
     public function BranchData()
     {
@@ -59,12 +59,12 @@ class Company extends Authenticatable implements JWTSubject
 
     public function City()
     {
-        return $this->belongsto(City::class, 'city_id');
+        return $this->belongsTo(City::class, 'city_id');
     }
 
     public function Transfer()
     {
-        return $this->Hasmany(Transfer::class, 'company_id');
+        return $this->hasMany(Transfer::class, 'company_id');
     }
     public function getImageAttribute($img)
     {
@@ -86,10 +86,10 @@ class Company extends Authenticatable implements JWTSubject
     }
     public function CompanyCity()
     {
-        return $this->Hasmany(CompanyCity::class, 'company_id');
+        return $this->hasMany(CompanyCity::class, 'company_id');
     }
     public function CompanyCityGroup()
     {
-        return $this->Hasmany(CompanyCityGroup::class, 'company_id');
+        return $this->hasMany(CompanyCityGroup::class, 'company_id');
     }
 }

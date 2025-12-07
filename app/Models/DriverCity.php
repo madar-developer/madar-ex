@@ -13,11 +13,11 @@ class DriverCity extends Model
 
     public function City()
     {
-        return $this->belongsto(City::class, 'city_id');
+        return $this->belongsTo(City::class, 'city_id');
     }
     public function Driver()
     {
-        return $this->belongsto(Driver::class, 'driver_id');
+        return $this->belongsTo(Driver::class, 'driver_id');
     }
 
 

@@ -51,7 +51,7 @@ class Driver extends Authenticatable implements JWTSubject
     }
     public function DriverFianance()
     {
-        return $this->Hasmany(DriverFianance::class, 'driver_id');
+        return $this->hasMany(DriverFianance::class, 'driver_id');
     }
     /**
      * Get all of the post's Files.
@@ -62,17 +62,17 @@ class Driver extends Authenticatable implements JWTSubject
     }
     public function Car()
     {
-        return $this->belongsto(Car::class, 'car_id');
+        return $this->belongsTo(Car::class, 'car_id');
     }
 
     public function DriverCity()
     {
-        return $this->Hasmany(DriverCity::class, 'driver_id');
+        return $this->hasMany(DriverCity::class, 'driver_id');
     }
 
     public function Order()
     {
-        return $this->Hasmany(Order::class, 'driver_id');
+        return $this->hasMany(Order::class, 'driver_id');
     }
 
     public function Invoice()
@@ -126,6 +126,6 @@ class Driver extends Authenticatable implements JWTSubject
 
     public function DriverCityPrice()
     {
-        return $this->Hasmany(DriverCityPrice::class, 'driver_id');
+        return $this->hasMany(DriverCityPrice::class, 'driver_id');
     }
 }

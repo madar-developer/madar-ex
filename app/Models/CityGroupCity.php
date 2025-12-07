@@ -13,10 +13,10 @@ class CityGroupCity extends Model
 
     public function City()
     {
-        return $this->belongsto(City::class, 'city_id');
+        return $this->belongsTo(City::class, 'city_id');
     }
     public function CityGroup()
     {
-        return $this->belongsto(CityGroup::class, 'city_group_id');
+        return $this->belongsTo(CityGroup::class, 'city_group_id');
     }
 }

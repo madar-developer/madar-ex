@@ -13,15 +13,15 @@ class CompanyAddress extends Model
 
     public function Company()
     {
-        return $this->belongsto(Company::class, 'company_id');
+        return $this->belongsTo(Company::class, 'company_id');
     }
     public function City()
     {
-        return $this->belongsto(City::class, 'city_id');
+        return $this->belongsTo(City::class, 'city_id');
     }
     public function Order()
     {
-        return $this->Hasmany(Order::class, 'company_address_id');
+        return $this->hasMany(Order::class, 'company_address_id');
     }
 
 }

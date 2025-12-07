@@ -19,7 +19,7 @@ class CityGroup extends Model
 
     public function CityGroupCity()
     {
-        return $this->Hasmany(CityGroupCity::class, 'city_group_id');
+        return $this->hasMany(CityGroupCity::class, 'city_group_id');
     }
     public function City()
     {

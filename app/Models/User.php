@@ -2,12 +2,13 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 
 class User extends Authenticatable
 {
-    use Notifiable;
+    use HasFactory, Notifiable;
 
     /**
      * The attributes that are mass assignable.
@@ -23,12 +24,12 @@ class User extends Authenticatable
 
     public function Order()
     {
-        return $this->Hasmany(Order::class, 'user_id');
+        return $this->hasMany(Order::class, 'user_id');
     }
 
     public function Transfer()
     {
-        return $this->Hasmany(Transfer::class, 'user_id');
+        return $this->hasMany(Transfer::class, 'user_id');
     }
 
     public function BranchData()

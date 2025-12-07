@@ -13,7 +13,7 @@ class CarMaintenance extends Model
 
     public function Car()
     {
-        return $this->belongsto(Car::class, 'car_id');
+        return $this->belongsTo(Car::class, 'car_id');
     }
 
     public function BranchData()

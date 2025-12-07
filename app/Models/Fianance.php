@@ -13,10 +13,10 @@ class Fianance extends Model
 
     public function Branch()
     {
-        return $this->belongsto(Admin::class, 'branch_id');
+        return $this->belongsTo(Admin::class, 'branch_id');
     }
     // public function Admin()
     // {
-    //     return $this->belongsto(Admin::class, 'employee_id');
+    //     return $this->belongsTo(Admin::class, 'employee_id');
     // }
 }

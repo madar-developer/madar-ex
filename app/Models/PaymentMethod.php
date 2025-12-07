@@ -16,6 +16,6 @@ class PaymentMethod extends Model
 
     public function Order()
     {
-        return $this->Hasmany(Order::class, 'payment_method_id');
+        return $this->hasMany(Order::class, 'payment_method_id');
     }
 }

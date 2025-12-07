@@ -25,27 +25,27 @@ class City extends Model
 
     public function Order()
     {
-        return $this->Hasmany(Order::class, 'city_id');
+        return $this->hasMany(Order::class, 'city_id');
     }
     public function BranchCity()
     {
-        return $this->Hasmany(BranchCity::class, 'city_id');
+        return $this->hasMany(BranchCity::class, 'city_id');
     }
 
     public function Company()
     {
-        return $this->Hasmany(Company::class, 'city_id');
+        return $this->hasMany(Company::class, 'city_id');
     }
     public function CompanyAddress()
     {
-        return $this->Hasmany(CompanyAddress::class, 'city_id');
+        return $this->hasMany(CompanyAddress::class, 'city_id');
     }
     public function DriverCity()
     {
-        return $this->Hasmany(DriverCity::class, 'city_id');
+        return $this->hasMany(DriverCity::class, 'city_id');
     }
     public function Admin()
     {
-        return $this->Hasmany(Admin::class, 'city_id');
+        return $this->hasMany(Admin::class, 'city_id');
     }
 }

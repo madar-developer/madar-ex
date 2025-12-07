@@ -17,10 +17,10 @@ class AvailableMethod extends Model
 
     public function AvailableMethodCompany()
     {
-        return $this->Hasmany(AvailableMethodCompany::class, 'available_method_id');
+        return $this->hasMany(AvailableMethodCompany::class, 'available_method_id');
     }
     public function CompanyCacheType()
     {
-        return $this->Hasmany(CompanyCacheType::class, 'available_method_id');
+        return $this->hasMany(CompanyCacheType::class, 'available_method_id');
     }
 }

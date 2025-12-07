@@ -34,27 +34,27 @@ class Admin extends Authenticatable
     ];
     public function UserRole()
     {
-        return $this->Hasone(UserRole::class, 'admin_id');
+        return $this->hasOne(UserRole::class, 'admin_id');
     }
     public function DriverFianance()
     {
-        return $this->Hasmany(DriverFianance::class, 'branch_id');
+        return $this->hasMany(DriverFianance::class, 'branch_id');
     }
     public function Fianance()
     {
-        return $this->Hasmany(Fianance::class, 'branch_id');
+        return $this->hasMany(Fianance::class, 'branch_id');
     }
     public function City()
     {
-        return $this->belongsto(City::class, 'city_id');
+        return $this->belongsTo(City::class, 'city_id');
     }
     public function BranchCity()
     {
-        return $this->Hasmany(BranchCity::class, 'branch_id');
+        return $this->hasMany(BranchCity::class, 'branch_id');
     }
     public function Parent()
     {
-        return $this->belongsto(Admin::class, 'parent_id');
+        return $this->belongsTo(Admin::class, 'parent_id');
     }
     public function getCitiesAttribute()
     {

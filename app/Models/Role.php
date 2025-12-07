@@ -14,11 +14,11 @@ class Role extends Model
 
     public function Permission()
     {
-        return $this->Hasmany(Permission::class, 'role_id');
+        return $this->hasMany(Permission::class, 'role_id');
     }
 
     public function UserRole()
     {
-        return $this->Hasmany(UserRole::class, 'role_id');
+        return $this->hasMany(UserRole::class, 'role_id');
     }
 }

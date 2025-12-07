@@ -14,11 +14,11 @@ class BranchCity extends Model
 
     public function City()
     {
-        return $this->belongsto(City::class, 'city_id');
+        return $this->belongsTo(City::class, 'city_id');
     }
 
     public function Branch()
     {
-        return $this->belongsto(Branch::class, 'branch_id');
+        return $this->belongsTo(Branch::class, 'branch_id');
     }
 }

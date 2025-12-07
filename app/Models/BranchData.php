@@ -14,7 +14,7 @@ class BranchData extends Model
 
     public function Admin()
     {
-        return $this->belongsto(Admin::class, 'admin_id');
+        return $this->belongsTo(Admin::class, 'admin_id');
     }
     public function taggable()
     {

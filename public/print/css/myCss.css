@@ -1,0 +1,427 @@
+body {
+    direction: rtl;
+    font-family: sans-serif;
+    text-align: right;
+}
+
+
+.page {
+
+    max-width: 990px;
+    margin: auto;
+    border: 1px solid #F2F2F2;
+    padding: 2rem;
+}
+
+.no-gutters>.col,
+.no-gutters>[class*=col-] {
+    padding-right: 0 !important;
+    padding-left: 0 !important;
+}
+
+
+.upper-logo {
+    display: -webkit-box;
+    display: -ms-flexbox;
+    display: flex;
+    min-height: 75px;
+    -webkit-box-pack: start;
+    -ms-flex-pack: start;
+    justify-content: flex-start;
+}
+
+.upper-logo img {
+    max-height: 75px;
+    max-width: 100%;
+}
+
+.title,
+.title2 {
+    text-align: center;
+    font-weight: bold;
+    margin-bottom: 1.5rem;
+    margin-top: 1rem;
+}
+
+.title2 {
+    text-align: right;
+    margin: 1rem 2rem 0 1rem;
+}
+
+
+.first-line {
+    -webkit-box-pack: center;
+    -ms-flex-pack: center;
+    justify-content: center;
+    padding-right: 25px;
+}
+
+.first-line input {
+    text-align: center;
+}
+
+.date {
+    display: -webkit-box;
+    display: -ms-flexbox;
+    display: flex;
+    -ms-flex-wrap: nowrap;
+    flex-wrap: nowrap;
+    -webkit-box-align: center;
+    -ms-flex-align: center;
+    align-items: center;
+    padding-right: 2rem;
+}
+
+.page2 .date {
+    -webkit-box-pack: end;
+    -ms-flex-pack: end;
+    justify-content: flex-end;
+}
+
+label,
+p {
+    font-weight: bold;
+    margin-right: .5rem;
+}
+
+.page2 p {
+    margin-right: 1rem;
+}
+
+.flx {
+    display: -webkit-box;
+    display: -ms-flexbox;
+    display: flex;
+    -ms-flex-pack: distribute;
+    justify-content: space-around;
+
+}
+
+.right {
+    width: 84%;
+    max-width: 84%;
+}
+
+.left {
+    max-width: 14%;
+    display: -webkit-box;
+    display: -ms-flexbox;
+    display: flex;
+    -webkit-box-align: center;
+    -ms-flex-align: center;
+    align-items: center;
+    -webkit-box-pack: end;
+    -ms-flex-pack: end;
+    justify-content: flex-end;
+}
+
+.left img {
+    width: 100%;
+    height: auto;
+    max-height: 100%;
+    margin: auto;
+}
+
+.money label {
+    position: absolute;
+    top: -70%;
+    right: 50%;
+    margin: 0;
+    -webkit-transform: translatex(50%);
+    -ms-transform: translatex(50%);
+    transform: translatex(50%);
+}
+
+.date {
+    display: -webkit-box;
+    display: -ms-flexbox;
+    display: flex;
+    -ms-flex-wrap: nowrap;
+    flex-wrap: nowrap;
+    -webkit-box-align: center;
+    -ms-flex-align: center;
+    align-items: center;
+    padding-right: 1.5rem !important;
+}
+
+.date label {
+    margin-bottom: 0 !important;
+}
+
+.page input {
+    border: none;
+    border-radius: .7rem;
+    background-color: #F2F2F2;
+}
+
+.date input {
+    text-align: center;
+    max-width: 2.75rem;
+    margin: 0 .5rem;
+    background-color: #fff;
+}
+
+
+.date input:nth-of-type(3) {
+    max-width: 4rem;
+
+}
+
+
+
+.line {
+    display: -webkit-box;
+    display: -ms-flexbox;
+    display: flex;
+    -ms-flex-wrap: nowrap;
+    flex-wrap: nowrap;
+    -webkit-box-align: center;
+    -ms-flex-align: center;
+    align-items: center;
+    margin: .25rem 0;
+}
+
+.line input,
+.line label {
+    margin: 0;
+    margin-left: .5rem;
+
+}
+
+.line label {
+    min-width: 4.5rem;
+    text-align: left;
+    margin-left: .5rem;
+
+}
+
+label.wl {
+    min-width: 5rem;
+    max-width: 10rem;
+}
+
+.last-line {
+    padding: 1rem 2rem;
+}
+
+@media print {
+    .form-cont input {
+        border: none;
+        border-radius: .7rem;
+        background-color: #F2F2F2 !important;
+    }
+
+    .date input {
+        background-color: #fff !important;
+    }
+
+    .w-input input {
+        background-color: #fff !important;
+    }
+
+}
+
+.no-gutters input:not(:last-child) {
+    margin-left: 0 !important;
+}
+
+thead th {
+    text-align: center;
+}
+
+tr {
+    line-height: 10px;
+}
+
+th:nth-child(1) {
+    width: 5%;
+}
+
+th:nth-child(2) {
+    width: 20%;
+}
+
+th:nth-child(3) {
+    width: 35%;
+}
+
+th:nth-child(4) {
+    width: 8%;
+}
+
+th:nth-child(5) {
+    width: 16%;
+}
+
+th:nth-child(6) {
+    width: 16%;
+}
+
+div.text-left small {
+    font-size: small;
+    font-weight: bold;
+}
+
+.p-input {
+    display: -webkit-box;
+    display: -ms-flexbox;
+    display: flex;
+    width: 66%;
+    -webkit-box-align: center;
+    -ms-flex-align: center;
+    align-items: center;
+}
+
+
+.p-input input {
+    margin-right: .5rem;
+}
+
+
+.p-input label {
+    width: 15rem;
+}
+
+.p-input .wide {
+    width: 20rem;
+}
+
+
+.w-input input {
+    background-color: #fff;
+}
+
+
+label.xwide {
+    min-width: 14.75rem;
+}
+
+label.mwide {
+    min-width: 7.5rem;
+}
+
+
+label.sm {
+    min-width: 2rem;
+}
+
+.cl input {
+    margin-top: .75rem;
+}
+
+.cl label {
+    text-align: center;
+}
+
+.mhalf {
+    margin-bottom: .5rem;
+}
+
+
+
+.t2 th:nth-child(2),
+.t2 th:nth-child(3),
+.t2 th:nth-child(4) {
+    width: 20%;
+}
+
+.t2 th:nth-child(5) {
+    width: 15%;
+}
+
+.madar .img-wr {
+    height: 4rem;
+
+}
+
+.madar .img-wr img {
+    height: 100%;
+}
+
+.page.madar {
+    text-align: left;
+    direction: ltr;
+}
+
+.madar label,
+.madar p {
+    font-weight: bold;
+    margin-right: 0;
+    margin-left: .5rem;
+}
+
+label.w5 {
+    min-width: 5.5rem;
+}
+
+label.w3 {
+    min-width: 3.5rem;
+}
+
+.madar .date {
+    margin-bottom: 0;
+}
+
+.madar .date input {
+    text-align: center;
+    min-width: 2.75rem;
+    margin: 0 .5rem;
+    background-color: #fff;
+}
+
+.madar .date input:nth-of-type(3) {
+    min-width: 4rem;
+}
+
+.madar .bl {
+    border-right: 1px solid #F2F2F2;
+}
+
+.madar .bold {
+    font-weight: bold;
+    margin-bottom: 1rem;
+    margin-top: .5rem;
+}
+
+.madar.page {
+
+    padding: 0;
+    padding-top: 1rem;
+
+
+}
+
+.madar hr {
+    margin: 0;
+}
+
+.madar .form-row .flx>div {
+    padding-top: .75rem;
+    padding-bottom: .75rem;
+}
+
+.madar .left {
+    max-width: 18%;
+
+}
+
+.madar .right {
+    width: 78%;
+}
+
+.madar .box .line {
+    margin-top: .5rem;
+}
+
+.madar .box .line label {
+    text-align: right;
+}
+
+.madar .box .line input {
+    margin-left: 0;
+}
+
+
+.madar .box textarea {
+    max-width: 98%;
+}

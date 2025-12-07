@@ -1,0 +1,40 @@
+[16-Apr-2023 04:31:47 UTC] PHP Warning:  Module 'redis' already loaded in Unknown on line 0
+[16-Apr-2023 04:31:47 UTC] PHP Fatal error:  Uncaught Error: Class 'Artisan' not found in /home/madarex/public_html/routes/console.php:16
+Stack trace:
+#0 {main}
+  thrown in /home/madarex/public_html/routes/console.php on line 16
+[18-Apr-2023 02:54:38 UTC] PHP Warning:  Module 'redis' already loaded in Unknown on line 0
+[18-Apr-2023 02:54:38 UTC] PHP Fatal error:  Uncaught Error: Class 'Artisan' not found in /home/madarex/public_html/routes/console.php:16
+Stack trace:
+#0 {main}
+  thrown in /home/madarex/public_html/routes/console.php on line 16
+[20-Apr-2023 03:37:14 UTC] PHP Warning:  Module 'redis' already loaded in Unknown on line 0
+[20-Apr-2023 03:37:14 UTC] PHP Fatal error:  Uncaught Error: Class 'Artisan' not found in /home/madarex/public_html/routes/console.php:16
+Stack trace:
+#0 {main}
+  thrown in /home/madarex/public_html/routes/console.php on line 16
+[23-Apr-2023 06:11:52 UTC] PHP Warning:  Module 'redis' already loaded in Unknown on line 0
+[23-Apr-2023 06:11:52 UTC] PHP Fatal error:  Uncaught Error: Class 'Artisan' not found in /home/madarex/public_html/routes/console.php:16
+Stack trace:
+#0 {main}
+  thrown in /home/madarex/public_html/routes/console.php on line 16
+[25-Apr-2023 09:04:01 UTC] PHP Warning:  Module 'redis' already loaded in Unknown on line 0
+[25-Apr-2023 09:04:01 UTC] PHP Fatal error:  Uncaught Error: Class 'Broadcast' not found in /home/madarex/public_html/routes/channels.php:14
+Stack trace:
+#0 {main}
+  thrown in /home/madarex/public_html/routes/channels.php on line 14
+[27-Apr-2023 11:54:35 UTC] PHP Warning:  Module 'redis' already loaded in Unknown on line 0
+[27-Apr-2023 11:54:35 UTC] PHP Fatal error:  Uncaught Error: Class 'Artisan' not found in /home/madarex/public_html/routes/console.php:16
+Stack trace:
+#0 {main}
+  thrown in /home/madarex/public_html/routes/console.php on line 16
+[30-Apr-2023 21:41:18 UTC] PHP Warning:  Module 'redis' already loaded in Unknown on line 0
+[30-Apr-2023 21:41:18 UTC] PHP Fatal error:  Uncaught Error: Class 'Broadcast' not found in /home/madarex/public_html/routes/channels.php:14
+Stack trace:
+#0 {main}
+  thrown in /home/madarex/public_html/routes/channels.php on line 14
+[03-May-2023 08:04:00 UTC] PHP Warning:  Module 'redis' already loaded in Unknown on line 0
+[03-May-2023 08:04:00 UTC] PHP Fatal error:  Uncaught Error: Class 'Artisan' not found in /home/madarex/public_html/routes/console.php:16
+Stack trace:
+#0 {main}
+  thrown in /home/madarex/public_html/routes/console.php on line 16

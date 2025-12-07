@@ -1,0 +1,346 @@
+@font-face {
+    font-family: "DINNextLTArabic";
+    src: url(../fonts/text-font/ArbFONTS-DINNextLTArabic-UltraLight-1.ttf);
+    font-weight: lighter;
+}
+
+@font-face {
+    font-family: "DINNextLTArabic";
+    src: url(../fonts/text-font/ArbFONTS-DINNextLTArabic-Regular-2.ttf);
+    font-weight: normal;
+}
+
+@font-face {
+    font-family: "DINNextLTArabic";
+    src: url(../fonts/text-font/ArbFONTS-DINNextLTArabic-Bold-2.ttf);
+    font-weight: bold;
+}
+
+
+/* */
+
+html,
+body,
+h1,
+h2,
+h3,
+h4,
+h5,
+h6,
+.h1,
+.h2,
+.h3,
+.h4,
+.h5,
+.h6 {
+    font-family: 'DINNextLTArabic' !important;
+}
+
+.navbar-default {
+    background: #fecd07;
+}
+
+.page-title {
+    color: #090d2e;
+}
+
+.side-menu {
+    background: #0a0d2e;
+}
+
+#sidebar-menu>ul>li>a {
+    background-color: #0b0d2e;
+    color: #ffffff;
+}
+
+#sidebar-menu .subdrop {
+    border-right: 3px solid #fece37;
+    color: #fece37 !important;
+}
+
+#sidebar-menu>ul>li>a:hover {
+    color: #fece37;
+}
+
+#sidebar-menu ul ul a:hover {
+    color: #fece37;
+}
+
+#sidebar-menu ul ul a {
+    color: #ffffff;
+}
+
+.topbar .topbar-left {
+    background: #fece37;
+}
+
+.content-page .content {
+    margin-top: 93px;
+}
+
+.login-page {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: nowrap;
+    justify-content: center;
+    align-items: center;
+    align-content: center;
+    height: 90vh;
+}
+
+.login-page .card-box {
+    padding: 0 !important;
+    margin: 0;
+    background-color: RGBA(255, 255, 255, 0.8);
+}
+
+.login-page .card-header {
+    background: #fecd07;
+    padding: 25px;
+}
+
+.login-page button.btn.btn-login {
+    background: #fece37;
+    color: #000;
+    font-size: 22px;
+    display: inline-block;
+    border-radius: 500px;
+}
+
+.login-page form.form-horizontal {
+    padding: 0 20px;
+}
+
+.login-page .card-bottom {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: nowrap;
+    justify-content: space-between;
+    align-items: center;
+    align-content: center;
+}
+
+.login-page .card-bottom a {
+    color: #000 !important;
+}
+
+.one-option {
+    padding: 10px;
+    margin-top: 10px;
+    border: 1px solid #d8d8d8;
+    border-radius: 5px;
+}
+
+.checkbox-primary input[type="checkbox"]:checked+label::before {
+    background-color: #0b0d2e;
+    border-color: #0b0d2e;
+}
+
+.one-option .checkbox.checkbox-primary.text-center {
+    background: #fece37;
+    color: #0b0d2e;
+    margin: -10px;
+    margin-bottom: 20px;
+    padding: 10px 0;
+}
+
+.checkbox label::before {
+    right: 1px;
+}
+
+.btn-primary {
+    background-color: #0b0d2e !important;
+    border: 1px solid #0b0d2e !important;
+}
+
+.btn-primary:hover,
+.btn-primary:focus,
+.btn-primary:active,
+.btn-primary.active,
+.btn-primary.focus,
+.btn-primary:active,
+.btn-primary:focus,
+.btn-primary:hover,
+.open>.dropdown-toggle.btn-primary {
+    background-color: #fece37 !important;
+    border: 1px solid #fece37 !important;
+    color: #0b0d2e !important;
+}
+
+.btn-custom:hover,
+.btn-custom:focus,
+.btn-custom:active,
+.btn-custom.active,
+.btn-custom.focus,
+.btn-custom:active,
+.btn-custom:focus,
+.btn-custom:hover,
+.open>.dropdown-toggle.btn-custom {
+    background-color: #0b0d2e !important;
+    border: 1px solid #0b0d2e !important;
+}
+
+button.btn.btn-submit {
+    margin-top: 20px;
+    min-width: 120px;
+    font-size: 18px;
+    padding-bottom: 9px;
+}
+
+.one-option .checkbox label {
+    font-size: 18px;
+}
+
+input.form-control,
+select.form-control,
+textarea.form-control {
+    background: #f5f5f5;
+    border: unset;
+    border-bottom: 1px solid #a9a9a9;
+    border-radius: 0;
+    color: #333333;
+}
+
+input.form-control:focus {
+    background: #f5f5f5;
+    border: unset;
+    border-bottom: 1px solid #000;
+    -webkit-box-shadow: none;
+    box-shadow: none;
+    outline: 0 !important;
+    color: #333333;
+}
+
+p.custom-label-centerd.text-left {
+    font-size: 22px;
+    margin-bottom: 20px;
+    color: #0b0d2e;
+}
+
+table button.btn {
+    padding: 2px 8px !important;
+}
+
+table button.btn {
+    padding: 2px 8px !important;
+    font-size: 12px;
+    font-weight: bold;
+    border-radius: 5px !important;
+}
+
+table .btns {
+    width: fit-content;
+    margin: auto;
+}
+
+.navbar .add-btn {
+    display: inline-block;
+    float: left;
+    margin-top: 20px;
+    margin-left: 15px !important;
+}
+
+a.logo img {
+    max-height: 140px;
+    padding: 10px;
+    margin: 0px auto;
+}
+
+.left.side-menu {
+    padding-top: 70px;
+}
+
+.text-custom {
+    color: #fece37 !important;
+}
+
+ul.nav a.btn.btn-custom {
+    background-color: #0b0d2e;
+    border-color: #0b0d2e;
+    padding-bottom: 9px;
+}
+
+ul.nav a.btn.btn-custom:hover {
+    background-color: #fece37 !important;
+    color: #0b0d2e !important;
+    border: 1px solid #0b0d2e !important;
+}
+
+thead {
+    background: #0b0d2e;
+}
+
+th {
+    color: #fff;
+}
+
+div#datatable-buttons_wrapper {
+    position: relative;
+}
+
+div#datatable-buttons_filter {
+    position: absolute;
+    top: 0;
+    left: 0;
+}
+
+div#datatable-buttons_wrapper .btn-default {
+    background-color: rgb(11, 13, 46);
+    border-color: rgba(218, 230, 236, 0.5);
+    color: #fff;
+}
+
+.pagination>.active>a,
+.pagination>.active>span,
+.pagination>.active>a:hover,
+.pagination>.active>span:hover,
+.pagination>.active>a:focus,
+.pagination>.active>span:focus {
+    background-color: #0b0d2e;
+    border-color: #0b0d2e;
+}
+
+div#datatable-buttons_wrapper .btn-default:hover,
+div#datatable-buttons_wrapper .btn-default:focus,
+div#datatable-buttons_wrapper .btn-default:active,
+div#datatable-buttons_wrapper .btn-default.active,
+div#datatable-buttons_wrapper .btn-default.focus,
+div#datatable-buttons_wrapper .btn-default:active,
+div#datatable-buttons_wrapper .btn-default:focus,
+div#datatable-buttons_wrapper .btn-default:hover,
+div#datatable-buttons_wrapper .open>.dropdown-toggle.btn-default {
+    background-color: rgb(254, 206, 55) !important;
+    border: 1px solid rgb(254, 206, 55) !important;
+    color: #0b0d2e !important;
+}
+
+.custom-modal-text {
+    text-align: right;
+}
+
+.custom-modal-title {
+    background-color: #0a0d2e;
+}
+
+a.btn-custom,
+.btn-primary,
+.btn-success,
+.btn-info,
+.btn-warning,
+.btn-danger,
+.btn-inverse,
+.btn-purple,
+.btn-pink {
+    color: #ffffff !important;
+}
+
+a.btn-custom {
+    background-color: #71b6f9 !important;
+    border-color: #71b6f9 !important;
+}
+
+ul.nav a.btn.btn-custom:hover {
+    background-color: #0b0d2e !important;
+    border: 1px solid #0b0d2e !important;
+    color: #ffffff !important;
+}

@@ -115,8 +115,13 @@
                             <div class="notification-box">
                                 <ul class="list-inline m-b-0">
                                     @php
-                    $user = \App\Models\Admin::first();
-                                    $c_n = \DB::table('notifications')->where('notifiable_id', $user->id)->whereNull('read_at')->where('notifiable_type', 'App\Models\Admin')->exists();//$user->unreadnotifications->count();
+                                        // Only check for existence to avoid loading the whole collection
+                                        $user = \App\Models\Admin::first();
+                                        $c_n = \DB::table('notifications')
+                                            ->where('notifiable_id', $user->id)
+                                            ->whereNull('read_at')
+                                            ->where('notifiable_type', 'App\Models\Admin')
+                                            ->exists();
                                     @endphp
                                     <li>
                                         <a href="javascript:void(0);" class="right-bar-toggle"
@@ -198,8 +203,12 @@
             <div class="notification-list nicescroll">
                 <ul class="list-group list-no-border user-list" id="notifications">
                     @php
-                    //$user = \App\Models\Admin::first();
-                    $notifications = $user->unreadnotifications->sortByDesc('created_at')->take(30);
+                    // Fetch a small page of unread notifications without loading them all
+                    $notifications = $user->notifications()
+                        ->whereNull('read_at')
+                        ->orderByDesc('created_at')
+                        ->limit(30)
+                        ->get();
                     @endphp
                     @foreach($notifications as $item)
                     <li class="list-group-item {{($item->read_at)? '' : 'active'}}">

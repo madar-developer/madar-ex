@@ -33,11 +33,18 @@ class FCMController extends Controller
             // Ensure token is an array
             $tokens = is_array($token) ? $token : [$token];
             
-            // Remove empty tokens
-            $tokens = array_filter($tokens);
+            // Filter out null, empty strings, and non-string values - only keep valid token strings
+            $tokens = array_filter($tokens, function($t) {
+                return !empty($t) && is_string($t) && trim($t) !== '';
+            });
+            
+            // Reset array keys after filtering
+            $tokens = array_values($tokens);
             
             if (empty($tokens)) {
-                Log::warning('No valid FCM tokens provided');
+                // This is not an error - just means user has no registered devices
+                // Use debug level instead of warning to reduce log noise
+                Log::debug('No valid FCM tokens provided - user may not have registered devices');
                 return false;
             }
 

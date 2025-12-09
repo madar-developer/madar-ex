@@ -91,9 +91,15 @@ class GeneralNotification extends Notification
             $related_id = $order_id;
             $type = 'order_details';
             $order = Order::find($order_id);
-            $company = $order->Company()->first();
-            $token = $company->PlayerId()->pluck('player_id')->toArray();
-            FCMController::Push('#'.$order_id, $this->message,$token,$data2, 'order_details');
+            if ($order) {
+                $company = $order->Company()->first();
+                if ($company) {
+                    $token = $company->PlayerId()->pluck('player_id')->filter()->values()->toArray();
+                    if (!empty($token)) {
+                        FCMController::Push('#'.$order_id, $this->message,$token,$data2, 'order_details');
+                    }
+                }
+            }
         }
         if (strpos($this->redirect, 'company/company-transfers') !== false) {
             $transfer_id = substr($this->redirect, 27);
@@ -109,9 +115,15 @@ class GeneralNotification extends Notification
             $related_id = $transfer_id;
             $type = 'transfer_details';
             $transfer = Transfer::find($transfer_id);
-            $company = $transfer->Company()->first();
-            $token = $company->PlayerId()->pluck('player_id')->toArray();
-            FCMController::Push('حوالة رقم '.$transfer_id, $this->message,$token,$data2, 'transfer_details');
+            if ($transfer) {
+                $company = $transfer->Company()->first();
+                if ($company) {
+                    $token = $company->PlayerId()->pluck('player_id')->filter()->values()->toArray();
+                    if (!empty($token)) {
+                        FCMController::Push('حوالة رقم '.$transfer_id, $this->message,$token,$data2, 'transfer_details');
+                    }
+                }
+            }
         }
 
         $pusher->trigger('my-channel-'.$notifiable->id, 'general', $data);

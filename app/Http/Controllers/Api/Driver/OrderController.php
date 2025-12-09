@@ -383,7 +383,7 @@ class OrderController extends Controller
             }
             if ($request->has('status') && $request->get('status') != 'new' && $request->get('status') != $Order->status) {
                 // webhook start - with timeout to prevent hanging
-                $company = $Order->Company()->first();
+                /*$company = $Order->Company()->first();
                 if($company && $company->notify_url)
                 {
                     $ch = curl_init();
@@ -392,7 +392,7 @@ class OrderController extends Controller
                     curl_setopt($ch, CURLOPT_TIMEOUT, 5); // 5 second timeout
                     curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 3); // 3 second connection timeout
                     $output = curl_exec($ch);
-                    curl_close($ch);
+                    curl_close($ch);*/
                 }
                 // webhook end
                 $log_data = [

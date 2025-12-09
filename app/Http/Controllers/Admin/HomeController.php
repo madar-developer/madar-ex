@@ -39,12 +39,17 @@ class HomeController extends Controller
                                 $x = Invoice::whereDate('created_at', $x)->sum('madar_price');
                                 $p->b = $x;
                             });
-        // Build lightweight order list for the map without loading full models into memory
+        // Build a capped, lightweight order list for the map to keep memory low
         $o_list = [];
+        $maxMapPoints = 2000; // safety cap; adjust if you truly need more points
         Order::where('status', 'at_office')
             ->select('id', 'latitude', 'longitude')
-            ->chunkById(500, function($orders) use (&$o_list) {
+            ->orderBy('id')
+            ->chunkById(500, function($orders) use (&$o_list, $maxMapPoints) {
                 foreach ($orders as $i) {
+                    if (count($o_list) >= $maxMapPoints) {
+                        return false; // stop chunking once we hit the cap
+                    }
                     $o_list[] = ['Order #'.$i->id, $i->latitude, $i->longitude];
                 }
             });

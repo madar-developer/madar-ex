@@ -14,12 +14,13 @@ class OrderResource extends JsonResource
      */
     public function toArray($request)
     {
-        $p_m = new PMResource($this->PaymentMethod()->first());
-        if(!$this->PaymentMethod()->first()){
-            $p_m = new \stdClass;
-            $p_m->id = 0;
-            $p_m->name = "no payment method";
-        }
+        // Cache PaymentMethod to avoid duplicate queries
+        $paymentMethod = $this->whenLoaded('PaymentMethod') ? $this->PaymentMethod : $this->PaymentMethod()->first();
+        $p_m = $paymentMethod ? new PMResource($paymentMethod) : (object)['id' => 0, 'name' => "no payment method"];
+        
+        // Cache Company to avoid duplicate queries
+        $company = $this->whenLoaded('Company') ? $this->Company : $this->Company()->first();
+        
         return [
             'id' => $this->id,
             'recipent_name' => $this->recipent_name,
@@ -51,7 +52,7 @@ class OrderResource extends JsonResource
             'status_image' => $this->status_image,
             'status_color' => $this->status_color,
             'available_statuses' => $this->available_statuses,
-            'company' => new CompanyResource($this->Company()->first()),
+            'company' => $company ? new CompanyResource($company) : null,
             'payment_method' => $p_m,
         ];
     }

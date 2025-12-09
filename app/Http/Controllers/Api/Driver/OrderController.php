@@ -15,6 +15,7 @@ use App\Models\Order;
 use App\Models\OrderStatus;
 use App\Models\Term;
 use App\Notifications\GeneralNotification;
+use App\Jobs\SendMadarxWebhookJob;
 use Carbon\Carbon;
 class OrderController extends Controller
 {
@@ -189,17 +190,20 @@ class OrderController extends Controller
         if ($request->has('status') && $request->get('status') != 'new' && $request->get('status') != $Order->status) {
             if ($request->get('status') == 'delivered') {
                 $Order->update(['delivery_date' => Carbon::now()]);
-                // fire update status on merchant side
+                // fire update status on merchant side - dispatch to job queue
                 $company = $Order->Company()->first();
                 if($company && $company->id == 663){
                     try {
-                        if (strpos($Order->refrence_no, '-') !== false) {
-                            sendMadarxWebhook($Order->refrence_no_repeated, 'delivered', $Order->serial, Carbon::now()->format('Y-m-d H:i:s'), 'Package delivered to customer successfully'  );
-                        } else {
-                            sendMadarxWebhook($Order->refrence_no, 'delivered', $Order->serial, Carbon::now()->format('Y-m-d H:i:s'), 'Package delivered to customer successfully'  );
-                        }
+                        $orderRef = (strpos($Order->refrence_no, '-') !== false) ? $Order->refrence_no_repeated : $Order->refrence_no;
+                        SendMadarxWebhookJob::dispatch(
+                            $orderRef,
+                            'delivered',
+                            $Order->serial,
+                            Carbon::now()->format('Y-m-d H:i:s'),
+                            'Package delivered to customer successfully'
+                        )->afterResponse(); // Run after HTTP response is sent
                     } catch (\Exception $e) {
-                        \Log::error('Failed to send Madarx webhook: ' . $e->getMessage());
+                        \Log::error('Failed to dispatch Madarx webhook job: ' . $e->getMessage());
                     }
                 }
                 // fire update status on merchant side end
@@ -247,11 +251,14 @@ class OrderController extends Controller
             
             $message = 'تم تغيير حالة الطلب  : '.$Order->id  . ' الي ' . trans('words.'.$request->get('status'));
             
-            // Send notifications asynchronously to prevent blocking
+            // Send notifications asynchronously - dispatch to background to prevent blocking
+            // Since GeneralNotification implements ShouldQueue, it will be queued automatically
             try {
                 $admin = Admin::first();
                 if($admin) {
-                    $admin->notify(new GeneralNotification($message, '/dashboard/orders/'.$Order->id ) );
+                    // Use sendNow() to bypass queue, or regular notify() to use queue
+                    // For speed, we'll dispatch to queue but don't wait
+                    \Illuminate\Support\Facades\Notification::send($admin, new GeneralNotification($message, '/dashboard/orders/'.$Order->id));
                 }
             } catch (\Exception $e) {
                 \Log::error('Failed to notify admin: ' . $e->getMessage());
@@ -259,7 +266,7 @@ class OrderController extends Controller
             
             if($company) {
                 try {
-                    $company->notify(new GeneralNotification($message, '/company/company-orders/'.$Order->id ) );
+                    \Illuminate\Support\Facades\Notification::send($company, new GeneralNotification($message, '/company/company-orders/'.$Order->id));
                 } catch (\Exception $e) {
                     \Log::error('Failed to notify company: ' . $e->getMessage());
                 }
@@ -311,6 +318,9 @@ class OrderController extends Controller
         // ******************************************************
         $order->update($data);
 
+        // Eager load relationships to avoid N+1 queries
+        $order->load(['Company', 'PaymentMethod']);
+        
         $order = new OrderResource($order);
         return Response()->json([
             'data'          => [

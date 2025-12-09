@@ -190,11 +190,16 @@ class OrderController extends Controller
             if ($request->get('status') == 'delivered') {
                 $Order->update(['delivery_date' => Carbon::now()]);
                 // fire update status on merchant side
-                if($Order->Company()->first() && $Order->Company()->first()->id == 663){
-                    if (strpos($Order->refrence_no, '-') !== false) {
-                        sendMadarxWebhook($Order->refrence_no_repeated, 'delivered', $Order->serial, Carbon::now()->format('Y-m-d H:i:s'), 'Package delivered to customer successfully'  );
-                    } else {
-                        sendMadarxWebhook($Order->refrence_no, 'delivered', $Order->serial, Carbon::now()->format('Y-m-d H:i:s'), 'Package delivered to customer successfully'  );
+                $company = $Order->Company()->first();
+                if($company && $company->id == 663){
+                    try {
+                        if (strpos($Order->refrence_no, '-') !== false) {
+                            sendMadarxWebhook($Order->refrence_no_repeated, 'delivered', $Order->serial, Carbon::now()->format('Y-m-d H:i:s'), 'Package delivered to customer successfully'  );
+                        } else {
+                            sendMadarxWebhook($Order->refrence_no, 'delivered', $Order->serial, Carbon::now()->format('Y-m-d H:i:s'), 'Package delivered to customer successfully'  );
+                        }
+                    } catch (\Exception $e) {
+                        \Log::error('Failed to send Madarx webhook: ' . $e->getMessage());
                     }
                 }
                 // fire update status on merchant side end
@@ -237,21 +242,37 @@ class OrderController extends Controller
                     $rr->save();
                 }
             }
-            $admin = Admin::first();
+            // Load company once to avoid multiple queries
+            $company = $Order->Company()->first();
+            
             $message = 'تم تغيير حالة الطلب  : '.$Order->id  . ' الي ' . trans('words.'.$request->get('status'));
-            if($admin)
-            {
-                $admin->notify(new GeneralNotification($message, '/dashboard/orders/'.$Order->id ) );
+            
+            // Send notifications asynchronously to prevent blocking
+            try {
+                $admin = Admin::first();
+                if($admin) {
+                    $admin->notify(new GeneralNotification($message, '/dashboard/orders/'.$Order->id ) );
+                }
+            } catch (\Exception $e) {
+                \Log::error('Failed to notify admin: ' . $e->getMessage());
             }
-            if($Order->Company()->first())
-            {
-                $Order->Company()->first()->notify(new GeneralNotification($message, '/company/company-orders/'.$Order->id ) );
+            
+            if($company) {
+                try {
+                    $company->notify(new GeneralNotification($message, '/company/company-orders/'.$Order->id ) );
+                } catch (\Exception $e) {
+                    \Log::error('Failed to notify company: ' . $e->getMessage());
+                }
             }
 
             if ($request->get('status') == 'init') {
-                $msg = "تم خروج الطلب رقم $Order->refrence_no من المتجر و جاري توصيلها اليكم.";
-                $msg = "مرحبا $Order->recipent_name  ، شحنتك  $Order->refrence_no  من  $Order->Company->name  في طريقها إليك وسيتم التواصل معكم عند اتجاه المندوب للعنوان";
-                sendSMS(FormatPhone($Order->phone), $msg);
+                try {
+                    $msg = "تم خروج الطلب رقم $Order->refrence_no من المتجر و جاري توصيلها اليكم.";
+                    $msg = "مرحبا $Order->recipent_name  ، شحنتك  $Order->refrence_no  من  $Order->Company->name  في طريقها إليك وسيتم التواصل معكم عند اتجاه المندوب للعنوان";
+                    sendSMS(FormatPhone($Order->phone), $msg);
+                } catch (\Exception $e) {
+                    \Log::error('Failed to send SMS: ' . $e->getMessage());
+                }
                 $Order->update(['receive_date' => Carbon::now()]);
             }
         }
@@ -351,17 +372,19 @@ class OrderController extends Controller
                 }
             }
             if ($request->has('status') && $request->get('status') != 'new' && $request->get('status') != $Order->status) {
-                // webhook start
-            if($Order->Company()->first() && $Order->Company()->first()->notify_url)
-            {
-                $ch = curl_init();
-                curl_setopt($ch, CURLOPT_URL, $Order->Company()->first()->notify_url."refrence_no=$Order->refrence_no&status=$request->get('status')");
-                curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
-                $output = curl_exec($ch);
-                curl_close($ch);
-
-            }
-            // webhook end
+                // webhook start - with timeout to prevent hanging
+                $company = $Order->Company()->first();
+                if($company && $company->notify_url)
+                {
+                    $ch = curl_init();
+                    curl_setopt($ch, CURLOPT_URL, $company->notify_url."refrence_no=$Order->refrence_no&status=$request->get('status')");
+                    curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+                    curl_setopt($ch, CURLOPT_TIMEOUT, 5); // 5 second timeout
+                    curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 3); // 3 second connection timeout
+                    $output = curl_exec($ch);
+                    curl_close($ch);
+                }
+                // webhook end
                 $log_data = [
                     'status' => $request->get('status'),
                     'details' => $status_data->details,
@@ -384,21 +407,37 @@ class OrderController extends Controller
                         $rr->save();
                     }
                 }
-                $admin = Admin::first();
+                // Load company once to avoid multiple queries
+                $company = $Order->Company()->first();
+                
                 $message = 'تم تغيير حالة الطلب  : '.$Order->id  . ' الي ' . trans('words.'.$request->get('status'));
-                if($admin)
-                {
-                    $admin->notify(new GeneralNotification($message, '/dashboard/orders/'.$Order->id ) );
+                
+                // Send notifications asynchronously to prevent blocking
+                try {
+                    $admin = Admin::first();
+                    if($admin) {
+                        $admin->notify(new GeneralNotification($message, '/dashboard/orders/'.$Order->id ) );
+                    }
+                } catch (\Exception $e) {
+                    \Log::error('Failed to notify admin: ' . $e->getMessage());
                 }
-                if($Order->Company()->first())
-                {
-                    $Order->Company()->first()->notify(new GeneralNotification($message, '/company/company-orders/'.$Order->id ) );
+                
+                if($company) {
+                    try {
+                        $company->notify(new GeneralNotification($message, '/company/company-orders/'.$Order->id ) );
+                    } catch (\Exception $e) {
+                        \Log::error('Failed to notify company: ' . $e->getMessage());
+                    }
                 }
 
                 if ($request->get('status') == 'init') {
-                    $msg = "تم خروج الطلب رقم $Order->refrence_no من المتجر و جاري توصيلها اليكم.";
-                    $msg = "مرحبا $Order->recipent_name  ، شحنتك  $Order->refrence_no  من  $Order->Company->name  في طريقها إليك وسيتم التواصل معكم عند اتجاه المندوب للعنوان";
-                    sendSMS(FormatPhone($Order->phone), $msg);
+                    try {
+                        $msg = "تم خروج الطلب رقم $Order->refrence_no من المتجر و جاري توصيلها اليكم.";
+                        $msg = "مرحبا $Order->recipent_name  ، شحنتك  $Order->refrence_no  من  $Order->Company->name  في طريقها إليك وسيتم التواصل معكم عند اتجاه المندوب للعنوان";
+                        sendSMS(FormatPhone($Order->phone), $msg);
+                    } catch (\Exception $e) {
+                        \Log::error('Failed to send SMS: ' . $e->getMessage());
+                    }
                     $Order->update(['receive_date' => Carbon::now()]);
                 }
             }

@@ -17,8 +17,8 @@ class LogApiRequests
     protected $excludedFields = [
         'password',
         'password_confirmation',
-        'token',
-        'api_token',
+        // 'token',
+        // 'api_token',
         'secret',
         'authorization',
         'credit_card',
@@ -32,7 +32,7 @@ class LogApiRequests
      * @var array
      */
     protected $excludedHeaders = [
-        'authorization',
+        // 'authorization',
         'cookie',
     ];
 

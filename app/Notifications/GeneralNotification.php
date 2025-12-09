@@ -8,7 +8,6 @@ use App\Models\Transfer;
 use Illuminate\Bus\Queueable;
 use Illuminate\Notifications\Notification;
 use Illuminate\Contracts\Queue\ShouldQueue;
-use Illuminate\Support\Facades\Log;
 use Illuminate\Notifications\Messages\MailMessage;
 use Carbon\Carbon;
 use Pusher\Pusher;
@@ -91,24 +90,15 @@ class GeneralNotification extends Notification
             ];
             $related_id = $order_id;
             $type = 'order_details';
-            // Dispatch FCM push to background to prevent blocking
-            try {
-                $order = Order::find($order_id);
-                if ($order) {
-                    $company = $order->Company()->first();
-                    if ($company) {
-                        $token = $company->PlayerId()->pluck('player_id')->filter()->values()->toArray();
-                        if (!empty($token)) {
-                            // Dispatch FCM to queue or run in background
-                            $message = $this->message;
-                            dispatch(function() use ($order_id, $token, $data2, $message) {
-                                FCMController::Push('#'.$order_id, $message, $token, $data2, 'order_details');
-                            })->afterResponse();
-                        }
+            $order = Order::find($order_id);
+            if ($order) {
+                $company = $order->Company()->first();
+                if ($company) {
+                    $token = $company->PlayerId()->pluck('player_id')->filter()->values()->toArray();
+                    if (!empty($token)) {
+                        FCMController::Push('#'.$order_id, $this->message,$token,$data2, 'order_details');
                     }
                 }
-            } catch (\Exception $e) {
-                Log::error('FCM push failed in notification: ' . $e->getMessage());
             }
         }
         if (strpos($this->redirect, 'company/company-transfers') !== false) {
@@ -124,33 +114,19 @@ class GeneralNotification extends Notification
             ];
             $related_id = $transfer_id;
             $type = 'transfer_details';
-            // Dispatch FCM push to background to prevent blocking
-            try {
-                $transfer = Transfer::find($transfer_id);
-                if ($transfer) {
-                    $company = $transfer->Company()->first();
-                    if ($company) {
-                        $token = $company->PlayerId()->pluck('player_id')->filter()->values()->toArray();
-                        if (!empty($token)) {
-                            // Dispatch FCM to queue or run in background
-                            $message = $this->message;
-                            dispatch(function() use ($transfer_id, $token, $data2, $message) {
-                                FCMController::Push('حوالة رقم '.$transfer_id, $message, $token, $data2, 'transfer_details');
-                            })->afterResponse();
-                        }
+            $transfer = Transfer::find($transfer_id);
+            if ($transfer) {
+                $company = $transfer->Company()->first();
+                if ($company) {
+                    $token = $company->PlayerId()->pluck('player_id')->filter()->values()->toArray();
+                    if (!empty($token)) {
+                        FCMController::Push('حوالة رقم '.$transfer_id, $this->message,$token,$data2, 'transfer_details');
                     }
                 }
-            } catch (\Exception $e) {
-                Log::error('FCM push failed in notification: ' . $e->getMessage());
             }
         }
 
-        // Trigger Pusher asynchronously to prevent blocking
-        try {
-            $pusher->trigger('my-channel-'.$notifiable->id, 'general', $data);
-        } catch (\Exception $e) {
-            Log::error('Pusher trigger failed: ' . $e->getMessage());
-        }
+        $pusher->trigger('my-channel-'.$notifiable->id, 'general', $data);
         return [
             'text' => $this->message,
             'related_id' => $related_id,

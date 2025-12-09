@@ -15,7 +15,6 @@ use App\Models\Order;
 use App\Models\OrderStatus;
 use App\Models\Term;
 use App\Notifications\GeneralNotification;
-use App\Jobs\SendMadarxWebhookJob;
 use Carbon\Carbon;
 class OrderController extends Controller
 {
@@ -190,20 +189,12 @@ class OrderController extends Controller
         if ($request->has('status') && $request->get('status') != 'new' && $request->get('status') != $Order->status) {
             if ($request->get('status') == 'delivered') {
                 $Order->update(['delivery_date' => Carbon::now()]);
-                // fire update status on merchant side - dispatch to job queue
-                $company = $Order->Company()->first();
-                if($company && $company->id == 663){
-                    try {
-                        $orderRef = (strpos($Order->refrence_no, '-') !== false) ? $Order->refrence_no_repeated : $Order->refrence_no;
-                        SendMadarxWebhookJob::dispatch(
-                            $orderRef,
-                            'delivered',
-                            $Order->serial,
-                            Carbon::now()->format('Y-m-d H:i:s'),
-                            'Package delivered to customer successfully'
-                        )->afterResponse(); // Run after HTTP response is sent
-                    } catch (\Exception $e) {
-                        \Log::error('Failed to dispatch Madarx webhook job: ' . $e->getMessage());
+                // fire update status on merchant side
+                if($Order->Company()->first() && $Order->Company()->first()->id == 663){
+                    if (strpos($Order->refrence_no, '-') !== false) {
+                        sendMadarxWebhook($Order->refrence_no_repeated, 'delivered', $Order->serial, Carbon::now()->format('Y-m-d H:i:s'), 'Package delivered to customer successfully'  );
+                    } else {
+                        sendMadarxWebhook($Order->refrence_no, 'delivered', $Order->serial, Carbon::now()->format('Y-m-d H:i:s'), 'Package delivered to customer successfully'  );
                     }
                 }
                 // fire update status on merchant side end
@@ -246,40 +237,21 @@ class OrderController extends Controller
                     $rr->save();
                 }
             }
-            // Load company once to avoid multiple queries
-            $company = $Order->Company()->first();
-            
+            $admin = Admin::first();
             $message = 'تم تغيير حالة الطلب  : '.$Order->id  . ' الي ' . trans('words.'.$request->get('status'));
-            
-            // Send notifications asynchronously - dispatch to background to prevent blocking
-            // Since GeneralNotification implements ShouldQueue, it will be queued automatically
-            try {
-                $admin = Admin::first();
-                if($admin) {
-                    // Use sendNow() to bypass queue, or regular notify() to use queue
-                    // For speed, we'll dispatch to queue but don't wait
-                    \Illuminate\Support\Facades\Notification::send($admin, new GeneralNotification($message, '/dashboard/orders/'.$Order->id));
-                }
-            } catch (\Exception $e) {
-                \Log::error('Failed to notify admin: ' . $e->getMessage());
+            if($admin)
+            {
+                $admin->notify(new GeneralNotification($message, '/dashboard/orders/'.$Order->id ) );
             }
-            
-            if($company) {
-                try {
-                    \Illuminate\Support\Facades\Notification::send($company, new GeneralNotification($message, '/company/company-orders/'.$Order->id));
-                } catch (\Exception $e) {
-                    \Log::error('Failed to notify company: ' . $e->getMessage());
-                }
+            if($Order->Company()->first())
+            {
+                $Order->Company()->first()->notify(new GeneralNotification($message, '/company/company-orders/'.$Order->id ) );
             }
 
             if ($request->get('status') == 'init') {
-                try {
-                    $msg = "تم خروج الطلب رقم $Order->refrence_no من المتجر و جاري توصيلها اليكم.";
-                    $msg = "مرحبا $Order->recipent_name  ، شحنتك  $Order->refrence_no  من  $Order->Company->name  في طريقها إليك وسيتم التواصل معكم عند اتجاه المندوب للعنوان";
-                    sendSMS(FormatPhone($Order->phone), $msg);
-                } catch (\Exception $e) {
-                    \Log::error('Failed to send SMS: ' . $e->getMessage());
-                }
+                $msg = "تم خروج الطلب رقم $Order->refrence_no من المتجر و جاري توصيلها اليكم.";
+                $msg = "مرحبا $Order->recipent_name  ، شحنتك  $Order->refrence_no  من  $Order->Company->name  في طريقها إليك وسيتم التواصل معكم عند اتجاه المندوب للعنوان";
+                sendSMS(FormatPhone($Order->phone), $msg);
                 $Order->update(['receive_date' => Carbon::now()]);
             }
         }
@@ -318,9 +290,6 @@ class OrderController extends Controller
         // ******************************************************
         $order->update($data);
 
-        // Eager load relationships to avoid N+1 queries
-        $order->load(['Company', 'PaymentMethod']);
-        
         $order = new OrderResource($order);
         return Response()->json([
             'data'          => [
@@ -382,19 +351,17 @@ class OrderController extends Controller
                 }
             }
             if ($request->has('status') && $request->get('status') != 'new' && $request->get('status') != $Order->status) {
-                // webhook start - with timeout to prevent hanging
-                /*$company = $Order->Company()->first();
-                if($company && $company->notify_url)
-                {
-                    $ch = curl_init();
-                    curl_setopt($ch, CURLOPT_URL, $company->notify_url."refrence_no=$Order->refrence_no&status=$request->get('status')");
-                    curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
-                    curl_setopt($ch, CURLOPT_TIMEOUT, 5); // 5 second timeout
-                    curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 3); // 3 second connection timeout
-                    $output = curl_exec($ch);
-                    curl_close($ch);*/
-                }
-                // webhook end
+                // webhook start
+            if($Order->Company()->first() && $Order->Company()->first()->notify_url)
+            {
+                $ch = curl_init();
+                curl_setopt($ch, CURLOPT_URL, $Order->Company()->first()->notify_url."refrence_no=$Order->refrence_no&status=$request->get('status')");
+                curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+                $output = curl_exec($ch);
+                curl_close($ch);
+
+            }
+            // webhook end
                 $log_data = [
                     'status' => $request->get('status'),
                     'details' => $status_data->details,
@@ -417,37 +384,21 @@ class OrderController extends Controller
                         $rr->save();
                     }
                 }
-                // Load company once to avoid multiple queries
-                $company = $Order->Company()->first();
-                
+                $admin = Admin::first();
                 $message = 'تم تغيير حالة الطلب  : '.$Order->id  . ' الي ' . trans('words.'.$request->get('status'));
-                
-                // Send notifications asynchronously to prevent blocking
-                try {
-                    $admin = Admin::first();
-                    if($admin) {
-                        $admin->notify(new GeneralNotification($message, '/dashboard/orders/'.$Order->id ) );
-                    }
-                } catch (\Exception $e) {
-                    \Log::error('Failed to notify admin: ' . $e->getMessage());
+                if($admin)
+                {
+                    $admin->notify(new GeneralNotification($message, '/dashboard/orders/'.$Order->id ) );
                 }
-                
-                if($company) {
-                    try {
-                        $company->notify(new GeneralNotification($message, '/company/company-orders/'.$Order->id ) );
-                    } catch (\Exception $e) {
-                        \Log::error('Failed to notify company: ' . $e->getMessage());
-                    }
+                if($Order->Company()->first())
+                {
+                    $Order->Company()->first()->notify(new GeneralNotification($message, '/company/company-orders/'.$Order->id ) );
                 }
 
                 if ($request->get('status') == 'init') {
-                    try {
-                        $msg = "تم خروج الطلب رقم $Order->refrence_no من المتجر و جاري توصيلها اليكم.";
-                        $msg = "مرحبا $Order->recipent_name  ، شحنتك  $Order->refrence_no  من  $Order->Company->name  في طريقها إليك وسيتم التواصل معكم عند اتجاه المندوب للعنوان";
-                        sendSMS(FormatPhone($Order->phone), $msg);
-                    } catch (\Exception $e) {
-                        \Log::error('Failed to send SMS: ' . $e->getMessage());
-                    }
+                    $msg = "تم خروج الطلب رقم $Order->refrence_no من المتجر و جاري توصيلها اليكم.";
+                    $msg = "مرحبا $Order->recipent_name  ، شحنتك  $Order->refrence_no  من  $Order->Company->name  في طريقها إليك وسيتم التواصل معكم عند اتجاه المندوب للعنوان";
+                    sendSMS(FormatPhone($Order->phone), $msg);
                     $Order->update(['receive_date' => Carbon::now()]);
                 }
             }

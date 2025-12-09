@@ -867,8 +867,6 @@ function sendSMS($numbers, $msg)
     $cURLConnection = curl_init('https://api.taqnyat.sa/v1/messages');
     curl_setopt($cURLConnection, CURLOPT_POSTFIELDS, json_encode($postRequest));
     curl_setopt($cURLConnection, CURLOPT_RETURNTRANSFER, true);
-    curl_setopt($cURLConnection, CURLOPT_TIMEOUT, 10); // 10 second timeout
-    curl_setopt($cURLConnection, CURLOPT_CONNECTTIMEOUT, 5); // 5 second connection timeout
     curl_setopt($cURLConnection, CURLOPT_HTTPHEADER, array(
         'Authorization: Bearer 056c7c300f4896d2a686ca278ec154d5',
         'Content-Type: application/json'

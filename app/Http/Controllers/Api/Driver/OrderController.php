@@ -15,6 +15,8 @@ use App\Models\Order;
 use App\Models\OrderStatus;
 use App\Models\Term;
 use App\Notifications\GeneralNotification;
+use App\Jobs\SendMadarxWebhookJob;
+use App\Jobs\SendCompanyWebhookJob;
 use Carbon\Carbon;
 class OrderController extends Controller
 {
@@ -189,25 +191,29 @@ class OrderController extends Controller
         if ($request->has('status') && $request->get('status') != 'new' && $request->get('status') != $Order->status) {
             if ($request->get('status') == 'delivered') {
                 $Order->update(['delivery_date' => Carbon::now()]);
-                // fire update status on merchant side
-                if($Order->Company()->first() && $Order->Company()->first()->id == 663){
-                    if (strpos($Order->refrence_no, '-') !== false) {
-                        sendMadarxWebhook($Order->refrence_no_repeated, 'delivered', $Order->serial, Carbon::now()->format('Y-m-d H:i:s'), 'Package delivered to customer successfully'  );
-                    } else {
-                        sendMadarxWebhook($Order->refrence_no, 'delivered', $Order->serial, Carbon::now()->format('Y-m-d H:i:s'), 'Package delivered to customer successfully'  );
-                    }
+                // fire update status on merchant side - dispatch to job
+                $company = $Order->Company()->first();
+                if($company && $company->id == 663){
+                    $orderRef = (strpos($Order->refrence_no, '-') !== false) ? $Order->refrence_no_repeated : $Order->refrence_no;
+                    SendMadarxWebhookJob::dispatch(
+                        $orderRef,
+                        'delivered',
+                        $Order->serial,
+                        Carbon::now()->format('Y-m-d H:i:s'),
+                        'Package delivered to customer successfully'
+                    )->afterResponse(); // Run after HTTP response is sent
                 }
                 // fire update status on merchant side end
             }
-            // webhook start
-            if($Order->Company()->first() && $Order->Company()->first()->notify_url)
+            // webhook start - dispatch to job
+            $company = $Order->Company()->first();
+            if($company && $company->notify_url)
             {
-                $ch = curl_init();
-                curl_setopt($ch, CURLOPT_URL, $Order->Company()->first()->notify_url."refrence_no=$Order->refrence_no&status=$request->get('status')");
-                curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
-                $output = curl_exec($ch);
-                curl_close($ch);
-
+                SendCompanyWebhookJob::dispatch(
+                    $company->notify_url,
+                    $Order->refrence_no,
+                    $request->get('status')
+                )->afterResponse(); // Run after HTTP response is sent
             }
             // webhook end
             // signature
@@ -351,17 +357,17 @@ class OrderController extends Controller
                 }
             }
             if ($request->has('status') && $request->get('status') != 'new' && $request->get('status') != $Order->status) {
-                // webhook start
-            if($Order->Company()->first() && $Order->Company()->first()->notify_url)
-            {
-                $ch = curl_init();
-                curl_setopt($ch, CURLOPT_URL, $Order->Company()->first()->notify_url."refrence_no=$Order->refrence_no&status=$request->get('status')");
-                curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
-                $output = curl_exec($ch);
-                curl_close($ch);
-
-            }
-            // webhook end
+                // webhook start - dispatch to job
+                $company = $Order->Company()->first();
+                if($company && $company->notify_url)
+                {
+                    SendCompanyWebhookJob::dispatch(
+                        $company->notify_url,
+                        $Order->refrence_no,
+                        $request->get('status')
+                    )->afterResponse(); // Run after HTTP response is sent
+                }
+                // webhook end
                 $log_data = [
                     'status' => $request->get('status'),
                     'details' => $status_data->details,

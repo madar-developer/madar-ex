@@ -39,11 +39,15 @@ class HomeController extends Controller
                                 $x = Invoice::whereDate('created_at', $x)->sum('madar_price');
                                 $p->b = $x;
                             });
-        $orderse = Order::where('status', 'at_office')->get();
+        // Build lightweight order list for the map without loading full models into memory
         $o_list = [];
-        foreach ($orderse as $i) {
-            $o_list[] = ['Order #'.$i->id, $i->latitude, $i->longitude];
-        }
+        Order::where('status', 'at_office')
+            ->select('id', 'latitude', 'longitude')
+            ->chunkById(500, function($orders) use (&$o_list) {
+                foreach ($orders as $i) {
+                    $o_list[] = ['Order #'.$i->id, $i->latitude, $i->longitude];
+                }
+            });
         $o_list = json_encode($o_list);
         $order_statuses_chart = [];
         $order_statuses_colors = [];

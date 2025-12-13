@@ -357,3 +357,5 @@ Stack trace:
 [02-May-2023 05:36:16 UTC] PHP Warning:  Module 'redis' already loaded in Unknown on line 0
 [04-May-2023 15:28:14 UTC] PHP Warning:  Module 'redis' already loaded in Unknown on line 0
 [04-May-2023 18:14:53 UTC] PHP Warning:  Module 'redis' already loaded in Unknown on line 0
+[09-Dec-2025 12:08:06 UTC] PHP Warning:  PHP Startup: session.gc_divisor must be greater than 0 in Unknown on line 0
+[09-Dec-2025 12:14:19 UTC] PHP Warning:  PHP Startup: session.gc_divisor must be greater than 0 in Unknown on line 0

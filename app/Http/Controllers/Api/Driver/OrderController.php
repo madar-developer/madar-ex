@@ -201,7 +201,7 @@ class OrderController extends Controller
                         $Order->serial,
                         Carbon::now()->format('Y-m-d H:i:s'),
                         'Package delivered to customer successfully'
-                    )->afterResponse(); // Run after HTTP response is sent
+                    ); // Run after HTTP response is sent
                 }
                 // fire update status on merchant side end
             }
@@ -213,7 +213,7 @@ class OrderController extends Controller
                     $company->notify_url,
                     $Order->refrence_no,
                     $request->get('status')
-                )->afterResponse(); // Run after HTTP response is sent
+                ); // Run after HTTP response is sent
             }
             // webhook end
             // signature

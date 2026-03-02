@@ -18,6 +18,8 @@ use App\Notifications\GeneralNotification;
 use App\Jobs\SendMadarxWebhookJob;
 use App\Jobs\SendCompanyWebhookJob;
 use Carbon\Carbon;
+
+use App\Jobs\SendOrderWebhookJob;
 class OrderController extends Controller
 {
     public function index()
@@ -366,13 +368,16 @@ class OrderController extends Controller
                 // fire update status on merchant side end
             }
             // webhook start
-            if($Order->Company()->first() && $Order->Company()->first()->notify_url)
+            $company = $Order->Company()->first();
+            if($company && $company->notify_url)
             {
-                $ch = curl_init();
-                curl_setopt($ch, CURLOPT_URL, $Order->Company()->first()->notify_url."refrence_no=$Order->refrence_no&status=$request->get('status')");
-                curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
-                $output = curl_exec($ch);
-                curl_close($ch);
+                // $ch = curl_init();
+                // curl_setopt($ch, CURLOPT_URL, $Order->Company()->first()->notify_url."refrence_no=$Order->refrence_no&status=$request->get('status')");
+                // curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+                // $output = curl_exec($ch);
+                // curl_close($ch);
+                $url = $company->notify_url . "refrence_no=$Order->serial&status=".$request->get('status');
+                SendOrderWebhookJob::dispatch($url);
 
             }
             // webhook end

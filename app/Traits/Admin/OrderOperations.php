@@ -156,7 +156,7 @@ trait OrderOperations
                 // curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
                 // $output = curl_exec($ch);
                 // curl_close($ch);
-                $url = $Order->Company()->first()->notify_url . "refrence_no=$Order->serial&status=".$request->get('status');
+                $url = $company->notify_url . "refrence_no=$Order->serial&status=".$request->get('status');
                 SendOrderWebhookJob::dispatch($url);
 
 

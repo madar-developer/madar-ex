@@ -20,6 +20,8 @@ class PdfController extends Controller
         $company = Company::find($id);
         $title = 'شركة : '. $company->name;
         config(['pdf.format'                => 'A4']);
+        ini_set('pcre.backtrack_limit', '5000000');
+ini_set('memory_limit', '512M');
             $pdf1 = PDF::loadView('admin.reports.pdf.company', compact('company', 'title'));
             return $pdf1->download('document.pdf');
             $order = Order::find($id);
@@ -28,6 +30,8 @@ class PdfController extends Controller
     {
         $company = Company::find($id);
         $title = 'شركة : '. $company->name;
+        ini_set('pcre.backtrack_limit', '5000000');
+ini_set('memory_limit', '512M');
         config(['pdf.format'                => 'A4']);
             $pdf1 = PDF::loadView('admin.reports.pdf.company-finance', compact('company', 'title'));
             return $pdf1->download('document.pdf');
@@ -36,6 +40,8 @@ class PdfController extends Controller
     {
         $company = auth('company')->user();
         $title = 'شركة : '. $company->name;
+        ini_set('pcre.backtrack_limit', '5000000');
+ini_set('memory_limit', '512M');
         config(['pdf.format'                => 'A4']);
             $pdf1 = PDF::loadView('admin.reports.pdf.company-finance', compact('company', 'title'));
             return $pdf1->download('document.pdf');
@@ -46,6 +52,8 @@ class PdfController extends Controller
     {
         $driver = Driver::find($id);
         $title = 'سائق : '. $driver->name;
+        ini_set('pcre.backtrack_limit', '5000000');
+ini_set('memory_limit', '512M');
         config(['pdf.format'                => 'A4']);
             $pdf = PDF::loadView('admin.reports.pdf.driver', compact('driver', 'title'));
             return $pdf->download(\Str::slug($driver->first_name . ' ' . $driver->last_name).'.pdf');
@@ -74,6 +82,8 @@ class PdfController extends Controller
         //                                                 return Carbon::parse($date->created_at)->format('Y m'); // grouping by months
         //                                             });
         config(['pdf.format'                => 'A4']);
+        ini_set('pcre.backtrack_limit', '5000000');
+ini_set('memory_limit', '512M');
         $pdf = PDF::loadView('admin.reports.pdf.driver-finance', compact('driver', 'title', 'summary'));
         return $pdf->download('document.pdf');
     }
@@ -83,7 +93,8 @@ class PdfController extends Controller
         $driver = $row->Driver()->first();
         $title = 'سائق : '. $driver->name;
         $orders = Order::whereIn('id', explode(',', $row->orders))->get();
-        config(['pdf.format'                => 'A4']);
+        config(['pdf.format'                => 'A4']);ini_set('pcre.backtrack_limit', '5000000');
+ini_set('memory_limit', '512M');
         $pdf = PDF::loadView('admin.reports.pdf.driver-finance-collect', compact('driver', 'title', 'row', 'orders'));
         return $pdf->download('document.pdf');
     }
@@ -95,6 +106,8 @@ class PdfController extends Controller
         $invoices = $transfer->Invoice()->get();
         $title = 'فاتورة : '. $transfer->Company->name ?? '';
         config(['pdf.format'                => 'A4']);
+        ini_set('pcre.backtrack_limit', '5000000');
+ini_set('memory_limit', '512M');
             $pdf = PDF::loadView('admin.reports.pdf.transfer', compact('transfer', 'title', 'invoices'));
             return $pdf->download(str_slug($transfer->Company->name).'.pdf');
     }
@@ -105,6 +118,8 @@ class PdfController extends Controller
         $order = Order::find($id);
         $title = 'طلب : '. $order->name;
         // return view('admin.reports.pdf.order', compact('order', 'title'));
+        ini_set('pcre.backtrack_limit', '5000000');
+ini_set('memory_limit', '512M');
             $pdf = PDF::loadView('admin.reports.pdf.order', compact('order', 'title'));
             return $pdf->download('invoice.pdf');
     }
@@ -114,6 +129,8 @@ class PdfController extends Controller
         $invoice = Invoice::find($id);
         $title = 'فاتورة : '. $invoice->name;
         config(['pdf.format'                => 'A4']);
+        ini_set('pcre.backtrack_limit', '5000000');
+ini_set('memory_limit', '512M');
             $pdf = PDF::loadView('admin.reports.pdf.invoice', compact('invoice', 'title'));
             return $pdf->download('invoice-'.$invoice->id.'.pdf');
     }

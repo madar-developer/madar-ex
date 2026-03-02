@@ -14,6 +14,7 @@ use App\Models\Company;
 use App\Models\OrderStatus;
 use App\Models\Term;
 use App\Notifications\AdminNotification;
+use App\Jobs\SendOrderWebhookJob;
 
 trait OrderOperations
 {
@@ -147,13 +148,16 @@ trait OrderOperations
         /////////////////////////////////////////////////////////// the date of first step from
         if ($request->has('status') && $request->get('status') != 'new' && $request->get('status') != $Order->status) {
             // webhook start
-            if($Order->Company()->first() && $Order->Company()->first()->notify_url)
+            $company = $Order->Company()->first();
+            if($company && $company->notify_url)
             {
-                $ch = curl_init();
-                curl_setopt($ch, CURLOPT_URL, $Order->Company()->first()->notify_url."refrence_no=$Order->serial&status=$request->get('status')");
-                curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
-                $output = curl_exec($ch);
-                curl_close($ch);
+                // $ch = curl_init();
+                // curl_setopt($ch, CURLOPT_URL, $Order->Company()->first()->notify_url."refrence_no=$Order->serial&status=$request->get('status')");
+                // curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+                // $output = curl_exec($ch);
+                // curl_close($ch);
+                $url = $Order->Company()->first()->notify_url . "refrence_no=$Order->serial&status=".$request->get('status');
+                SendOrderWebhookJob::dispatch($url);
 
 
 

@@ -198,8 +198,12 @@
             <div class="notification-list nicescroll">
                 <ul class="list-group list-no-border user-list" id="notifications">
                     @php
-                    //$user = \App\Models\Admin::first();
-                    $notifications = $user->unreadnotifications->sortByDesc('created_at')->take(30);
+                    // Fetch a small page of unread notifications without loading them all
+                    $notifications = $user->notifications()
+                        ->whereNull('read_at')
+                        ->orderByDesc('created_at')
+                        ->limit(30)
+                        ->get();
                     @endphp
                     @foreach($notifications as $item)
                     <li class="list-group-item {{($item->read_at)? '' : 'active'}}">

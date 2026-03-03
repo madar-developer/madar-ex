@@ -3,12 +3,15 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class OrderLog extends Model
 {
+    use SoftDeletes;
+
     protected $table='order_logs';
     protected $fillable = [
-        'order_id', 'status' , 'details', 'added_by_type', 'added_by_id', 'reason', 'active',
+        'order_id', 'status' , 'details', 'added_by_type', 'added_by_id', 'reason', 'active', 'changed_from',
     ];
     protected $appends = [
         'image', 'color'

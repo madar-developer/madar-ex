@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "e7f23d53a03779d4663cd152c2d7715b",
+    "content-hash": "fe9723fd69a42fe5c1e43252db0ff635",
     "packages": [
         {
             "name": "brozot/laravel-fcm",
@@ -2247,6 +2247,73 @@
                 }
             ],
             "time": "2022-08-04T09:53:51+00:00"
+        },
+        {
+            "name": "naif/saudiaddress",
+            "version": "v2.1.0",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/naifalshaye/saudiaddress.git",
+                "reference": "734b763dca96aeea7781e4e0269b78df16ac4b1f"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/naifalshaye/saudiaddress/zipball/734b763dca96aeea7781e4e0269b78df16ac4b1f",
+                "reference": "734b763dca96aeea7781e4e0269b78df16ac4b1f",
+                "shasum": ""
+            },
+            "require": {
+                "guzzlehttp/guzzle": "^6.3|^7.0",
+                "illuminate/support": "^5.5|^6.0|^7.0|^8.0|^9.0|^10.0|^11.0|^12.0",
+                "php": ">=7.2"
+            },
+            "require-dev": {
+                "mockery/mockery": "^1.3",
+                "orchestra/testbench": "^3.5|^4.0|^5.0|^6.0|^7.0|^8.0|^9.0|^10.0",
+                "phpunit/phpunit": "^7.0|^8.0|^9.0|^10.0|^11.0"
+            },
+            "type": "library",
+            "extra": {
+                "laravel": {
+                    "aliases": {
+                        "SaudiAddress": "Naif\\Saudiaddress\\Facades\\SaudiAddress"
+                    },
+                    "providers": [
+                        "Naif\\Saudiaddress\\SaudiAddressServiceProvider"
+                    ]
+                }
+            },
+            "autoload": {
+                "psr-4": {
+                    "Naif\\Saudiaddress\\": "src/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Naif Alshaye",
+                    "email": "naif@naif.io"
+                }
+            ],
+            "description": "Laravel wrapper for the Saudi National Address APIs",
+            "keywords": [
+                "Saudi Arabia",
+                "address",
+                "addresses",
+                "laravel",
+                "national-address",
+                "php",
+                "saudi",
+                "saudiaddress"
+            ],
+            "support": {
+                "issues": "https://github.com/naifalshaye/saudiaddress/issues",
+                "source": "https://github.com/naifalshaye/saudiaddress/tree/v2.1.0"
+            },
+            "time": "2026-02-05T13:56:01+00:00"
         },
         {
             "name": "namshi/jose",

@@ -6,6 +6,7 @@ use App\Models\Order;
 use App\Models\OrderLog;
 use App\Observers\OrderObserver;
 use App\Observers\OrderLogObserver;
+use App\Services\SaudiAddressService;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\ServiceProvider;
@@ -19,7 +20,9 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register()
     {
-        //
+        $this->app->singleton(SaudiAddressService::class, function () {
+            return new SaudiAddressService();
+        });
     }
 
     /**

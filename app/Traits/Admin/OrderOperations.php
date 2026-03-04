@@ -15,6 +15,8 @@ use App\Models\OrderStatus;
 use App\Models\Term;
 use App\Notifications\AdminNotification;
 use App\Jobs\SendOrderWebhookJob;
+use App\Services\SaudiAddressService;
+use Illuminate\Support\Facades\Log;
 
 trait OrderOperations
 {
@@ -59,6 +61,49 @@ trait OrderOperations
         ////////////////////////// serial start/////////////////////////////
 
         DB::beginTransaction();
+
+        if (!empty($data['latitude']) && !empty($data['longitude'])) {
+            try {
+                $geoAddress = app(SaudiAddressService::class)->geocode($data['latitude'], $data['longitude']);
+                
+                Log::info('SaudiAddress geocode success', [
+                    'lat'      => $data['latitude'],
+                    'lng'      => $data['longitude'],
+                    'response' => $geoAddress,
+                ]);
+
+                $addressParts = [];
+
+                if (!empty($geoAddress->BuildingNumber)) {
+                    $addressParts[] = $geoAddress->BuildingNumber;
+                }
+                if (!empty($geoAddress->Street)) {
+                    $addressParts[] = $geoAddress->Street;
+                }
+                if (!empty($geoAddress->District)) {
+                    $addressParts[] = $geoAddress->District;
+                }
+                if (!empty($geoAddress->City)) {
+                    $addressParts[] = $geoAddress->City;
+                }
+                if (!empty($geoAddress->PostCode)) {
+                    $addressParts[] = $geoAddress->PostCode;
+                }
+
+                $geoAddressString = implode(', ', $addressParts);
+                if (!empty($geoAddressString)) {
+                    $data['adress_details'] = $geoAddressString;
+                }
+            } catch (\Throwable $e) {
+                // Keep provided address details if geocode fails.
+                Log::error('SaudiAddress geocode failed', [
+                    'lat'     => $data['latitude'] ?? null,
+                    'lng'     => $data['longitude'] ?? null,
+                    'error'   => $e->getMessage(),
+                ]);
+            }
+        }
+
         $Order = Order::create($data);
         $s = str_replace(' ', '',date('Y m').$Order->id);
         $serial = 'mx-'.$s;

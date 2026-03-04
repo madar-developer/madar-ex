@@ -4,6 +4,7 @@ namespace App\Traits\Api;
 // use App\Mail\Api\DriverVerify as DriverVerifyMail;
 use Illuminate\Http\Request;
 use App\Models\Driver;
+use Illuminate\Support\Str;
 use Mail;
 use DB;
 
@@ -20,7 +21,7 @@ trait DriverOperations
     public function register ($request)
     {
         $data = $request->all();
-        $api_token      = str_random(60);
+        $api_token      = Str::random(60);
         // while ( Driver::where('api_token',$api_token)->count() > 0 ) {                    
         //     $$api_token = str_random(60);
         // }

@@ -5,6 +5,7 @@ use App\Mail\Api\UserVerify as UserVerifyMail;
 use Illuminate\Http\Request;
 use App\Models\DeliveryUser;
 use App\Models\User;
+use Illuminate\Support\Str;
 use Mail;
 use DB;
 
@@ -21,7 +22,7 @@ trait UserOperations
     public function register ($request)
     {
         $data = (array)$request->except('player_id');
-        $api_token      = str_random(60);
+        $api_token      = Str::random(60);
         // while ( User::where('api_token',$api_token)->count() > 0 ) {                    
         //     $$api_token = str_random(60);
         // }

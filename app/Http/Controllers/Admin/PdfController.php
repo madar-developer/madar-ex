@@ -10,6 +10,7 @@ use App\Models\DriverFianance;
 use App\Models\Invoice;
 use App\Models\Transfer;
 use App\Models\Order;
+use Illuminate\Support\Str;
 use PDF;
 use Carbon\Carbon;
 
@@ -109,7 +110,7 @@ ini_set('memory_limit', '512M');
         ini_set('pcre.backtrack_limit', '5000000');
 ini_set('memory_limit', '512M');
             $pdf = PDF::loadView('admin.reports.pdf.transfer', compact('transfer', 'title', 'invoices'));
-            return $pdf->download(str_slug($transfer->Company->name).'.pdf');
+            return $pdf->download(Str::slug($transfer->Company->name).'.pdf');
     }
 
 

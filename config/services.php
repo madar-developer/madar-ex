@@ -34,4 +34,9 @@ return [
         'secret' => env('SPARKPOST_SECRET'),
     ],
 
+    'firebase' => [
+        // 'credentials' => env('FIREBASE_CREDENTIALS'), // Path to service account JSON file
+        'credentials' => storage_path('app/madarexpress-firebase-adminsdk-3facz-ae95777956.json'), // Path to service account JSON file
+    ],
+
 ];

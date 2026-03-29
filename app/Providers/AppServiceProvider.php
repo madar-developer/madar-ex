@@ -10,6 +10,8 @@ use App\Services\SaudiAddressService;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\ServiceProvider;
+use Kreait\Firebase\Contract\Messaging;
+use Kreait\Firebase\Factory as FirebaseFactory;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -23,6 +25,15 @@ class AppServiceProvider extends ServiceProvider
         $this->app->singleton(SaudiAddressService::class, function () {
             return new SaudiAddressService();
         });
+
+        $credentialsPath = config('services.firebase.credentials') ?? env('FIREBASE_CREDENTIALS');
+        if ($credentialsPath && is_file($credentialsPath)) {
+            $this->app->singleton(Messaging::class, function () use ($credentialsPath) {
+                return (new FirebaseFactory)
+                    ->withServiceAccount($credentialsPath)
+                    ->createMessaging();
+            });
+        }
     }
 
     /**
@@ -34,8 +45,8 @@ class AppServiceProvider extends ServiceProvider
     {
         Order::observe(OrderObserver::class);
         OrderLog::observe(OrderLogObserver::class);
-        if (Request()->has('notify') && Request()->get('notify') != '') {
-            DB::table('notifications')->where('id', Request()->get('notify'))->update(['read_at' => Carbon::now()]);
+        if (request()->has('notify') && request()->get('notify') != '') {
+            DB::table('notifications')->where('id', request()->get('notify'))->update(['read_at' => Carbon::now()]);
         }
     }
 }

@@ -38,19 +38,19 @@ class Kernel extends HttpKernel
         ],
 
         'api' => [
-            // 'throttle:60,1',
+            'throttle:60,1',
             'bindings',
         ],
     ];
 
     /**
-     * The application's route middleware.
+     * The application's route middleware aliases.
      *
      * These middleware may be assigned to groups or used individually.
      *
-     * @var array
+     * @var array<string, class-string|string>
      */
-    protected $routeMiddleware = [
+    protected $middlewareAliases = [
         'auth' => \App\Http\Middleware\Authenticate::class,
         'auth.basic' => \Illuminate\Auth\Middleware\AuthenticateWithBasicAuth::class,
         'bindings' => \Illuminate\Routing\Middleware\SubstituteBindings::class,

@@ -37,7 +37,7 @@ return [
 
     'guards' => [
         'web' => [
-            // byst5dem l web
+            // used by web
             'driver' => 'session',
             'provider' => 'users',
         ],

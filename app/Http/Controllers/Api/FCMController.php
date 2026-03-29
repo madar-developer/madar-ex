@@ -2,47 +2,68 @@
 
 namespace App\Http\Controllers\Api;
 
-use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
-use LaravelFCM\Message\OptionsBuilder;
-use LaravelFCM\Message\PayloadDataBuilder;
-use LaravelFCM\Message\PayloadNotificationBuilder;
-use FCM;
-use FCMGroup;
-
+use Kreait\Firebase\Contract\Messaging;
+use Kreait\Firebase\Messaging\CloudMessage;
+use Kreait\Firebase\Messaging\Notification;
 
 class FCMController extends Controller
 {
-    public static function Push($title, $content,$token,$data, $activity = '')
+    /**
+     * Send FCM push notification to a device token.
+     *
+     * @param  string  $title
+     * @param  string  $content
+     * @param  string|array<int, string>  $token  FCM device token(s); callers often pass pluck()->toArray()
+     * @param  array  $data  Optional data payload (values will be stringified for FCM)
+     * @param  string  $activity  Click action / activity name
+     * @return mixed
+     */
+    public static function Push($title, $content, $token, $data, $activity = '')
     {
-        // $data2 = [
-        //     'notification' => [
-        //         'click_action' => $activity,
-        //         'body' => $content,
-        //         'title' => $title,
-        //         'icon' => ''
-        //     ],
-        //     'data' =>$data
-        // ];
-        try{
-            $notificationBuilder = new PayloadNotificationBuilder();
-            $notificationBuilder->setTitle($title)
-                                ->setBody($content)
-                                ->setSound('sound')
-                                ->setChannelId('com.madar_al_reyadah.algeri_client')
-                                // ->setChannelName('busstecc_driver_channel')
-                                ->setClickAction($activity);
-                                // ->setBadge('badge');
+        try {
+            $messaging = app(Messaging::class);
 
-            $notification = $notificationBuilder->build();
-            $dataBuilder = new PayloadDataBuilder();
-            $dataBuilder->addData($data);
+            $tokens = is_array($token)
+                ? array_values(array_filter(array_map('strval', $token), static fn (string $t): bool => $t !== ''))
+                : [trim((string) $token)];
+            $tokens = array_values(array_unique($tokens));
+            if ($tokens === []) {
+                return null;
+            }
 
-            $data = $dataBuilder->build();
-            $downstreamResponse = FCM::sendTo($token, null, $notification, $data);
-            return $downstreamResponse;
-        }catch(\Exception $e){
-            return true;
+            $dataPayload = [];
+            foreach ((array) $data as $key => $value) {
+                $dataPayload[(string) $key] = is_scalar($value) ? (string) $value : json_encode($value);
+            }
+            if ($activity !== '') {
+                $dataPayload['click_action'] = $activity;
+            }
+
+            $androidNotification = [
+                'channel_id' => 'com.madar_al_reyadah.algeri_client',
+                'sound' => 'sound',
+            ];
+            if ($activity !== '') {
+                $androidNotification['click_action'] = $activity;
+            }
+
+            $message = CloudMessage::new()
+                ->withNotification(Notification::create($title, $content))
+                ->withData($dataPayload)
+                ->withAndroidConfig([
+                    'notification' => $androidNotification,
+                ]);
+
+            if (count($tokens) === 1) {
+                return $messaging->send($message->toToken($tokens[0]));
+            }
+
+            return $messaging->sendMulticast($message, $tokens);
+        } catch (\Exception $e) {
+            report($e);
+
+            return null;
         }
     }
 }

@@ -59,4 +59,28 @@ class AuthController extends Controller
             'code'          => getMsgCode('success'),
         ]);
     }
+
+    public function refresh(Request $request)
+    {
+        try {
+            $token = JWTAuth::parseToken()->refresh();
+
+            return response()->json([
+                'data' => [
+                    'token' => $token,
+                ],
+                'message' => 'success',
+                'code' => getMsgCode('success'),
+            ]);
+        } catch (\Throwable $e) {
+            report($e);
+
+            return response()->json([
+                'data' => new \stdClass,
+                'errors' => ['token_refresh_failed'],
+                'message' => 'authFailed',
+                'code' => getMsgCode('authFailed'),
+            ], 401);
+        }
+    }
 }

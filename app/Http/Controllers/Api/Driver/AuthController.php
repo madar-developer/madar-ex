@@ -15,16 +15,21 @@ use Validator;
 
 class AuthController extends Controller
 {
+    
     public function login(Request $request)
     {
 
+    // Prevent expired token interference
+    // \Tymon\JWTAuth\Facades\JWTAuth::unsetToken();
+    // dd(now());
+    // dd(config('jwt.ttl'));
             $email = $request->get('email');
             $password = $request->get('password');
             $field = (filter_var($email, FILTER_SANITIZE_NUMBER_INT))? 'phone' : 'email';
                 $credentials = [$field => $email, 'password' => $password];
                 $driver = Driver::where($field, $email)->first();
-                // if($token = auth('api-driver')->attempt($credentials))
-                if($driver && $token = auth('api-driver')->login($driver))
+                if($token = auth('api-driver')->attempt($credentials))
+                // if($driver && $token = auth('api-driver')->login($driver))
                 {
                     $driver = auth('api-driver')->user();
                     // $driver->update(['verify_code' => null]);
@@ -48,6 +53,39 @@ class AuthController extends Controller
                         'code'          => getMsgCode('authFailed'),
                     ]);
     }
+    /*public function login(Request $request)
+    {
+
+            $email = $request->get('email');
+            $password = $request->get('password');
+            $field = (filter_var($email, FILTER_SANITIZE_NUMBER_INT))? 'phone' : 'email';
+                $credentials = [$field => $email, 'password' => $password];
+                $driver = Driver::where($field, $email)->first();
+                // if($token = auth('api-driver')->attempt($credentials))
+                $driver && $token = auth('api-driver')->login($driver))r))
+                {
+                    $driver = auth('api-driver')->user();
+                    // $driver->update(['verify_code' => null]);
+                    if(Request()->has('player_id') && !$driver->PlayerId()->where('player_id', '=', $request->get('player_id'))->first() )
+                    {
+                        $driver->PlayerId()->create(['player_id' => $request->player_id]);
+                    }
+                    $driver->token = $token;
+                    return Response()->json([
+                            'data'          => [
+                                'driver'  => $driver,
+                            ],
+                            'message'       => 'success',
+                            'code'          => getMsgCode('success'),
+                        ]);
+                }
+            return Response()->json([
+                        'data'   => new \stdClass,
+                        'errors'       => [' '],
+                        'message'       => trans('words.authFailed'),
+                        'code'          => getMsgCode('authFailed'),
+                    ]);
+    }*/
     public function logout()
     {
         $user = auth('api-driver')->user();
@@ -58,5 +96,29 @@ class AuthController extends Controller
             'message'       => 'success',
             'code'          => getMsgCode('success'),
         ]);
+    }
+
+    public function refresh(Request $request)
+    {
+        try {
+            $token = JWTAuth::parseToken()->refresh();
+
+            return response()->json([
+                'data' => [
+                    'token' => $token,
+                ],
+                'message' => 'success',
+                'code' => getMsgCode('success'),
+            ]);
+        } catch (\Throwable $e) {
+            report($e);
+
+            return response()->json([
+                'data' => new \stdClass,
+                'errors' => ['token_refresh_failed'],
+                'message' => 'authFailed',
+                'code' => getMsgCode('authFailed'),
+            ], 401);
+        }
     }
 }

@@ -4,6 +4,9 @@ namespace App\Exceptions;
 
 use Illuminate\Foundation\Exceptions\Handler as ExceptionHandler;
 use Illuminate\Auth\AuthenticationException;
+use Tymon\JWTAuth\Exceptions\TokenExpiredException;
+use Tymon\JWTAuth\Exceptions\TokenInvalidException;
+use Tymon\JWTAuth\Exceptions\JWTException;
 use Throwable;
 
 class Handler extends ExceptionHandler
@@ -14,7 +17,7 @@ class Handler extends ExceptionHandler
      * @var array
      */
     protected $dontReport = [
-        //
+        TokenExpiredException::class,
     ];
 
     /**
@@ -47,6 +50,33 @@ class Handler extends ExceptionHandler
      */
     public function render($request, Throwable $e)
     {
+        if (($request->expectsJson() || $request->segment(1) === 'api') && $e instanceof TokenExpiredException) {
+            return response()->json([
+                'data' => new \stdClass,
+                'errors' => ['token_expired'],
+                'message' => 'Token has expired',
+                'code' => 401,
+            ], 401);
+        }
+
+        if (($request->expectsJson() || $request->segment(1) === 'api') && $e instanceof TokenInvalidException) {
+            return response()->json([
+                'data' => new \stdClass,
+                'errors' => ['token_invalid'],
+                'message' => 'Token is invalid',
+                'code' => 401,
+            ], 401);
+        }
+
+        if (($request->expectsJson() || $request->segment(1) === 'api') && $e instanceof JWTException) {
+            return response()->json([
+                'data' => new \stdClass,
+                'errors' => ['token_error'],
+                'message' => 'Token error',
+                'code' => 401,
+            ], 401);
+        }
+
         return parent::render($request, $e);
     }
 

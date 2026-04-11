@@ -31,6 +31,7 @@ Route::group(['prefix' => '/v1', 'namespace' => 'Api'], function() {
     Route::post('get-order-history', 'ServiceController@getHistory');
     Route::group(['prefix' => '/driver', 'namespace' => 'Driver'], function() {
         Route::post('/signin', 'AuthController@login');
+        Route::post('/refresh', 'AuthController@refresh');
         Route::post('forget-password', 'ProfileController@ForgetPassword');
         Route::group(['middleware' => 'auth:api-driver'], function() {
             Route::post('logout', 'AuthController@logout');
@@ -63,6 +64,7 @@ Route::group(['prefix' => '/v1', 'namespace' => 'Api'], function() {
     Route::group(['prefix' => '/company', 'namespace' => 'Company'], function() {
         Route::post('/signin', 'AuthController@login');
         Route::post('/signup', 'AuthController@signup');
+        Route::post('/refresh', 'AuthController@refresh');
         Route::post('forget-password', 'ProfileController@ForgetPassword');
         Route::group(['middleware' => 'auth:api-company'], function() {
             Route::get('delete-account', 'ProfileController@delete_account');

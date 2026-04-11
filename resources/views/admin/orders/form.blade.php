@@ -257,7 +257,9 @@
 </div>
 
 <div class="sub-wr col-md-12 text-center">
-    <button class="btn btn-primary waves-effect waves-light btn-submit" type="submit"> اضافة
+    <button class="btn btn-primary waves-effect waves-light btn-submit" type="submit"> حفظ
+    </button>
+    <button class="btn btn-primary waves-effect waves-light btn-submit" type="submit"> احفظ و ابقي علي نفس الصفحة
     </button>
 
 </div>

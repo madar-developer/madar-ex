@@ -147,7 +147,7 @@ class OrderController extends Controller
             $orders = $orders->get();
             return Excel::download(new GeneralExport('admin.reports.orders-excel', $orders), 'orders-'.Carbon::now()->toDateString().'.xlsx');
         }
-        $orders = $orders->paginate(40);
+        $orders = $orders->paginate(100);
         $title = 'الطلبات';
 
         return view('admin.orders.index', compact('orders', 'title' ,'search'));

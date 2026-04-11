@@ -12,6 +12,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\ServiceProvider;
 use Kreait\Firebase\Contract\Messaging;
 use Kreait\Firebase\Factory as FirebaseFactory;
+use Illuminate\Pagination\Paginator;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -43,6 +44,7 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot()
     {
+        Paginator::useBootstrap();
         Order::observe(OrderObserver::class);
         OrderLog::observe(OrderLogObserver::class);
         if (request()->has('notify') && request()->get('notify') != '') {

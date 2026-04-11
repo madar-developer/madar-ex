@@ -11,6 +11,7 @@ use App\Models\Admin;
 use App\Models\Company;
 use Auth;
 use Excel;
+use App\Exports\CompanyOrdersShipmentsExport;
 use App\Exports\GeneralExport;
 use App\Models\Invoice;
 use Carbon\Carbon;
@@ -27,7 +28,7 @@ class CompanyController extends Controller
 
     public function __construct()
     {
-        $this->middleware('Permission:company_show'    , ['only' => 'index', 'show']);
+        $this->middleware('Permission:company_show'    , ['only' => 'index', 'show', 'exportCompanyOrdersShipments']);
         $this->middleware('Permission:company_add'     , ['only' => 'create', 'store']);
         $this->middleware('Permission:company_edit'    , ['only' => 'edit', 'update']);
         $this->middleware('Permission:company_delete'  , ['only' => 'destroy']);
@@ -128,6 +129,25 @@ class CompanyController extends Controller
             $q->where('company_id', $company->id);
         })->where('active', '0')->sum('madar_price');
         return view('admin.companies.show', compact('addresses', 'company', 'title', 'orders', 'invoices', 'transfers', 'invoices_company_price', 'invoices_madar_price', 'transfers_get'));
+    }
+
+    public function exportCompanyOrdersShipments(Request $request, Company $company)
+    {
+        $query = $company->Order()->with(['City', 'PaymentMethod', 'Invoice'])->orderBy('id');
+
+        if ($request->filled('status')) {
+            $query->where('status', $request->get('status'));
+        }
+        if ($request->filled('start_date')) {
+            $query->whereDate('created_at', '>=', $request->get('start_date'));
+        }
+        if ($request->filled('end_date')) {
+            $query->whereDate('created_at', '<=', $request->get('end_date'));
+        }
+
+        $orders = $query->get();
+
+        return CompanyOrdersShipmentsExport::downloadResponse($company, $orders);
     }
 
     /**

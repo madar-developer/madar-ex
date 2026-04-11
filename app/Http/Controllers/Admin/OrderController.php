@@ -12,6 +12,8 @@ use App\Models\Order;
 use Auth;
 use Excel;
 use App\Exports\GeneralExport;
+use App\Models\City;
+use App\Models\Driver;
 use App\Models\OrderStatus;
 use Carbon\Carbon;
 
@@ -26,7 +28,7 @@ class OrderController extends Controller
 
     public function __construct()
     {
-        $this->middleware('Permission:order_show'    , ['only' => 'index', 'show']);
+        $this->middleware('Permission:order_show'    , ['only' => 'index', 'show', 'ordersRegionMap']);
         $this->middleware('Permission:order_add'     , ['only' => 'create', 'store']);
         $this->middleware('Permission:order_edit'    , ['only' => 'edit', 'update']);
         $this->middleware('Permission:order_delete'  , ['only' => 'destroy']);
@@ -184,7 +186,15 @@ class OrderController extends Controller
     public function show(Order $order)
     {
         $title = 'عرض طلب';
-        return view('admin.orders.show', compact('order', 'title'));
+        $order->load(['Company.City', 'City', 'Driver']);
+        $orderLogs = $order->OrderLog()->orderBy('id', 'asc')->get();
+        $lastLog = $order->OrderLog()->orderByDesc('id')->first();
+        $logDriverIds = $orderLogs->where('added_by_type', 'driver')->pluck('added_by_id')->filter()->unique()->values();
+        $driversById = $logDriverIds->isEmpty()
+            ? collect()
+            : Driver::whereIn('id', $logDriverIds)->get()->keyBy('id');
+
+        return view('admin.orders.show', compact('order', 'title', 'orderLogs', 'lastLog', 'driversById'));
     }
 
     /**
@@ -275,7 +285,81 @@ class OrderController extends Controller
         }
         return redirect()->back()->with('success', 'data updated successfully');
 
-    }public function invoice($id)
+    }
+
+    /**
+     * Map + summary of orders grouped by city (region), scoped like the orders index.
+     */
+    public function ordersRegionMap()
+    {
+        $base = $this->ordersScopeQuery();
+
+        $countRows = (clone $base)
+            ->whereNotNull('city_id')
+            ->selectRaw('city_id, COUNT(*) as c')
+            ->groupBy('city_id')
+            ->get();
+
+        $positionRows = (clone $base)
+            ->whereNotNull('city_id')
+            ->whereNotNull('latitude')
+            ->whereNotNull('longitude')
+            ->where('latitude', '!=', 0)
+            ->where('longitude', '!=', 0)
+            ->selectRaw('city_id, AVG(latitude) as avg_lat, AVG(longitude) as avg_lng')
+            ->groupBy('city_id')
+            ->get()
+            ->keyBy('city_id');
+
+        $nullCityCount = (clone $base)->whereNull('city_id')->count();
+
+        $cityIds = $countRows->pluck('city_id')->filter()->unique()->values();
+        $cities = City::whereIn('id', $cityIds)->get()->keyBy('id');
+
+        $regions = [];
+        foreach ($countRows as $row) {
+            $city = $cities->get($row->city_id);
+            $pos = $positionRows->get($row->city_id);
+            $regions[] = [
+                'city_id' => (int) $row->city_id,
+                'name' => $city ? (string) $city->name : '—',
+                'count' => (int) $row->c,
+                'lat' => $pos ? round((float) $pos->avg_lat, 6) : null,
+                'lng' => $pos ? round((float) $pos->avg_lng, 6) : null,
+            ];
+        }
+
+        usort($regions, static function ($a, $b) {
+            return $b['count'] <=> $a['count'];
+        });
+
+        $totalInRegions = array_sum(array_column($regions, 'count'));
+        $title = 'خريطة الطلبات حسب المنطقة';
+
+        return view('admin.orders.region-map', compact('regions', 'nullCityCount', 'title', 'totalInRegions'));
+    }
+
+    /**
+     * @return \Illuminate\Database\Eloquent\Builder
+     */
+    protected function ordersScopeQuery()
+    {
+        if (in_array(auth('admin')->user()->role, ['branch', 'employee']) || (auth('admin')->user()->role == 'employee' && auth()->user()->parent_id != '0')) {
+            if (auth('admin')->user()->role == 'branch') {
+                $branch_id = auth('admin')->id();
+            } else {
+                $branch_id = auth('admin')->user()->parent_id;
+            }
+
+            return Order::whereHas('BranchData', function ($q) use ($branch_id) {
+                $q->where('admin_id', $branch_id);
+            });
+        }
+
+        return Order::query();
+    }
+
+    public function invoice($id)
     {
         $order = Order::find($id);
         $title = 'عرض طلب';

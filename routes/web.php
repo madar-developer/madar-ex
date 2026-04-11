@@ -64,12 +64,14 @@ Route::group(['namespace' =>'Admin'], function() {
         Route::resource('/contact_us', 'ContactUsController');
         Route::resource('/users', 'UserController');
         Route::resource('/shops', 'ShopController');
+        Route::get('/companies/{company}/orders-export', 'CompanyController@exportCompanyOrdersShipments')->name('companies.orders-export');
         Route::resource('/companies', 'CompanyController');
         Route::post('/companies-files/{id}', 'CompanyController@files')->name('companies-files');
         Route::post('/companies-pricelist/{id}', 'CompanyController@pricelist')->name('companies-pricelist');
         Route::resource('/company-addresses', 'CompanyAddressController');
         Route::resource('/company-cache-types', 'CompanyCacheTypeController');
         Route::resource('/carmaintaince', 'CarMaintenanceController');
+        Route::get('/orders/region-map', 'OrderController@ordersRegionMap')->name('orders.region-map');
         Route::resource('/orders', 'OrderController');
         Route::get('/orders-charts', 'OrderController@charts')->name('orders-charts');
         Route::get('/orders-invoice/{id}', 'OrderController@invoice')->name('orders-invoice');

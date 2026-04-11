@@ -135,6 +135,28 @@
                     </div>
                     <div id="navpills-2" class="tab-pane fade">
                         <div class="row">
+                            <div class="col-md-12 m-b-15">
+                                <div class="panel panel-default">
+                                    <div class="panel-heading" style="text-align: right;">تصدير الشحنات (Excel)</div>
+                                    <div class="panel-body">
+                                        {!! Form::open(['url' => route('companies.orders-export', $company), 'method' => 'get', 'class' => 'form-inline', 'style' => 'display:flex; flex-wrap:wrap; gap:10px; align-items:flex-end; justify-content:flex-end;']) !!}
+                                        <div class="form-group">
+                                            <label for="export_status">الحالة</label>
+                                            {!! Form::select('status', ['' => 'الكل'] + OrderStatus(), \Request::get('status'), ['id' => 'export_status', 'class' => 'form-control']) !!}
+                                        </div>
+                                        <div class="form-group">
+                                            <label for="export_start_date">من تاريخ</label>
+                                            {!! Form::date('start_date', \Request::get('start_date'), ['id' => 'export_start_date', 'class' => 'form-control']) !!}
+                                        </div>
+                                        <div class="form-group">
+                                            <label for="export_end_date">إلى تاريخ</label>
+                                            {!! Form::date('end_date', \Request::get('end_date'), ['id' => 'export_end_date', 'class' => 'form-control']) !!}
+                                        </div>
+                                        <button type="submit" class="btn btn-success waves-effect waves-light m-b-5"><i class="fa fa-file-excel-o"></i> تصدير</button>
+                                        {!! Form::close() !!}
+                                    </div>
+                                </div>
+                            </div>
                             <div class="col-md-12">
                                 <div class="table-responsive">
                                     <table class="table table-striped table-bordered">

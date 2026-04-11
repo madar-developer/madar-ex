@@ -423,13 +423,13 @@
             @endphp
 
             <div class="order-track-card order-log-panel">
-                <span class="ot-badge">
+                <!-- <span class="ot-badge">
                     @if(($order->order_type ?? '') === 'outside' || ($order->order_type ?? '') === 'external')
                         شحنة دولية
                     @else
                         شحنة محلية
                     @endif
-                </span>
+                </span> -->
 
                 <div class="order-track-head">
                     <div class="ot-tracking">

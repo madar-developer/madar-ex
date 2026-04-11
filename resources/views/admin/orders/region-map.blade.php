@@ -28,7 +28,7 @@
     </div>
 </div>
 
-<div class="row region-map-stats">
+<!-- <div class="row region-map-stats">
     <div class="col-md-12 m-b-15">
         <div class="panel panel-default">
             <div class="panel-heading">ملخص</div>
@@ -41,7 +41,7 @@
             </div>
         </div>
     </div>
-</div>
+</div> -->
 
 <div class="row">
     <div class="col-md-8 m-b-20">

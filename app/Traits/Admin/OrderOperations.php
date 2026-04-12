@@ -30,7 +30,7 @@ trait OrderOperations
      */
     public function register ($request)
     {
-        $data = $request->all();
+        $data = $request->except(['save_action']);
         if ($request->hasFile('image')) {
             $data['image'] = uploadImage($request->file('image'));
         }
@@ -154,7 +154,7 @@ trait OrderOperations
      */
     public function UpdateRecords(Order $Order,$request)
     {
-        $data = $request->all();
+        $data = $request->except(['save_action']);
         if ($request->hasFile('image')) {
             @unlink(public_path('/cdn/'.$Order->image));
             //

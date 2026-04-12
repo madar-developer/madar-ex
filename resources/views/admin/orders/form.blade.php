@@ -257,11 +257,8 @@
 </div>
 
 <div class="sub-wr col-md-12 text-center">
-    <button class="btn btn-primary waves-effect waves-light btn-submit" type="submit"> حفظ
-    </button>
-    <button class="btn btn-primary waves-effect waves-light btn-submit" type="submit"> احفظ و ابقي علي نفس الصفحة
-    </button>
-
+    <button class="btn btn-primary waves-effect waves-light btn-submit" type="submit" name="save_action" value="list">حفظ</button>
+    <button class="btn btn-default waves-effect waves-light btn-submit m-l-5" type="submit" name="save_action" value="stay">احفظ و ابقي علي نفس الصفحة</button>
 </div>
 
 

@@ -172,9 +172,12 @@ class OrderController extends Controller
      */
     public function store(StoreOrderRequest $request)
     {
-        $this->register($request);
-        // return view('admin.orders.add');
-        return redirect()->back()->with('success', 'data added successfully');
+        $order = $this->register($request);
+        if ($request->input('save_action') === 'stay') {
+            return redirect('/dashboard/orders/'.$order->id.'/edit')->with('success', 'تم الحفظ بنجاح');
+        }
+
+        return redirect('/dashboard/orders')->with('success', 'تم الحفظ بنجاح');
     }
 
     /**
@@ -236,7 +239,11 @@ class OrderController extends Controller
             return response()->json($data, 200);
         }
 
-        return redirect()->back()->with('success', 'data updated successfully');
+        if ($request->input('save_action') === 'stay') {
+            return redirect()->back()->with('success', 'تم الحفظ بنجاح');
+        }
+
+        return redirect('/dashboard/orders')->with('success', 'تم الحفظ بنجاح');
     }
 
     /**

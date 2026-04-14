@@ -27,7 +27,232 @@
         </div>
     </div>
 </div>
+<div class="container">
+    <div class="row collapse2 " id="searchFilter">
+    
+        <div class="col-sm-12">
+            <div class="card-box">
+                <form action="" method="get">
+                    <div class="row">
+                        <div class="col-md-12 part-top">
+                            <div class="row">
+                            </div>
+                        </div>
+                        <div class="col-md-12">
+                            <div class="row">
+    
+    
+                                <div class="col-md-2">
+                                    <div class="form-horizontal">
+                                        <div class="form-group">
+                                            <div class="col-md-12">
+                                                <input type="text" name="serial_from"
+                                                    value="{{(array_key_exists('serial_from', $search))? $search['serial_from'] : ''}}"
+                                                    class="form-control" placeholder="  رقم الطلب من">
+                                            </div>
+                                        </div>
+    
+                                    </div>
+                                </div>
+                                <div class="col-md-2">
+                                    <div class="form-horizontal">
+                                        <div class="form-group">
+                                            <div class="col-md-12">
+                                                <input type="text" name="serial_to"
+                                                    value="{{(array_key_exists('serial_to', $search))? $search['serial_to'] : ''}}"
+                                                    class="form-control" placeholder="  رقم الطلب الي">
+                                            </div>
+                                        </div>
+    
+                                    </div>
+                                </div>
+                                <div class="col-md-2">
+                                    <div class="form-horizontal">
+                                        <div class="form-group">
+                                            <div class="col-md-12">
+                                                <input type="text" name="date_from"
+                                                    value="{{(array_key_exists('date_from', $search))? $search['date_from'] : ''}}"
+                                                    class="form-control start-datepicker" autocomplete="off"
+                                                    placeholder="  التاريخ من">
+                                            </div>
+                                        </div>
+    
+                                    </div>
+                                </div>
+                                <div class="col-md-2">
+                                    <div class="form-horizontal">
+                                        <div class="form-group">
+                                            <div class="col-md-12">
+                                                <input type="text" name="date_to"
+                                                    value="{{(array_key_exists('date_to', $search))? $search['date_to'] : ''}}"
+                                                    class="form-control end-datepicker" autocomplete="off"
+                                                    placeholder="  التاريخ الي">
+                                            </div>
+                                        </div>
+    
+                                    </div>
+                                </div>
+    
+                                <div class="col-md-2">
+                                    <div class="form-horizontal">
+                                        <div class="form-group">
+                                            <div class="col-md-12">
+                                                <input type="text" name="refrence_no"
+                                                    value="{{(array_key_exists('refrence_no', $search))? $search['refrence_no'] : ''}}"
+                                                    class="form-control" placeholder="رقم الطلب على متجر التاجر">
+                                            </div>
+                                        </div>
+    
+                                    </div>
+                                </div>
+                                <div class="col-md-2">
+                                    <div class="form-horizontal">
+                                        <div class="form-group">
+                                            <div class="col-md-12">
+                                                {!! Form::select("company_id",StoreOrCompany(),(array_key_exists('company_id',
+                                                $search))?
+                                                $search['company_id'] : null,['class'=>"form-control "])!!}
+    
+                                            </div>
+                                        </div>
+    
+                                    </div>
+                                </div>
+                                <div class="col-md-2">
+                                    <div class="form-horizontal">
+                                        <div class="form-group">
+                                            <div class="col-md-12">
+                                                {!! Form::select("driver_id",Driver(),(array_key_exists('driver_id', $search))?
+                                                $search['driver_id'] : null,['class'=>"form-control "])!!}
+    
+                                            </div>
+                                        </div>
+    
+                                    </div>
+                                </div>
+    
+    
+    
+                                <div class="col-md-2">
+                                    <div class="form-horizontal">
+                                        <div class="form-group">
+                                            <div class="col-md-12">
+                                                <input type="text" name="company_phone"
+                                                    value="{{(array_key_exists('company_phone', $search))? $search['company_phone'] : ''}}"
+                                                    class="form-control" placeholder="  رقم تليفون المتجر">
+                                            </div>
+                                        </div>
+    
+                                    </div>
+                                </div>
+    
+                                <div class="col-md-2">
+                                    <div class="form-horizontal">
+                                        <div class="form-group">
+                                            <div class="col-md-12">
+                                                <input type="text" name="recipent_name"
+                                                    value="{{(array_key_exists('recipent_name', $search))? $search['recipent_name'] : ''}}"
+                                                    class="form-control" placeholder="اسم المستلم">
+                                            </div>
+                                        </div>
+    
+                                    </div>
+                                </div>
+                                <div class="col-md-2">
+                                    <div class="form-horizontal">
+                                        <div class="form-group">
+                                            <div class="col-md-12">
+                                                <input type="text" name="phone"
+                                                    value="{{(array_key_exists('phone', $search))? $search['phone'] : ''}}"
+                                                    class="form-control" placeholder="رقم تليفون المستلم">
+    
+                                            </div>
+                                        </div>
+    
+                                    </div>
+                                </div>
+    
+    
+                                <div class="col-md-2">
+                                    <div class="form-horizontal">
+                                        <div class="form-group">
+                                            <div class="col-md-12">
+                                                {!! Form::select("city_id",TheCityP('المدينه من '),(array_key_exists('city_id',
+                                                $search))?
+                                                $search['city_id'] : null,['class'=>"form-control "])!!}
+                                            </div>
+                                        </div>
+    
+                                    </div>
+                                </div>
+    
+                                <div class="col-md-2">
+                                    <div class="form-horizontal">
+                                        <div class="form-group">
+                                            <div class="col-md-12">
+                                                {!! Form::select("city_id",TheCityP('المدينه الى'),(array_key_exists('city_id',
+                                                $search))?
+                                                $search['city_id'] : null,['class'=>"form-control "])!!}
+                                            </div>
+                                        </div>
+    
+                                    </div>
+                                </div>
+                                <div class="col-md-2">
+                                    <div class="form-horizontal">
+                                        <div class="form-group">
+                                            <div class="col-md-12">
+                                                {!! Form::select("status",array_merge(['' => 'اختر
+                                                الحالة'],OrderStatus()),(array_key_exists('status', $search))? $search['status'] :
+                                                null,['class'=>"form-control "])!!}
+                                            </div>
+                                        </div>
+    
+                                    </div>
+                                </div>
+                                <div class="col-md-2">
+                                    <div class="form-horizontal">
+                                        <div class="form-group">
+                                            <div class="col-md-12">
+                                                {!! Form::select("deliver_failed",deliverFailedOptions(),(array_key_exists('deliver_failed', $search))? $search['deliver_failed'] :
+                                                null,['class'=>"form-control "])!!}
+                                            </div>
+                                        </div>
+    
+                                    </div>
+                                </div>
+                                <div class="col-md-2">
+                                    <div class="form-horizontal">
+                                        <div class="form-group">
+                                            <div class="col-md-12">
+                                                {!! Form::select("payment_method_id",PaymentMethod(),(array_key_exists('deliver_failed', $search))? $search['deliver_failed'] :
+                                                null,['class'=>"form-control "])!!}
+                                            </div>
+                                        </div>
+    
+                                    </div>
+                                </div>
+                                <div class="col-md-6 btns-row">
+    
+                                            <button type="submit"
+                                                class="search-bbt btn btn-sm btn-success waves-effect waves-light b-t-10 b-b-10"><i
+                                                    class="fa fa-search"></i> بحث</button>
+    
+    
+                                                    <a href="{{url('/dashboard/orders/region-map')}}"
+                                                    class="btn btn-sm btn-success waves-effect waves-light b-t-10 b-b-10"><i
+                                                        class="fa fa-trash"></i> مسح خيارات البحث</a>
+    
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
 
+</div>
 <!-- <div class="row region-map-stats">
     <div class="col-md-12 m-b-15">
         <div class="panel panel-default">

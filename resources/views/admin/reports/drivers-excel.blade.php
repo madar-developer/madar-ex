@@ -14,11 +14,11 @@
                 <th> البريد الإلكترونى   </th>
                 <th>  الجنسيه</th>
                 <th>  رقم الرخصة</th>
-                <th>   تاريخ إنتهاء الرخصة</th>
-                <th>    تاريخ إنتهاء الرخصة هجري</th>
+                <!-- <th>   تاريخ إنتهاء الرخصة</th> -->
+                <!-- <th>    تاريخ إنتهاء الرخصة هجري</th> -->
                 <th>     اسم السيارة</th>
-                <th>      انتهاء الهويه</th>
-                <th>      انتهاء الهويه هجري </th>
+                <!-- <th>      انتهاء الهويه</th> -->
+                <!-- <th>      انتهاء الهويه هجري </th> -->
             </tr>
         </thead>
         <tbody>
@@ -26,18 +26,28 @@
             
             <tr>
                 <td>{{$i++}} </td>
-                <td> {{$item->first_name}} </td>
+                @php
+                    $weekStart = \Carbon\Carbon::now()->startOfWeek(\Carbon\Carbon::SATURDAY)->startOfDay();
+                    $weekEnd = (clone $weekStart)->addDays(6)->endOfDay();
+                    $isActiveThisWeek = !empty($item->last_activity)
+                        && \Carbon\Carbon::parse($item->last_activity)->between($weekStart, $weekEnd);
+                @endphp
+                @if($isActiveThisWeek)
+                    <td bgcolor="#d4edda">{{$item->first_name}}</td>
+                @else
+                    <td bgcolor="#f8d7da">{{$item->first_name}}</td>
+                @endif
                 <td>{{$item->last_name}} </td>
                 <td>{{$item->phone}}</td>
                 <td>{{$item->identical_number}}</td>
                 <td>{{$item->email}}</td>
                 <td> {{$item->nationality}} </td>
                 <td> {{$item->license_number}} </td>
-                <td> {{$item->license_date_expiration}} </td>
-                <td> {{$item->license_expiration_date_hijri}} </td>
+                <!-- <td> {{$item->license_date_expiration}} </td> -->
+                <!-- <td> {{$item->license_expiration_date_hijri}} </td> -->
                 <td> {{$item->Car->name ?? '' }}</td>
-                <td> {{$item->identity_expiration_date }}</td>
-                <td> {{$item->identity_expiration_date_hijri }}</td>
+                <!-- <td> {{$item->identity_expiration_date }}</td> -->
+                <!-- <td> {{$item->identity_expiration_date_hijri }}</td> -->
             </tr>
             @endforeach
         </tbody>

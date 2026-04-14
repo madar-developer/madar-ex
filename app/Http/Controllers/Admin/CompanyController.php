@@ -67,6 +67,11 @@ class CompanyController extends Controller
             $search['phone'] = $phone;
             $companies = $companies->where('phone'     , 'LIKE', '%'.$phone.'%');
         }
+        if (Request()->has('active') && Request()->get('active') != '') {
+            $active = Request()->get('active');
+            $search['active'] = $active;
+            $companies = $companies->where('active'     , $active);
+        }
         $title = 'المتاجر والشركات';
 
         if (Request()->has('excel') && Request()->get('excel') != '') {

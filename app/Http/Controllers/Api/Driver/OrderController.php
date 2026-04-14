@@ -22,6 +22,12 @@ use Carbon\Carbon;
 use App\Jobs\SendOrderWebhookJob;
 class OrderController extends Controller
 {
+    protected function updateDriverLastActivity(Driver $driver): void
+    {
+        $driver->last_activity = Carbon::now();
+        $driver->save();
+    }
+
     public function index()
     {
         $driver = Auth::guard('api-driver')->user();
@@ -106,6 +112,7 @@ class OrderController extends Controller
             ]);
         }
         $order->update($data);
+        $this->updateDriverLastActivity($driver);
 
         $order = new OrderResource($order);
 
@@ -133,6 +140,7 @@ class OrderController extends Controller
         }
         $order->driver_id = null;
         $order->save();
+        $this->updateDriverLastActivity($driver);
 
         $order = new OrderResource($order);
         return Response()->json([
@@ -297,6 +305,7 @@ class OrderController extends Controller
         }
         // ******************************************************
         $order->update($data);
+        $this->updateDriverLastActivity($driver);
 
         $order = new OrderResource($order);
         return Response()->json([
@@ -460,6 +469,7 @@ class OrderController extends Controller
         }
         // ******************************************************
         $order->update($data);
+        $this->updateDriverLastActivity($driver);
 
         $order = new OrderResource($order);
         return Response()->json([
@@ -614,6 +624,7 @@ class OrderController extends Controller
             // ******************************************************
         }
         $orders->update($data);
+        $this->updateDriverLastActivity($driver);
 
 
         $orders =  OrderResource::collection($orders_1);
@@ -663,6 +674,7 @@ class OrderController extends Controller
             }
         }
         $order->OrderLog()->create($data);
+        $this->updateDriverLastActivity($driver);
 
 
         $order = new OrderResource($order);
@@ -804,6 +816,7 @@ class OrderController extends Controller
         $data['added_by_type'] = 'driver';
         $data['added_by_id'] = $driver->id;
         $order->OrderLog()->create($data);
+        $this->updateDriverLastActivity($driver);
 
 
         $order = new OrderResource($order);

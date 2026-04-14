@@ -164,6 +164,9 @@
         border-color: #e53935;
         box-shadow: 0 0 0 6px rgba(229, 57, 53, 0.25);
     }
+    .ot-step-line.is-done {
+        margin-bottom: 3rem;
+    }
     .ot-dot.is-delivered {
         background: #43a047;
         border-color: #43a047;
@@ -401,9 +404,8 @@
             <!-- new order stepper step + logs -->
             @php
                 $st = $order->status;
-                $stepLabels = ['انشاء الشحنة', 'استلام الشحنة', 'مغادرة المنشأ', 'في الطريق', 'الوصول إلى الوجهة', 'الخروج للتوصيل', 'تم التوصيل'];
                 if ($st === 'returned') {
-                    $stepLabels[6] = 'تم الإرجاع';
+                    $stepLabels[6] = $returnedStepLabel ?? 'تم الإرجاع';
                 }
                 $currentStepIndex = match ($st) {
                     'new' => 0,
@@ -447,7 +449,7 @@
                     </div>
                 </div>
 
-                <div class="order-track-od">
+                <!-- <div class="order-track-od">
                     <div class="ot-orig">
                         <div class="ot-od-label">المنشأ</div>
                         <div class="ot-od-val">المملكة العربية السعودية @if($originCity) / {{ $originCity }} @endif</div>
@@ -456,7 +458,7 @@
                         <div class="ot-od-label">الوجهة</div>
                         <div class="ot-od-val">المملكة العربية السعودية @if($destCity)<br><span class="ot-loc-en" style="display:inline-block;margin-top:4px;">{{ $destCity }}</span>@endif</div>
                     </div>
-                </div>
+                </div> -->
 
                 @if($st === 'cancelled')
                     <div class="alert alert-warning m-b-20" style="text-align:right;">تم إلغاء هذا الطلب.</div>
@@ -475,11 +477,22 @@
                                         @elseif(!$allStepsComplete && $i === $currentStepIndex) is-current
                                         @endif
                                     ">
-                                        @if($allStepsComplete && $st === 'delivered' && $i === 6)
+                                    
+                                @php
+                                    if ($allStepsComplete) {
+                                        $segDone1 = true;
+                                    } else {
+                                        $segDone1 = ($i < $currentStepIndex);
+                                    }
+                                @endphp
+                                    @if($segDone1)
+                                    <i class="fa fa-check"></i>
+                                    @endif
+                                        <!-- @if($allStepsComplete && $st === 'delivered' && $i === 6)
                                             <i class="fa fa-check"></i>
                                         @elseif($allStepsComplete && $st === 'returned' && $i === 6)
                                             <i class="fa fa-undo"></i>
-                                        @endif
+                                        @endif -->
                                     </div>
                                 </div>
                                 <div class="ot-step-label">{{ $label }}</div>
@@ -492,7 +505,9 @@
                                         $segDone = ($i < $currentStepIndex);
                                     }
                                 @endphp
-                                <div class="ot-step-line {{ $segDone ? 'is-done' : '' }}"></div>
+                                <div class="ot-step-line {{ $segDone ? 'is-done' : '' }}">
+                                    
+                                </div>
                             @endif
                         @endforeach
                     </div>

@@ -53,6 +53,18 @@
 
                                 </div>
                             </div>
+                            <!-- add filter if company is active or not -->
+                            <div class="col-lg-2">
+                                <div class="form-horizontal">
+                                    <div class="form-group">
+                                        <div class="col-md-12">
+                                            {!! Form::select("active",(['' => 'اختر الحالة','1' => 'مفعل', '0' => 'غير مفعل']),
+                                            (array_key_exists('active', $search))? $search['active'] : null,['class'=>"form-control select2 "])!!}
+                            <!-- add filter if company is active or not -->
+                                    </div>
+                                </div>
+                            </div>
+                            </div>
 
 
                             <div class="col-md-2">

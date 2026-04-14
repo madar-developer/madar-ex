@@ -36,25 +36,24 @@ class OrderController extends Controller
     public function index(Request $request)
     {
         // $orders = Order::latest();
-      //////////////////// branch or admin
-      if (in_array( auth('admin')->user()->role, ['branch', 'employee']) || (auth('admin')->user()->role == 'employee' && auth()->user()->parent_id != '0' )) {
-        //
-        if (auth('admin')->user()->role == 'branch') {
-            $branch_id = auth('admin')->id();
+        //////////////////// branch or admin
+        if (in_array( auth('admin')->user()->role, ['branch', 'employee']) || (auth('admin')->user()->role == 'employee' && auth()->user()->parent_id != '0' )) {
+            //
+            if (auth('admin')->user()->role == 'branch') {
+                $branch_id = auth('admin')->id();
+            } else {
+                $branch_id = auth('admin')->user()->parent_id;
+            }
+            $orders = Order::whereHas('BranchData', function($q)use($branch_id){
+                $q->where('admin_id', $branch_id);
+            })->latest();
         } else {
-            $branch_id = auth('admin')->user()->parent_id;
+            $orders = Order::latest();
         }
-        $orders = Order::whereHas('BranchData', function($q)use($branch_id){
-            $q->where('admin_id', $branch_id);
-        })->latest();
-    } else {
-        $orders = Order::latest();
+        ///////////////////////////
+        // $search=[];
 
-    }
-    ///////////////////////////
-// $search=[];
-
-
+        // search for orders
         $search = array();
         if (Request()->has('serial') && Request()->get('serial') != '') {
             $serial = Request()->get('serial');
@@ -192,12 +191,33 @@ class OrderController extends Controller
         $order->load(['Company.City', 'City', 'Driver']);
         $orderLogs = $order->OrderLog()->orderBy('id', 'asc')->get();
         $lastLog = $order->OrderLog()->orderByDesc('id')->first();
+        $statusNameMap = OrderStatus::whereIn('key', ['new', 'not_received', 'init', 'at_madar', 'at_office', 'delivered', 'returned'])
+            ->get()
+            ->keyBy('key');
+        $nameFor = function (string $key) use ($statusNameMap): string {
+            $status = $statusNameMap->get($key);
+            if (!$status) {
+                return $key;
+            }
+
+            return (string) ($status->getTranslation('name', 'ar') ?: $key);
+        };
+        $stepLabels = [
+            $nameFor('new'),
+            $nameFor('not_received'),
+            $nameFor('init'),
+            $nameFor('at_madar'),
+            $nameFor('at_office'),
+            $nameFor('at_office'),
+            $nameFor('delivered'),
+        ];
+        $returnedStepLabel = $nameFor('returned');
         $logDriverIds = $orderLogs->where('added_by_type', 'driver')->pluck('added_by_id')->filter()->unique()->values();
         $driversById = $logDriverIds->isEmpty()
             ? collect()
             : Driver::whereIn('id', $logDriverIds)->get()->keyBy('id');
 
-        return view('admin.orders.show', compact('order', 'title', 'orderLogs', 'lastLog', 'driversById'));
+        return view('admin.orders.show', compact('order', 'title', 'orderLogs', 'lastLog', 'driversById', 'stepLabels', 'returnedStepLabel'));
     }
 
     /**
@@ -297,9 +317,10 @@ class OrderController extends Controller
     /**
      * Map + summary of orders grouped by city (region), scoped like the orders index.
      */
-    public function ordersRegionMap()
+    public function ordersRegionMap( Request $request)
     {
-        $base = $this->ordersScopeQuery();
+        $search = [];
+        $base = $this->ordersScopeQuery($request);
 
         $countRows = (clone $base)
             ->whereNotNull('city_id')
@@ -343,13 +364,13 @@ class OrderController extends Controller
         $totalInRegions = array_sum(array_column($regions, 'count'));
         $title = 'خريطة الطلبات حسب المنطقة';
 
-        return view('admin.orders.region-map', compact('regions', 'nullCityCount', 'title', 'totalInRegions'));
+        return view('admin.orders.region-map', compact('regions', 'nullCityCount', 'title', 'totalInRegions', 'search'));
     }
 
     /**
      * @return \Illuminate\Database\Eloquent\Builder
      */
-    protected function ordersScopeQuery()
+    protected function ordersScopeQuery( Request $request)
     {
         if (in_array(auth('admin')->user()->role, ['branch', 'employee']) || (auth('admin')->user()->role == 'employee' && auth()->user()->parent_id != '0')) {
             if (auth('admin')->user()->role == 'branch') {
@@ -358,12 +379,103 @@ class OrderController extends Controller
                 $branch_id = auth('admin')->user()->parent_id;
             }
 
-            return Order::whereHas('BranchData', function ($q) use ($branch_id) {
+            $orders = Order::whereHas('BranchData', function ($q) use ($branch_id) {
                 $q->where('admin_id', $branch_id);
             });
-        }
+        }else{
+            $orders = Order::query();
 
-        return Order::query();
+        }
+        // search for orders
+        $search = array();
+        if (Request()->has('serial') && Request()->get('serial') != '') {
+            $serial = Request()->get('serial');
+            $search['serial'] = $serial;
+            $orders = $orders->where('serial'  ,$serial);
+        }
+        if (Request()->has('company_id') && Request()->get('company_id') != '') {
+            $company_id = Request()->get('company_id');
+            $search['company_id'] = $company_id;
+            $orders = $orders->where('company_id'  ,$company_id);
+        }
+        if (Request()->has('driver_id') && Request()->get('driver_id') != '') {
+            $driver_id = Request()->get('driver_id');
+            $search['driver_id'] = $driver_id;
+            $orders = $orders->where('driver_id'  ,$driver_id);
+        }
+        if ($request->has('serial_from') && $request->get('serial_from') != '') {
+            $serial_from = (int)str_replace('mx-', '', $request->get('serial_from') );
+            $search['serial_from'] = $request->get('serial_from');
+            $orders = $orders->where('serial_no', '>=', $serial_from);
+            if (!$request->has('serial_to') || $request->get('serial_to') == '') {
+                $orders = $orders->where('serial_no', '=', $serial_from);
+            }
+        }
+        if ($request->has('serial_to') && $request->get('serial_to') != '') {
+            $serial_to = (int)str_replace('mx-', '', $request->get('serial_to') );
+            $search['serial_to'] = $request->get('serial_to');
+            $orders = $orders->where('serial_no', '<=', $serial_to);
+        }
+        if (Request()->has('refrence_no') && Request()->get('refrence_no') != '') {
+            $refrence_no = Request()->get('refrence_no');
+            $search['refrence_no'] = $refrence_no;
+            $orders = $orders->where('refrence_no'     ,$refrence_no);
+        }
+        if (Request()->has('payment_method_id') && Request()->get('payment_method_id') != '') {
+            $payment_method_id = Request()->get('payment_method_id');
+            $search['payment_method_id'] = $payment_method_id;
+            $orders = $orders->where('payment_method_id'     ,$payment_method_id);
+        }
+        if (Request()->has('refrence_no') && Request()->get('refrence_no') != '') {
+            $refrence_no = Request()->get('refrence_no');
+            $search['refrence_no'] = $refrence_no;
+            $orders = $orders->where('refrence_no'     ,$refrence_no);
+        }
+        if (Request()->has('company_phone') && Request()->get('company_phone') != '') {
+            $company_phone = Request()->get('company_phone');
+            $search['company_phone'] = $company_phone;
+            $orders = $orders->wherehas('Company', function($q) use ($company_phone){
+                $q->where('phone'     , 'LIKE', '%'.$company_phone.'%');
+            });
+        }
+        if (Request()->has('deliver_failed') && Request()->get('deliver_failed') != '') {
+            $deliver_failed = Request()->get('deliver_failed');
+            $search['deliver_failed'] = $deliver_failed;
+            $orders = $orders->wherehas('OrderLog', function($q) use ($deliver_failed){
+                $q->where('active', '1')->where('reason'     , $deliver_failed);
+            });
+        }
+        if (Request()->has('recipent_name') && Request()->get('recipent_name') != '') {
+            $recipent_name = Request()->get('recipent_name');
+            $search['recipent_name'] = $recipent_name;
+            $orders = $orders->where('recipent_name'     ,$recipent_name);
+        }
+        if (Request()->has('phone') && Request()->get('phone') != '') {
+            $phone = Request()->get('phone');
+            $search['phone'] = $phone;
+            $orders = $orders->where('phone'     ,$phone);
+        }
+        if (Request()->has('status') && Request()->get('status') != '') {
+            $status = Request()->get('status');
+            $search['status'] = $status;
+            $orders = $orders->where('status'     ,$status);
+        }
+        if ($request->has('date_from') && $request->get('date_from') != '') {
+            $date_from = $request->get('date_from');
+            $search['date_from'] = $date_from;
+            $date_from = Carbon::parse($request->get('date_from'));
+            $orders = $orders->whereDate('created_at', '>=', $date_from);
+            if (!$request->has('date_to') || $request->get('date_to') == '') {
+                $orders = $orders->whereDate('created_at', '=', $date_from);
+            }
+        }
+        if ($request->has('date_to') && $request->get('date_to') != '') {
+            $date_to = $request->get('date_to');
+            $search['date_to'] = $date_to;
+            $date_to = Carbon::parse($request->get('date_to'));
+            $orders = $orders->whereDate('created_at', '<=', $date_to);
+        }
+        return $orders;
     }
 
     public function invoice($id)

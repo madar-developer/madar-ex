@@ -1,5 +1,3 @@
-2
-
 <table class="table table-striped table-bordered">
     <thead>
         @php

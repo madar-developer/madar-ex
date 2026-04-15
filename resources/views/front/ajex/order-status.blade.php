@@ -18,7 +18,222 @@
 
     <div class="modal-dialog modal-lg"  id="order-response">
 @else
+<style>
+.shipment-card{
+    margin-top: 25px;
+    border: 1px solid #eee;
+    border-radius: 12px;
+    padding: 20px 15px;
+    background: #fff;
+}
 
+.shipment-head{
+    margin-bottom: 30px;
+}
+
+.shipment-number .lbl,
+.shipment-last-update .lbl{
+    display:block;
+    font-weight:700;
+    margin-bottom:8px;
+    color:#555;
+}
+
+.shipment-number .val,
+.shipment-last-update .val{
+    font-size:22px;
+    font-weight:700;
+    color:#222;
+}
+
+.shipment-number .val i{
+    margin-left:8px;
+    color:#444;
+}
+
+.shipment-progress-wrapper{
+    position: relative;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin: 35px 0 25px;
+    padding: 0 10px;
+    overflow-x: auto;
+}
+
+.shipment-progress-line{
+    position: absolute;
+    top: 12px;
+    right: 30px;
+    left: 30px;
+    height: 3px;
+    background: #b71c1c;
+    z-index: 1;
+}
+
+.shipment-progress-step{
+    position: relative;
+    z-index: 2;
+    min-width: 90px;
+    text-align: center;
+}
+
+.shipment-progress-step .step-circle{
+    width: 24px;
+    height: 24px;
+    margin: 0 auto 10px;
+    border-radius: 50%;
+    background: #b71c1c;
+    color: #fff;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-size: 11px;
+    box-shadow: 0 0 0 4px #fff;
+}
+
+.shipment-progress-step:not(.done) .step-circle{
+    background:#d9d9d9;
+    color:#999;
+}
+
+.shipment-progress-step .step-label{
+    font-size: 12px;
+    color: #333;
+    line-height: 1.6;
+}
+
+.shipment-timeline-table .table{
+    margin-bottom: 0;
+    border: 1px solid #eee;
+}
+
+.shipment-timeline-table thead th{
+    background: #f3f3f3;
+    color: #222;
+    font-weight: 700;
+    border-bottom: 1px solid #e5e5e5;
+    text-align: right;
+}
+
+.shipment-timeline-table tbody td{
+    vertical-align: middle !important;
+    border-top: 1px solid #efefef;
+    text-align: right;
+}
+
+.timeline-status-row{
+    position: relative;
+    padding-right: 34px;
+}
+
+.timeline-dot{
+    position: absolute;
+    right: 0;
+    top: 2px;
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    background: #b71c1c;
+    color: #fff;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-size: 10px;
+}
+
+.timeline-text{
+    display: inline-block;
+    line-height: 1.8;
+}
+
+@media (max-width: 767px){
+    .shipment-number .val,
+    .shipment-last-update .val{
+        font-size:18px;
+    }
+
+    .shipment-progress-step{
+        min-width: 80px;
+    }
+
+    .shipment-progress-step .step-label{
+        font-size: 11px;
+    }
+}
+/*  */
+.order-log-table {
+        width: 100%;
+        margin: 0;
+        border-collapse: collapse;
+        direction: rtl;
+    }
+    .order-log-table thead th {
+        background: #5c5c5c;
+        color: #fff;
+        font-weight: 600;
+        padding: 12px 14px;
+        text-align: right;
+        border: none;
+        font-size: 13px;
+    }
+    .order-log-table tbody tr:nth-child(even) {
+        background: #f9f9f9;
+    }
+    .order-log-table tbody tr:nth-child(odd) {
+        background: #fff;
+    }
+    .order-log-table tbody td {
+        padding: 14px 12px;
+        vertical-align: top;
+        border-bottom: 1px solid #eee;
+        text-align: right;
+    }
+    .order-log-table .ot-tl-cell {
+        width: 48px;
+        position: relative;
+        padding-right: 20px !important;
+        border-left: 1px solid #eee;
+    }
+    .order-log-table .ot-tl-rail {
+        position: absolute;
+        right: 22px;
+        top: 0;
+        bottom: 0;
+        width: 4px;
+        background: #e53935;
+    }
+    .order-log-table tr:last-child .ot-tl-rail {
+        bottom: 50%;
+    }
+    .order-log-table tr:first-child .ot-tl-rail {
+        top: 50%;
+    }
+    .order-log-table .ot-tl-dot {
+        position: absolute;
+        right: 13px;
+        top: 50%;
+        transform: translateY(-50%);
+        width: 22px;
+        height: 22px;
+        border-radius: 50%;
+        background: #e53935;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #fff;
+        font-size: 11px;
+        z-index: 2;
+        border: 2px solid #fff;
+        box-shadow: 0 0 0 1px #e53935;
+    }
+    .order-log-table .ot-loc-en {
+        direction: ltr;
+        text-align: left;
+        font-size: 13px;
+        color: #444;
+    }
+</style>
 @php
     if (in_array($order->status, ['init', 'at_madar'])) {
         $step = 1;
@@ -75,6 +290,8 @@
                         </div>
 
                     </div>
+                    <!-- start replace -->
+                     @if(0)
                     <div class="state-bar">
                         <div class="step {{($step > 1)? 'done' : (($step == 1)? 'active' : '')}}">
                             <div class="step-text">تم الاستلام</div>
@@ -136,6 +353,145 @@
                             </tbody>
                         </table>
                     </div>
+                    @else
+                        <!-- start replace -->
+
+                        @php
+                            $progressSteps = [
+                                1 => 'تم الاستلام',
+                                2 => 'تم استلام الطلب من المتجر ',
+                                //3 => 'الخروج في جولة',
+                                //4 => 'في الطريق',
+                                5 => 'الشحنه فى مستودع مدار ',
+                                6 => 'جاري التوصيل ',
+                                7 => 'تم التسليم',
+                                //8 => 'فشل التسليم'
+                            ];
+
+                            $statusMap = [
+                                'init' => 1,
+                                'at_madar' => 2,
+                                //'reschedule' => 3,
+                                'at_madar' => 5,
+                                'at_office' => 6,
+
+                                'delivered' => 7,
+                                //'deliver_failed' => 8,
+                            ];
+
+                            $currentProgress = $statusMap[$order->status] ?? 1;
+
+                            $logs = $order->OrderLog()->latest()->get();
+
+                            $last_msg = '';
+                            $filteredLogs = [];
+
+                            foreach ($logs as $item) {
+                                if ($last_msg == $item->details) {
+                                    continue;
+                                }
+
+                                $filteredLogs[] = $item;
+                                $last_msg = $item->details;
+                            }
+                        @endphp
+
+                        <div class="shipment-card">
+                            <!-- <div class="shipment-head row">
+                                <div class="col-xs-12 col-sm-6 text-right">
+                                    <div class="shipment-number">
+                                        <span class="lbl">رقم تتبع الشحنة</span>
+                                        <div class="val">
+                                            <i class="fa fa-truck" aria-hidden="true"></i>
+                                            {{$order->serial}}
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-xs-12 col-sm-6 text-left">
+                                    @if(count($filteredLogs))
+                                        <div class="shipment-last-update">
+                                            <span class="lbl">التحديث الأخير</span>
+                                            <div class="val">
+                                                {{$filteredLogs[0]->details}}<br>
+                                                <small>{{$filteredLogs[0]->created_at->format('H:i d M y')}}</small>
+                                            </div>
+                                        </div>
+                                    @endif
+                                </div>
+                            </div> -->
+
+                            <div class="shipment-progress-wrapper">
+                                <div class="shipment-progress-line"></div>
+
+                                @foreach($progressSteps as $index => $label)
+                                    @php
+                                        $stepClass = $index <= $currentProgress ? 'done' : '';
+                                        $isLast = $loop->last;
+                                    @endphp
+
+                                    <div class="shipment-progress-step {{$stepClass}}">
+                                        <div class="step-circle">
+                                            <i class="fa fa-check"></i>
+                                        </div>
+                                        <div class="step-label">{{$label}}</div>
+                                    </div>
+                                @endforeach
+                            </div>
+
+                            <div class="table-wr shipment-timeline-table">
+                                <table class="order-log-table table">
+                                    <thead>
+                                        <tr>
+                                            <th class="ot-tl-cell"></th>
+                                            <th>التاريخ</th>
+                                            <th>الحالة</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @php
+                                        $last_msg = '';
+                                        @endphp
+                                        @forelse($order->OrderLog()->latest()->get()  as $log)
+                                        @php
+                                        if($last_msg == $log->details){
+                                        continue;
+                                        }
+                                        @endphp
+                                            <tr>
+                                                <td class="ot-tl-cell">
+                                                    <span class="ot-tl-rail"></span>
+                                                    <span class="ot-tl-dot"><i class="fa fa-check"></i></span>
+                                                </td>
+                                                <td>
+                                                    <div>{{ $log->created_at->format('d/m/Y') }}</div>
+                                                    <div style="color:#888;font-size:12px;">{{ $log->created_at->format('H:i') }}</div>
+                                                </td>
+                                                <td>
+                                                    <div>{{ $log->details }}</div>
+                                                    <!-- <div style="font-size:12px;color:#888;margin-top:6px;">
+                                                        @if($log->added_by_type === 'driver')
+                                                            @php $d2 = $driversById->get($log->added_by_id); @endphp
+                                                            {{ $d2 ? ('سائق: '.trim($d2->first_name.' '.$d2->last_name)) : 'سائق' }}
+                                                        @else
+                                                            لوحة التحكم
+                                                        @endif
+                                                    </div> -->
+                                                </td>
+                                            </tr>
+                                        @empty
+                                            <tr>
+                                                <td colspan="4" class="text-center" style="padding:24px;">لا توجد سجلات.</td>
+                                            </tr>
+                                        @endforelse
+                                    </tbody>
+                                </table>
+                                <!--  -->
+                            </div>
+                        </div>
+
+                        <!-- end replace -->
+                    @endif
+                    <!-- end replace -->
 
                 </div>
 

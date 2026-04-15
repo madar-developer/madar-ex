@@ -208,7 +208,7 @@ class OrderController extends Controller
             $nameFor('init'),
             $nameFor('at_madar'),
             $nameFor('at_office'),
-            $nameFor('at_office'),
+            // $nameFor('at_office'),
             $nameFor('delivered'),
         ];
         $returnedStepLabel = $nameFor('returned');

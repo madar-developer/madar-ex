@@ -204,7 +204,7 @@ class OrderController extends Controller
         };
         $stepLabels = [
             $nameFor('new'),
-            $nameFor('not_received'),
+            // $nameFor('not_received'),
             $nameFor('init'),
             $nameFor('at_madar'),
             $nameFor('at_office'),

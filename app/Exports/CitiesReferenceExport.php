@@ -25,9 +25,14 @@ class CitiesOnlySheetExport implements FromCollection, WithHeadings, WithTitle
     {
         return City::query()
             ->where('parent', 0)
-            ->select('id', 'name')
             ->orderBy('id')
-            ->get();
+            ->get()
+            ->map(function (City $city) {
+                return [
+                    'id' => $city->id,
+                    'name' => $city->getTranslation('name', app()->getLocale()),
+                ];
+            });
     }
 
     public function headings(): array
@@ -46,11 +51,17 @@ class DistrictsSheetExport implements FromCollection, WithHeadings, WithTitle
     public function collection()
     {
         return City::query()
-            ->leftJoin('cities as parent_city', 'cities.parent', '=', 'parent_city.id')
-            ->where('cities.parent', '!=', 0)
-            ->select('cities.id', 'parent_city.name as city', 'cities.name')
-            ->orderBy('cities.id')
-            ->get();
+            ->with('Parent')
+            ->where('parent', '!=', 0)
+            ->orderBy('id')
+            ->get()
+            ->map(function (City $district) {
+                return [
+                    'id' => $district->id,
+                    'city' => $district->Parent ? $district->Parent->getTranslation('name', app()->getLocale()) : '',
+                    'name' => $district->getTranslation('name', app()->getLocale()),
+                ];
+            });
     }
 
     public function headings(): array

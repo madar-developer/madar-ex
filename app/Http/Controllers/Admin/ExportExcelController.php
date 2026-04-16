@@ -4,14 +4,37 @@ namespace App\Http\Controllers\Admin;
 
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
+use App\Exports\CitiesReferenceExport;
+use App\Exports\OrderFieldsTemplateExport;
 use App\Exports\OrdersExport;
 use App\Imports\OrderImport;
 use App\Imports\CompanyOrderImport;
-use DB;
-use Excel;
+use Illuminate\Support\Facades\DB;
+use Maatwebsite\Excel\Facades\Excel;
 use App\Models\Order;
 class ExportExcelController extends Controller
 {
+    public function __construct()
+    {
+        $this->middleware('Permission:order_add', ['only' => ['ordersImportPage', 'downloadOrdersTemplate', 'downloadCitiesReference', 'Import']]);
+    }
+
+    public function ordersImportPage()
+    {
+        $title = 'استيراد الطلبات من Excel';
+        return view('admin.orders.import', compact('title'));
+    }
+
+    public function downloadOrdersTemplate()
+    {
+        return Excel::download(new OrderFieldsTemplateExport(), 'orders-fields-template.xlsx');
+    }
+
+    public function downloadCitiesReference()
+    {
+        return Excel::download(new CitiesReferenceExport(), 'cities-reference.xlsx');
+    }
+
     function index(){
 
         $company_data=DB::table('companies')->get();
@@ -44,11 +67,15 @@ class ExportExcelController extends Controller
 
     public function Import(Request $request)
     {
-        
+        $request->validate([
+            'excel' => 'required|file|mimes:xlsx,xls,csv',
+            'company_id' => 'required|integer|exists:companies,id',
+        ]);
+
         if ($request->hasFile('excel')) {
             $file = uploadImage($request->file('excel'));
             $excelfile = public_path('/cdn/'.$file);
-            Excel::import(new OrderImport, $excelfile);
+            Excel::import(new OrderImport((int) $request->get('company_id')), $excelfile);
         }
             
             return redirect()->back()->with('success', 'All good!');

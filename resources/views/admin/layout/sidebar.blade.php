@@ -54,6 +54,7 @@
                                 <ul class="list-unstyled">
                                     <li><a href="{{url('/dashboard/orders')}}"> عرض  الطلبات </a></li>
                                     <li><a href="{{ route('orders.region-map') }}"> خريطة الطلبات حسب المنطقة </a></li>
+                                    <li class=" {!! (CheckPermission(['order_add']))? '' : 'hidden'  !!}"><a href="{{ route('orders.import-page') }}"> استيراد الطلبات من Excel </a></li>
                                     <li class=" {!! (CheckPermission(['order_add']))? '' : 'hidden'  !!}"><a href="{{ url('/dashboard/orders/create') }}">  اضافة طلب</a></li>
                                 </ul>
                             </li>

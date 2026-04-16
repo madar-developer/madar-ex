@@ -77,7 +77,10 @@ Route::group(['namespace' =>'Admin'], function() {
         Route::get('/orders-invoice/{id}', 'OrderController@invoice')->name('orders-invoice');
         Route::post('/orders-invoice/{id}', 'OrderController@invoicePost');
         Route::post('/orders-ajax', 'OrderController@UAll')->name('orders-ajax');
-        Route::post('/orders-excel', 'ExportExcelController@Import');
+        Route::get('/orders-import', 'ExportExcelController@ordersImportPage')->name('orders.import-page');
+        Route::get('/orders-import-template', 'ExportExcelController@downloadOrdersTemplate')->name('orders.import-template');
+        Route::get('/orders-import-cities-reference', 'ExportExcelController@downloadCitiesReference')->name('orders.import-cities-reference');
+        Route::post('/orders-excel', 'ExportExcelController@Import')->name('orders.import-excel');
         Route::resource('/cars', 'CarController');
         Route::resource('/sliders', 'SliderController');
         Route::resource('/partners', 'PartnerController');

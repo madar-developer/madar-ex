@@ -30,7 +30,7 @@ class CitiesOnlySheetExport implements FromCollection, WithHeadings, WithTitle
             ->map(function (City $city) {
                 return [
                     'id' => $city->id,
-                    'name' => $city->getTranslation('name', app()->getLocale()),
+                    'name' => $city->getTranslation('name', 'ar'),
                 ];
             });
     }
@@ -58,8 +58,8 @@ class DistrictsSheetExport implements FromCollection, WithHeadings, WithTitle
             ->map(function (City $district) {
                 return [
                     'id' => $district->id,
-                    'city' => $district->Parent ? $district->Parent->getTranslation('name', app()->getLocale()) : '',
-                    'name' => $district->getTranslation('name', app()->getLocale()),
+                    'city' => $district->Parent ? $district->Parent->getTranslation('name', 'ar') : '',
+                    'name' => $district->getTranslation('name', 'ar'),
                 ];
             });
     }

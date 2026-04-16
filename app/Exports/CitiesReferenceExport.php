@@ -95,6 +95,15 @@ class CitiesOnlySheetExport implements FromCollection, WithHeadings, WithTitle
                         }
                     }
 
+                    // Last-resort: extract {"ar":"..."} via regex (avoids JSON decode issues).
+                    $keysToTry = array_values(array_unique([$locale, $localeShort, $fallbackLocale, $fallbackLocaleShort]));
+                    foreach ($keysToTry as $key) {
+                        $pattern = '/"' . preg_quote((string) $key, '/') . '"\s*:\s*"([^"]*)"/u';
+                        if (preg_match($pattern, $trimmed, $m) === 1) {
+                            return $decodeUnicodeEscapes((string) $m[1]);
+                        }
+                    }
+
                     // Otherwise return as-is (Excel will show it).
                     return $value;
                 };
@@ -192,6 +201,15 @@ class DistrictsSheetExport implements FromCollection, WithHeadings, WithTitle
                         $maybeDecoded = json_decode($maybeObject, true);
                         if (is_array($maybeDecoded)) {
                             return $pickFromArray($maybeDecoded);
+                        }
+                    }
+
+                    // Last-resort: extract {"ar":"..."} via regex (avoids JSON decode issues).
+                    $keysToTry = array_values(array_unique([$locale, $localeShort, $fallbackLocale, $fallbackLocaleShort]));
+                    foreach ($keysToTry as $key) {
+                        $pattern = '/"' . preg_quote((string) $key, '/') . '"\s*:\s*"([^"]*)"/u';
+                        if (preg_match($pattern, $trimmed, $m) === 1) {
+                            return $decodeUnicodeEscapes((string) $m[1]);
                         }
                     }
 

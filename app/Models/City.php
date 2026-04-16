@@ -14,6 +14,11 @@ class City extends Model
         'name', 'parent', 'delivery_cost', 'city_code',
     ];
 
+    public function asJson($value)
+    {
+        return json_encode($value, JSON_UNESCAPED_UNICODE);
+    }
+
     public function Parent()
     {
         return $this->belongsTo(City::class, 'parent');

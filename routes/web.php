@@ -85,6 +85,7 @@ Route::group(['namespace' =>'Admin'], function() {
         Route::resource('/sliders', 'SliderController');
         Route::resource('/partners', 'PartnerController');
         Route::resource('/worktimes', 'WorkTimeController');
+        Route::resource('/circulars', 'CircularController');
         Route::resource('/drivers', 'DriverController');
         Route::get('/drivers-charts', 'DriverController@charts')->name('drivers-charts');
         Route::get('/driver-finance-orders/{id}', 'DriverController@DFOrders');

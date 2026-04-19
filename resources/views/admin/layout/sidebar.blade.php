@@ -142,6 +142,7 @@
                                     <li><a href="{{ url('/dashboard/payment-methods') }}">   وسائل الدفع</a></li>
                                     <li><a href="{{ url('/dashboard/avaliable-methods') }}">    طرق التحصيل</a></li>
                                     <li><a href="{{ url('/dashboard/order-status') }}">    حالات الطلب </a></li>
+                                    <li><a href="{{ url('/dashboard/circulars') }}"> التعاميم </a></li>
                                     <li><a href="{{ url('/dashboard/settings/permissions') }}">     الصلاحيات </a></li>
                                     <li><a href="{{ url('/dashboard/settings/site') }}">     اعدادات عامة </a></li>
 

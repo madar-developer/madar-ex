@@ -142,7 +142,16 @@
                 </div>
                 <div class="container">
 
-
+                    @foreach (\App\Models\Circular::activeForCompany()->get() as $companyCircular)
+                    <div class="alert alert-info alert-dismissible" role="alert">
+                        <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span
+                                aria-hidden="true">&times;</span></button>
+                        <strong>{{ $companyCircular->title }}</strong>
+                        @if ($companyCircular->description)
+                        <div class="m-t-5">{!! nl2br(e($companyCircular->description)) !!}</div>
+                        @endif
+                    </div>
+                    @endforeach
 
                     @yield('content')
 

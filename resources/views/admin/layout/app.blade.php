@@ -166,6 +166,16 @@
                     </div>
                     @endif
 
+                    @foreach (\App\Models\Circular::activeForAdmin()->get() as $adminCircular)
+                    <div class="alert alert-info alert-dismissible" role="alert">
+                        <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span
+                                aria-hidden="true">&times;</span></button>
+                        <strong>{{ $adminCircular->title }}</strong>
+                        @if ($adminCircular->description)
+                        <div class="m-t-5">{!! nl2br(e($adminCircular->description)) !!}</div>
+                        @endif
+                    </div>
+                    @endforeach
 
                     @yield('content')
 

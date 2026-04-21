@@ -104,11 +104,12 @@
                                                                 <th> البريد الإلكترونى   </th>
                                                                 <th>  الجنسيه</th>
                                                                 <th>  رقم الرخصة</th>
-                                                                <th>   تاريخ إنتهاء الرخصة</th>
-                                                                <th>    تاريخ إنتهاء الرخصة هجري</th>
+                                                                <!-- <th>   تاريخ إنتهاء الرخصة</th> -->
+                                                                <!-- <th>    تاريخ إنتهاء الرخصة هجري</th> -->
                                                                 <th>     اسم السيارة</th>
-                                                                <th>      انتهاء الهويه</th>
-                                                                <th>      انتهاء الهويه هجري</th>
+                                                                <!-- <th>      انتهاء الهويه</th> -->
+                                                                <!-- <th>      انتهاء الهويه هجري</th> -->
+                                                                 <th>      --------</th>
                                                                 {{-- <th>      صورة الهويه</th>
                                                                 <th>      صورة الرخصه</th>
                                                                 <th>      صوره الاستماره</th> --}}
@@ -129,11 +130,23 @@
                                                                 <td>{{$item->email}}</td>
                                                                 <td> {{$item->nationality}} </td>
                                                                 <td> {{$item->license_number}} </td>
-                                                                <td> {{$item->license_date_expiration}} </td>
-                                                                <td> {{$item->license_expiration_date_hijri}} </td>
+                                                                <!-- <td> {{$item->license_date_expiration}} </td> -->
+                                                                <!-- <td> {{$item->license_expiration_date_hijri}} </td> -->
                                                                 <td> {{$item->Car->name ?? '' }}</td>
-                                                                <td> {{$item->identity_expiration_date }}</td>
-                                                                <td> {{$item->identity_expiration_date_hijri }}</td>
+                                                                <!-- <td> {{$item->identity_expiration_date }}</td> -->
+                                                                <!-- <td> {{$item->identity_expiration_date_hijri }}</td> -->
+                                                                 
+                                                                @php
+                                                                    $weekStart = \Carbon\Carbon::now()->startOfWeek(\Carbon\Carbon::SATURDAY)->startOfDay();
+                                                                    $weekEnd = (clone $weekStart)->addDays(6)->endOfDay();
+                                                                    $isActiveThisWeek = !empty($item->last_activity)
+                                                                        && \Carbon\Carbon::parse($item->last_activity)->between($weekStart, $weekEnd);
+                                                                @endphp
+                                                                @if($isActiveThisWeek)
+                                                                    <td bgcolor="#d4edda"></td>
+                                                                @else
+                                                                    <td bgcolor="#f8d7da"></td>
+                                                                @endif
                                                                 {{-- <td>
                                                                     <img src="{{getImage($item->identity_image) }}" width="150" height="150" />
                                                                 </td>

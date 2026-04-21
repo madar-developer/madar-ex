@@ -36,6 +36,11 @@ class DriverFinanceController extends Controller
             $search['driver_id'] = $driver_id;
             $driver_finances = $driver_finances->where('driver_id'     ,$driver_id);
         }
+        if (Request()->has('status') && Request()->get('status') != '') {
+            $status = Request()->get('status');
+            $search['status'] = $status;
+            $driver_finances = $driver_finances->where('status', $status);
+        }
         $driver_finances = $driver_finances->paginate(40);
         $title = 'حسابات السائقين';
         return view('admin.driver-finances.index', compact('driver_finances', 'title', 'search'));

@@ -37,6 +37,17 @@
 
                                 </div>
                             </div>
+                            <!-- implement new factor for status  -->
+                            <div class="col-lg-2">
+                                <div class="form-horizontal">
+                                    <div class="form-group">
+                                        <div class="col-md-12">
+                                            {!! Form::select("status",[''=>'اختر الحالة','init' => 'جاهز للتحصيل  ','collected_by_branch' => 'تم التحصيل بواسطة الفرع'],null,['class'=>"form-control
+                                            select2", "autocomplete"=> 'off']) !!}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
 
 
                             <div class="row btns-row">

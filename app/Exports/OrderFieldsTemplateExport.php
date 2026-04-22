@@ -45,29 +45,29 @@ class OrderFieldsTemplateExport implements FromArray
             };
         }, $fields);
 
-        $headers = array_map(function ($field) {
-            $fieldKey = strtolower(trim((string) $field));
-            $normalizedFieldKey = preg_replace('/[^a-z0-9_]/', '', $fieldKey) ?? $fieldKey;
+        $arabicLabels = [
+            'recipent_name' => 'اسم المستلم',
+            'adress_details' => 'تفاصيل العنوان',
+            'phone' => 'رقم الجوال',
+            'notes' => 'ملاحظات',
+            'city_id' => 'المدينة',
+            'district_id' => 'المنطقة',
+            'refrence_no' => 'الرقم المرجعي',
+            'packages_number' => 'عدد الطرود',
+            'price' => 'السعر',
+            'payment_method_id' => 'طريقة الدفع',
+            'include_delivery_cost' => 'يشمل تكلفة التوصيل',
+            'can_open' => 'يسمح بالفتح',
+            'description' => 'الوصف',
+            'weight' => 'الوزن',
+        ];
 
-            $label = match (true) {
-                str_contains($normalizedFieldKey, 'recipent_name') => 'اسم المستلم',
-                str_contains($normalizedFieldKey, 'adress_details') => 'تفاصيل العنوان',
-                str_contains($normalizedFieldKey, 'phone') => 'رقم الجوال',
-                str_contains($normalizedFieldKey, 'notes') => 'ملاحظات',
-                str_contains($normalizedFieldKey, 'city_id') => 'المدينة',
-                str_contains($normalizedFieldKey, 'district_id') => 'المنطقة',
-                str_contains($normalizedFieldKey, 'refrence_no') => 'الرقم المرجعي',
-                str_contains($normalizedFieldKey, 'packages_number') => 'عدد الطرود',
-                str_contains($normalizedFieldKey, 'price') => 'السعر',
-                str_contains($normalizedFieldKey, 'payment_method_id') => 'طريقة الدفع',
-                str_contains($normalizedFieldKey, 'include_delivery_cost') => 'يشمل تكلفة التوصيل',
-                str_contains($normalizedFieldKey, 'can_open') => 'يسمح بالفتح',
-                str_contains($normalizedFieldKey, 'description') => 'الوصف',
-                str_contains($normalizedFieldKey, 'weight') => 'الوزن',
-                default => $field,
-            };
+        $headers = array_map(function ($field) use ($arabicLabels) {
+            $label = $arabicLabels[$field] ?? $field;
             return sprintf('%s (%s)', $label, $field);
         }, $fields);
+        // log header and fields to laravel log
+        \Log::info('Headers and fields', ['headers' => $headers, 'fields' => $fields]);
 
         return [
             $headers,

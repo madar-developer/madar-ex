@@ -60,6 +60,8 @@ class OrderFieldsTemplateExport implements FromArray
             'can_open' => 'يسمح بالفتح',
             'description' => 'الوصف',
             'weight' => 'الوزن',
+            'description' => 'الوصف',
+            'weight' => 'الوزن',
         ];
 
         $headers = array_map(function ($field) use ($arabicLabels) {

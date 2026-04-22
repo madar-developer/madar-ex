@@ -17,7 +17,7 @@
                         </div>
                         <div class="panel-body">
                             <!-- <p class="m-b-15">القالب يحتوي أعمدة حقول الطلب (Order fields) كصف أول.</p> -->
-                            <a href="{{ route('orders.import-template') }}" class="btn btn-primary">
+                            <a href="{{ route('orders.import-template') }}?v={{ time() }}" class="btn btn-primary">
                                 <i class="fa fa-download"></i> تحميل القالب
                             </a>
                             <a href="{{ route('orders.import-cities-reference') }}" class="btn btn-default m-r-10">

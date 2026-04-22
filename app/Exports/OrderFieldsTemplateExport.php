@@ -45,8 +45,28 @@ class OrderFieldsTemplateExport implements FromArray
             };
         }, $fields);
 
+        $arabicLabels = [
+            'recipent_name' => 'اسم المستلم',
+            'adress_details' => 'تفاصيل العنوان',
+            'phone' => 'رقم الجوال',
+            'notes' => 'ملاحظات',
+            'city_id' => 'المدينة',
+            'district_id' => 'المنطقة',
+            'refrence_no' => 'الرقم المرجعي',
+            'packages_number' => 'عدد الطرود',
+            'price' => 'السعر',
+            'payment_method_id' => 'طريقة الدفع',
+            'include_delivery_cost' => 'يشمل تكلفة التوصيل',
+            'can_open' => 'يسمح بالفتح',
+        ];
+
+        $headers = array_map(function ($field) use ($arabicLabels) {
+            $label = $arabicLabels[$field] ?? $field;
+            return sprintf('%s (%s)', $label, $field);
+        }, $fields);
+
         return [
-            $fields,
+            $headers,
             $hints,
         ];
     }

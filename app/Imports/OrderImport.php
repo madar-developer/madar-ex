@@ -10,6 +10,20 @@ use Maatwebsite\Excel\Concerns\WithHeadingRow;
 class OrderImport implements ToModel, WithHeadingRow
 {
     protected int $companyId;
+    private const KNOWN_FIELDS = [
+        'recipent_name',
+        'adress_details',
+        'phone',
+        'notes',
+        'city_id',
+        'district_id',
+        'refrence_no',
+        'packages_number',
+        'price',
+        'payment_method_id',
+        'include_delivery_cost',
+        'can_open',
+    ];
 
     public function __construct(int $companyId)
     {
@@ -23,6 +37,8 @@ class OrderImport implements ToModel, WithHeadingRow
     */
     public function model(array $row)
     {
+        $row = $this->normalizeRowKeys($row);
+
         $recipientName = trim((string) ($row['recipent_name'] ?? ''));
         $phone = trim((string) ($row['phone'] ?? ''));
         if ($recipientName === '' && $phone === '') {
@@ -111,5 +127,26 @@ class OrderImport implements ToModel, WithHeadingRow
         }
 
         return null;
+    }
+
+    private function normalizeRowKeys(array $row): array
+    {
+        $normalized = [];
+
+        foreach ($row as $key => $value) {
+            $keyString = (string) $key;
+            $target = $keyString;
+
+            foreach (self::KNOWN_FIELDS as $field) {
+                if ($keyString === $field || str_ends_with($keyString, '_'.$field) || str_contains($keyString, $field)) {
+                    $target = $field;
+                    break;
+                }
+            }
+
+            $normalized[$target] = $value;
+        }
+
+        return $normalized;
     }
 }

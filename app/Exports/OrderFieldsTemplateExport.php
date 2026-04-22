@@ -58,6 +58,8 @@ class OrderFieldsTemplateExport implements FromArray
             'payment_method_id' => 'طريقة الدفع',
             'include_delivery_cost' => 'يشمل تكلفة التوصيل',
             'can_open' => 'يسمح بالفتح',
+            'description' => 'الوصف',
+            'weight' => 'الوزن',
         ];
 
         $headers = array_map(function ($field) use ($arabicLabels) {

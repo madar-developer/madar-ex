@@ -63,7 +63,8 @@ class OrderFieldsTemplateExport implements FromArray
         ];
 
         $headers = array_map(function ($field) use ($arabicLabels) {
-            $label = $arabicLabels[$field] ?? $field;
+            $fieldKey = strtolower(trim((string) $field));
+            $label = $arabicLabels[$fieldKey] ?? $field;
             return sprintf('%s (%s)', $label, $field);
         }, $fields);
 

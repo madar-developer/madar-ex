@@ -14,6 +14,20 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Log;
+use App\Http\Controllers\SallaAuthController;
+use App\Http\Controllers\SallaOrderController;
+use App\Services\Salla\SallaAuthService;
+// use App\Http\Controllers\SallaAuthController;
+
+Route::get('/salla/callback', [SallaAuthController::class, 'callback']);
+Route::get('/connect-salla', function (SallaAuthService $service) {
+    return redirect(
+        $service->getAuthorizationUrl(
+            state: uniqid(),
+            scopes: ['offline_access', 'orders.read_write']
+        )
+    );
+});
 // create a new webhook for salla and log request data to log file
 Route::get('/webhook/salla', function(Request $request){
    Log::info('Salla Webhook received', $request->all());
@@ -22,6 +36,19 @@ Route::get('/webhook/salla', function(Request $request){
 Route::post('/webhook/salla', function(Request $request){
    Log::info('Salla Webhook received', $request->all());
     return response()->json(['message' => 'Webhook received'], 200);
+});
+
+Route::post('/salla/orders/bulk-change-status', [SallaOrderController::class, 'bulkChangeStatus']);
+Route::post('/salla/orders/assign-users', [SallaOrderController::class, 'assignUsers']);
+Route::post('/salla/orders/{orderId}/status', [SallaOrderController::class, 'updateSingleStatus']);
+Route::get('/salla/auth/test', [SallaAuthController::class, 'testCredentials']);
+Route::prefix('salla/orders')->group(function () {
+    Route::get('/', [SallaOrderController::class, 'index']);
+    Route::post('/', [SallaOrderController::class, 'create']);
+    Route::get('/{orderId}', [SallaOrderController::class, 'show']);
+    Route::put('/{orderId}', [SallaOrderController::class, 'update']);
+    Route::post('/actions', [SallaOrderController::class, 'actions']);
+    Route::post('/{orderId}/status', [SallaOrderController::class, 'updateStatus']);
 });
 Route::get('/cache', function(){
     Artisan::call('cache:clear');

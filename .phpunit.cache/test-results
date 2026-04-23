@@ -1,0 +1,1 @@
+{"version":2,"defects":[],"times":{"Tests\\Unit\\SallaOrderServiceTest::testCreatePostsOrderPayloadToSallaAndReturnsResponse":0.037,"Tests\\Unit\\SallaOrderServiceTest::testCreateThrowsSallaApiExceptionWhenSallaReturnsError":0.002}}

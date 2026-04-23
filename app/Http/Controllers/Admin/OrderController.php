@@ -13,6 +13,7 @@ use Auth;
 use Excel;
 use App\Exports\GeneralExport;
 use App\Models\City;
+use App\Models\CompanyAddress;
 use App\Models\Driver;
 use App\Models\OrderStatus;
 use Carbon\Carbon;
@@ -264,6 +265,52 @@ class OrderController extends Controller
         }
 
         return redirect('/dashboard/orders')->with('success', 'تم الحفظ بنجاح');
+    }
+
+    public function returnToMerchant(Order $order)
+    {
+        if ($order->status !== 'delivered') {
+            return redirect()->back()->with('error', 'يمكن ارجاع الطلبات التي تم تسليمها فقط');
+        }
+
+        $company = $order->Company()->first();
+        if (!$company) {
+            return redirect()->back()->with('error', 'لا يمكن ارجاع الطلب بدون بيانات متجر');
+        }
+
+        $companyAddress = CompanyAddress::where('company_id', $company->id)
+            ->orderByDesc('main')
+            ->latest('id')
+            ->first();
+
+        $data = [
+            'recipent_name' => $company->name,
+            'phone' => $company->phone,
+            'city_id' => $companyAddress->city_id ?? $company->city_id ?? $order->city_id,
+            'district_id' => null,
+            'adress_details' => $companyAddress->address ?? $company->adress_details ?? $company->address ?? $order->adress_details,
+            'latitude' => $companyAddress->latitude ?? $company->latitude ?? null,
+            'longitude' => $companyAddress->longitude ?? $company->longitude ?? null,
+            'notes' => trim('مرتجع من الطلب '.$order->serial.' - '.$order->recipent_name.' - '.$order->phone.' - '.$order->adress_details.($order->notes ? ' | '.$order->notes : '')),
+            'company_id' => $order->company_id,
+            'driver_id' => null,
+            'status' => 'new',
+            'refrence_no' => $order->refrence_no,
+            'order_type' => $order->order_type,
+            'packages_number' => $order->packages_number,
+            'return_packages' => $order->return_packages,
+            'price' => $order->price,
+            'include_delivery_cost' => $order->include_delivery_cost,
+            'weight' => $order->weight,
+            'description' => $order->description,
+            'payment_method_id' => $order->payment_method_id,
+            'can_open' => $order->can_open,
+            'cash_type' => $order->cash_type,
+        ];
+
+        $returnOrder = $this->register(new Request($data));
+
+        return redirect('/dashboard/orders/'.$returnOrder->id.'/edit')->with('success', 'تم انشاء طلب ارجاع جديد للتاجر');
     }
 
     /**

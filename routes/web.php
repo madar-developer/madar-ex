@@ -9,6 +9,20 @@
 | contains the "web" middleware group. Now create something great!
 |
 */
+
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Artisan;
+use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Facades\Log;
+// create a new webhook for salla and log request data to log file
+Route::get('/webhook/salla', function(Request $request){
+   Log::info('Salla Webhook received', $request->all());
+    return response()->json(['message' => 'Webhook received'], 200);
+});
+Route::post('/webhook/salla', function(Request $request){
+   Log::info('Salla Webhook received', $request->all());
+    return response()->json(['message' => 'Webhook received'], 200);
+});
 Route::get('/cache', function(){
     Artisan::call('cache:clear');
     Artisan::call('config:cache');
@@ -73,6 +87,7 @@ Route::group(['namespace' =>'Admin'], function() {
         Route::resource('/carmaintaince', 'CarMaintenanceController');
         Route::get('/orders/region-map', 'OrderController@ordersRegionMap')->name('orders.region-map');
         Route::resource('/orders', 'OrderController');
+        Route::post('/orders/{order}/return-to-merchant', 'OrderController@returnToMerchant')->name('orders.return-to-merchant');
         Route::get('/orders-charts', 'OrderController@charts')->name('orders-charts');
         Route::get('/orders-invoice/{id}', 'OrderController@invoice')->name('orders-invoice');
         Route::post('/orders-invoice/{id}', 'OrderController@invoicePost');

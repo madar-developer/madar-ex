@@ -14,6 +14,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Log;
+use App\Exceptions\SallaApiException;
 use App\Http\Controllers\SallaAuthController;
 use App\Http\Controllers\SallaOrderController;
 use App\Services\Salla\SallaAuthService;
@@ -73,7 +74,21 @@ Route::get('/test-salla-create-order', function (SallaOrderService $service) {
         ],
     ];
 
-    return response()->json($service->create($payload));
+    try {
+        return response()->json($service->create($payload));
+    } catch (SallaApiException $e) {
+        Log::error('Salla create order failed', [
+            'status_code' => $e->getCode(),
+            'response' => $e->responseData,
+        ]);
+
+        return response()->json([
+            'ok' => false,
+            'message' => $e->getMessage(),
+            'status_code' => $e->getCode(),
+            'salla_error' => $e->responseData,
+        ], $e->getCode() > 0 ? $e->getCode() : 422);
+    }
 });
 // create a new webhook for salla and log request data to log file
 Route::get('/webhook/salla', function(Request $request){

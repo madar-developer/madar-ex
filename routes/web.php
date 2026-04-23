@@ -17,6 +17,7 @@ use Illuminate\Support\Facades\Log;
 use App\Http\Controllers\SallaAuthController;
 use App\Http\Controllers\SallaOrderController;
 use App\Services\Salla\SallaAuthService;
+use App\Services\Salla\SallaOrderService;
 // use App\Http\Controllers\SallaAuthController;
 
 Route::get('/salla/callback', [SallaAuthController::class, 'callback']);
@@ -27,6 +28,52 @@ Route::get('/connect-salla', function (SallaAuthService $service) {
             scopes: ['offline_access', 'orders.read_write']
         )
     );
+});
+Route::get('/test-salla-create-order', function (SallaOrderService $service) {
+    $payload = [
+        'customer' => [
+            'id' => 1209983424,
+            'name' => 'new name',
+            'mobile' => '+966566666666',
+            'email' => 'test@example.com',
+        ],
+        'receiver' => [
+            'name' => 'i am the one',
+            'country_code' => 'SA',
+            'phone' => '966566666666',
+            'email' => 'test@example.com',
+            'notify' => false,
+        ],
+        'delivery_method' => 'shipping',
+        'branch_id' => 203948803,
+        'courier_id' => 1433878184,
+        'ship_to' => [
+            'country' => 1473353380,
+            'city' => 1939592358,
+            'district' => 674989864,
+            'block' => 'Apt. 836',
+            'street_number' => '8230',
+            'address' => '24453 Rosalinda Well',
+            'address_line' => 'West',
+            'postal_code' => '51434',
+        ],
+        'payment' => [
+            'status' => 'paid',
+            'method' => 'bank',
+            'store_bank_id' => 234234,
+            'receipt_image_path' => 'url',
+            'accepted_methods' => ['bank', 'credit_card'],
+        ],
+        'products' => [
+            [
+                'identifier_type' => 'id',
+                'identifier' => 892907448,
+                'quantity' => 1,
+            ],
+        ],
+    ];
+
+    return response()->json($service->create($payload));
 });
 // create a new webhook for salla and log request data to log file
 Route::get('/webhook/salla', function(Request $request){

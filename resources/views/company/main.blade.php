@@ -91,6 +91,24 @@
             </div>
         </div>
     </div><!-- end col -->
+    <div class="col-md-6">
+        <div class="card-box">
+            <h4 class="header-title m-t-0">ربط متجر سلة</h4>
+            @if(!empty($sallaToken))
+                <p class="text-success m-b-10">الحساب مربوط مع سلة بنجاح.</p>
+                <p class="text-muted m-b-10">Merchant ID: <strong>{{ $sallaToken->merchant_id ?? 'N/A' }}</strong></p>
+                <p class="text-muted m-b-20">Company ID: <strong>{{ $sallaToken->company_id }}</strong></p>
+                <a href="{{ route('company.connect-salla') }}" class="btn btn-default">
+                    إعادة الربط
+                </a>
+            @else
+                <p class="text-muted m-b-20">قم بربط حساب الشركة الحالي مع سلة لتفعيل مزامنة الطلبات.</p>
+                <a href="{{ route('company.connect-salla') }}" class="btn btn-primary">
+                    ربط مع سلة
+                </a>
+            @endif
+        </div>
+    </div>
 </div>
 
 

@@ -109,6 +109,9 @@ class SallaAuthService
     protected function storeTokenPayload(array $payload, ?int $merchantId = null, ?SallaToken $token = null): SallaToken
     {
         $token ??= new SallaToken();
+        $resolvedMerchantId = $merchantId
+            ?? (isset($payload['merchant_id']) ? (int) $payload['merchant_id'] : null)
+            ?? (isset($payload['merchant']) && is_numeric($payload['merchant']) ? (int) $payload['merchant'] : null);
 
         $accessTokenExpiresAt = isset($payload['expires'])
             ? Carbon::createFromTimestamp((int) $payload['expires'])
@@ -119,7 +122,7 @@ class SallaAuthService
             : $token->refresh_token_expires_at;
 
         $token->fill([
-            'merchant_id' => $merchantId,
+            'merchant_id' => $resolvedMerchantId,
             'access_token' => $payload['access_token'] ?? $token->access_token,
             'refresh_token' => $payload['refresh_token'] ?? $token->refresh_token,
             'access_token_expires_at' => $accessTokenExpiresAt,

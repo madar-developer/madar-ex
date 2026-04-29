@@ -364,6 +364,7 @@ Route::group(['namespace' =>'Admin'], function() {
 });
 Route::group(['prefix' => 'company', 'namespace' => 'Admin', 'middleware' => 'auth:company'], function() {
     Route::get('/', 'CompanyHomeController@index');
+    Route::get('/connect-salla', [SallaAuthController::class, 'companyConnect'])->name('company.connect-salla');
     Route::resource('/company-orders', 'CompanyOrderController');
     Route::get('/order-bill/{id}','CompanyOrderController@bill');
     Route::get('/noti-count-com', 'CompanyOrderController@notiCount')->name('noti-count-company');

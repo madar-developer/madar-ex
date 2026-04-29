@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\OrderStatus;
 use App\Models\Order;
+use App\Models\SallaToken;
 use App\Models\User;
 use Carbon\Carbon;
 use Auth;
@@ -36,6 +37,9 @@ class CompanyHomeController extends Controller
         $search = array();
         $order_statuses_chart = [];
         $order_statuses_colors = [];
+        $sallaToken = SallaToken::where('company_id', auth('company')->id())
+            ->latest('id')
+            ->first();
         foreach (OrderStatus::get() as $item)
         {
             $i = new \stdClass;
@@ -48,6 +52,6 @@ class CompanyHomeController extends Controller
         $order_statuses_colors = json_encode($order_statuses_colors);
     	$title = "الرئيسية";
         // $orders = $orders->paginate(10);
-    	return view('company.main', compact('search', 'users_chart', 'orders_chart', 'orders', 'title', 'order_statuses_chart', 'order_statuses_colors'));
+    	return view('company.main', compact('search', 'users_chart', 'orders_chart', 'orders', 'title', 'order_statuses_chart', 'order_statuses_colors', 'sallaToken'));
     }
 }

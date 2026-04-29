@@ -6,7 +6,11 @@
                             => 'PATCH','files'=>true]) !!}
                             {!! Form::select("status",OrderStatus($item->status),null,['class'=>"form-control select2", "autocomplete"=> 'off', "onchange" => "$(this).closest('form').submit()"])!!}
                             {!!Form::close() !!}  --}}
-    <td>{{$item->Company->name ?? ''}} </td>
+    <td>{{$item->Company->name ?? ''}}
+        @if($item->order_source == 'salla')
+        <span class="badge badge-primary">سلة</span>
+        @endif
+    </td>
     <td>{{$item->Company->phone ?? ''}} </td>
     <td>{{$item->recipent_name}} </td>
     <td>{{$item->phone}} </td>

@@ -72,6 +72,7 @@ class OrderImport implements ToModel, WithHeadingRow
             'can_open' => $this->parseYesNoFlag($row['can_open'] ?? null),
             'company_id'  => $this->companyId,
             'status'  => 'new',
+            'order_source' => 'sheet',
 
         ]);
         $s = str_replace(' ', '',date('Y m').$Order->id);

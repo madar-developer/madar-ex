@@ -10,6 +10,7 @@ class SallaToken extends Model
 
     protected $fillable = [
         'merchant_id',
+        'company_id',
         'access_token',
         'refresh_token',
         'access_token_expires_at',

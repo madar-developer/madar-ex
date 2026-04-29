@@ -42,6 +42,7 @@ class CompanyOrderImport implements ToModel
             'payment_method_id'  => $p_m,
             'company_id'  => auth('company')->id(),
             'status'  => 'new',
+            'order_source' => 'sheet',
 
         ]);
         $s = str_replace(' ', '',date('Y m').$Order->id);

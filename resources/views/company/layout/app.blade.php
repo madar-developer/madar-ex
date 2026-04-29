@@ -101,7 +101,8 @@
                             <div class="notification-box">
                                 <ul class="list-inline m-b-0">
                                     @php
-                                    $c_n = auth('company')->user()->unreadnotifications->count();
+                                    $companyUser = auth('company')->user();
+                                    $c_n = $companyUser->unreadNotifications()->count();
                                     @endphp
                                     <li>
                                         <a href="javascript:void(0);" class="right-bar-toggle"
@@ -183,7 +184,10 @@
                 <ul class="list-group list-no-border user-list" id="notifications">
                     @php
                     $user = auth('company')->user();
-                    $notifications = $user->unreadnotifications->sortByDesc('created_at');
+                    $notifications = $user->unreadNotifications()
+                        ->latest()
+                        ->limit(50)
+                        ->get();
                     @endphp
                     @foreach($notifications as $item)
                     <li class="list-group-item {{($item->read_at)? '' : 'active'}}">

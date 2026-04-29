@@ -2,6 +2,7 @@
 
 namespace App\Imports;
 
+use App\Models\City;
 use App\Models\Order;
 use App\Models\OrderStatus;
 use Maatwebsite\Excel\Concerns\ToModel;
@@ -45,9 +46,8 @@ class OrderImport implements ToModel, WithHeadingRow
             return null;
         }
 
-        $city = $row['city_id'] ?? null;
-        $district = $row['district_id'] ?? null;
-        $city = $city !== null && $city !== '' ? (int) $city : null;
+        $city = $this->resolveCityOrDistrictId($row['city_id'] ?? null, true);
+        $district = $this->resolveCityOrDistrictId($row['district_id'] ?? null, false, $city);
 
         $paymentMethod = $this->parsePaymentMethod($row['payment_method_id'] ?? null);
 
@@ -72,6 +72,7 @@ class OrderImport implements ToModel, WithHeadingRow
             'can_open' => $this->parseYesNoFlag($row['can_open'] ?? null),
             'company_id'  => $this->companyId,
             'status'  => 'new',
+            'order_source' => 'sheet',
 
         ]);
         $s = str_replace(' ', '',date('Y m').$Order->id);
@@ -127,6 +128,42 @@ class OrderImport implements ToModel, WithHeadingRow
         }
 
         return null;
+    }
+
+    private function resolveCityOrDistrictId($value, bool $isCity, ?int $parentCityId = null): ?int
+    {
+        if ($value === null || $value === '') {
+            return null;
+        }
+
+        if (is_numeric($value)) {
+            return (int) $value;
+        }
+
+        $needle = trim((string) $value);
+        if ($needle === '') {
+            return null;
+        }
+
+        $query = City::query();
+        if ($isCity) {
+            $query->where('parent', 0);
+        } else {
+            $query->where('parent', '!=', 0);
+            if ($parentCityId !== null) {
+                $query->where('parent', $parentCityId);
+            }
+        }
+
+        $city = $query
+            ->where(function ($q) use ($needle) {
+                $q->whereRaw('LOWER(name) = LOWER(?)', [$needle])
+                    ->orWhereRaw('LOWER(JSON_UNQUOTE(JSON_EXTRACT(name, "$.ar"))) = LOWER(?)', [$needle])
+                    ->orWhereRaw('LOWER(JSON_UNQUOTE(JSON_EXTRACT(name, "$.en"))) = LOWER(?)', [$needle]);
+            })
+            ->first();
+
+        return $city?->id;
     }
 
     private function normalizeRowKeys(array $row): array

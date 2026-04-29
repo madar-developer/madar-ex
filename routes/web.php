@@ -15,6 +15,8 @@ use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Log;
 use App\Exceptions\SallaApiException;
+use App\Models\Order;
+use App\Models\OrderStatus;
 use App\Http\Controllers\SallaAuthController;
 use App\Http\Controllers\SallaOrderController;
 use App\Services\Salla\SallaAuthService;
@@ -96,7 +98,53 @@ Route::get('/webhook/salla', function(Request $request){
     return response()->json(['message' => 'Webhook received'], 200);
 });
 Route::post('/webhook/salla', function(Request $request){
-   Log::info('Salla Webhook received', $request->all());
+    $payload = $request->all();
+
+    Log::info('Salla Webhook received', $payload);
+
+    $sallaOrderId = data_get($payload, 'data.id');
+    if (empty($sallaOrderId)) {
+        return response()->json(['message' => 'Webhook received'], 200);
+    }
+
+    $order = Order::where('refrence_no', (string) $sallaOrderId)->first();
+    $incomingStatusName = data_get($payload, 'data.status.name')
+        ?? data_get($payload, 'data.status.slug')
+        ?? data_get($payload, 'event');
+
+    if (!$order) {
+        $order = Order::create([
+            'refrence_no' => (string) $sallaOrderId,
+            'recipent_name' => data_get($payload, 'data.customer.full_name', 'Salla Customer'),
+            'phone' => (string) data_get($payload, 'data.customer.mobile', ''),
+            'adress_details' => data_get($payload, 'data.shipping.address.shipping_address'),
+            'notes' => data_get($payload, 'event'),
+            'price' => (int) data_get($payload, 'data.amounts.total.amount', 0),
+            'status' => 'new',
+            'order_source' => 'salla',
+            'source_status' => $incomingStatusName,
+        ]);
+
+        $serialBase = str_replace(' ', '', date('Y m') . $order->id);
+        $order->update([
+            'serial' => 'mx-' . $serialBase,
+            'serial_no' => (int) $serialBase,
+        ]);
+
+        $statusData = OrderStatus::where('key', 'new')->first();
+        if ($statusData) {
+            $order->OrderLog()->create([
+                'status' => 'new',
+                'details' => $statusData->details,
+            ]);
+        }
+    } else {
+        $order->update([
+            'order_source' => 'salla',
+            'source_status' => $incomingStatusName,
+        ]);
+    }
+
     return response()->json(['message' => 'Webhook received'], 200);
 });
 

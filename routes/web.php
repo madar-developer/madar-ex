@@ -107,7 +107,7 @@ Route::post('/webhook/salla', function(Request $request){
     if (empty($sallaOrderId)) {
         return response()->json(['message' => 'Webhook received'], 200);
     }
-
+    $payload = json_decode(json_encode($payload), true);
     $merchantId = data_get($payload, 'merchant');
     $companyId = null;
     if (!empty($merchantId)) {

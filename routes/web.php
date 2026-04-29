@@ -17,6 +17,7 @@ use Illuminate\Support\Facades\Log;
 use App\Exceptions\SallaApiException;
 use App\Models\Order;
 use App\Models\OrderStatus;
+use App\Models\SallaToken;
 use App\Http\Controllers\SallaAuthController;
 use App\Http\Controllers\SallaOrderController;
 use App\Services\Salla\SallaAuthService;
@@ -107,6 +108,15 @@ Route::post('/webhook/salla', function(Request $request){
         return response()->json(['message' => 'Webhook received'], 200);
     }
 
+    $merchantId = data_get($payload, 'merchant');
+    $companyId = null;
+    if (!empty($merchantId)) {
+        $companyId = SallaToken::where('merchant_id', (int) $merchantId)
+            ->whereNotNull('company_id')
+            ->latest('id')
+            ->value('company_id');
+    }
+
     $order = Order::where('refrence_no', (string) $sallaOrderId)->first();
     $incomingStatusName = data_get($payload, 'data.status.name')
         ?? data_get($payload, 'data.status.slug')
@@ -123,6 +133,7 @@ Route::post('/webhook/salla', function(Request $request){
             'status' => 'new',
             'order_source' => 'salla',
             'source_status' => $incomingStatusName,
+            'company_id' => $companyId,
         ]);
 
         $serialBase = str_replace(' ', '', date('Y m') . $order->id);
@@ -139,10 +150,14 @@ Route::post('/webhook/salla', function(Request $request){
             ]);
         }
     } else {
-        $order->update([
+        $updateData = [
             'order_source' => 'salla',
             'source_status' => $incomingStatusName,
-        ]);
+        ];
+        if (empty($order->company_id) && !empty($companyId)) {
+            $updateData['company_id'] = $companyId;
+        }
+        $order->update($updateData);
     }
 
     return response()->json(['message' => 'Webhook received'], 200);

@@ -12,10 +12,12 @@ use Carbon\Carbon;
 use App\Models\Admin;
 use App\Models\Company;
 use App\Models\OrderStatus;
+use App\Models\SallaToken;
 use App\Models\Term;
 use App\Notifications\AdminNotification;
 use App\Jobs\SendOrderWebhookJob;
 use App\Services\SaudiAddressService;
+use App\Services\Salla\SallaOrderService;
 use Illuminate\Support\Facades\Log;
 
 trait OrderOperations
@@ -246,6 +248,9 @@ trait OrderOperations
                 // sendSMS(FormatPhone($Order->phone), $msg);
                 $Order->update(['receive_date' => Carbon::now()]);
             }
+
+            // Sync status back to Salla for orders that originated from Salla.
+            $this->syncSallaOrderStatus($Order, (string) $request->get('status'));
         }
 
 
@@ -343,5 +348,54 @@ trait OrderOperations
     public function DeleteRecord($id)
     {
         //
+    }
+
+    protected function syncSallaOrderStatus(Order $order, string $localStatus): void
+    {
+        if ($order->order_source !== 'salla' || empty($order->refrence_no)) {
+            return;
+        }
+
+        $merchantId = SallaToken::where('company_id', $order->company_id)
+            ->whereNotNull('merchant_id')
+            ->latest('id')
+            ->value('merchant_id');
+
+        if (empty($merchantId)) {
+            Log::warning('Salla status sync skipped: missing merchant id', [
+                'order_id' => $order->id,
+                'company_id' => $order->company_id,
+                'local_status' => $localStatus,
+            ]);
+            return;
+        }
+
+        $statusMap = [
+            'new' => 'under_review',
+            'init' => 'under_review',
+            'at_office' => 'shipping_ready',
+            'delivered' => 'delivered',
+            'returned' => 'returned',
+            'cancelled' => 'cancelled',
+        ];
+
+        $sallaSlug = $statusMap[$localStatus] ?? $localStatus;
+
+        try {
+            app(SallaOrderService::class)->updateStatus(
+                orderId: $order->refrence_no,
+                payload: ['slug' => $sallaSlug],
+                merchantId: (int) $merchantId
+            );
+        } catch (\Throwable $e) {
+            Log::error('Salla status sync failed', [
+                'order_id' => $order->id,
+                'refrence_no' => $order->refrence_no,
+                'merchant_id' => $merchantId,
+                'local_status' => $localStatus,
+                'salla_slug' => $sallaSlug,
+                'error' => $e->getMessage(),
+            ]);
+        }
     }
 }

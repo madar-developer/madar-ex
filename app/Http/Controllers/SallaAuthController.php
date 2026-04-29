@@ -56,6 +56,9 @@ class SallaAuthController extends Controller
             ?: $request->integer('store_id');
 
         $token = $authService->exchangeCodeForToken($request->code, $merchantId ?: null);
+        if (!$merchantId) {
+            $merchantId = $authService->detectMerchantIdFromApi($token->access_token);
+        }
         Log::info('Salla token', $token->toArray());
         $token->update([
             'company_id' => $companyId,

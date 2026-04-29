@@ -106,6 +106,57 @@ class SallaAuthService
         }
     }
 
+    public function detectMerchantIdFromApi(string $accessToken): ?int
+    {
+        $candidateUrls = [
+            rtrim(config('salla.base_url'), '/') . '/store/info',
+            rtrim(config('salla.base_url'), '/') . '/store',
+            rtrim(config('salla.base_url'), '/') . '/me',
+        ];
+
+        foreach ($candidateUrls as $url) {
+            $response = Http::withToken($accessToken)->acceptJson()->get($url);
+            if ($response->failed()) {
+                continue;
+            }
+
+            $payload = $response->json();
+            $merchantId = $this->extractMerchantId($payload);
+            if ($merchantId !== null) {
+                return $merchantId;
+            }
+        }
+
+        return null;
+    }
+
+    protected function extractMerchantId($payload): ?int
+    {
+        if (!is_array($payload)) {
+            return null;
+        }
+
+        $possiblePaths = [
+            'merchant.id',
+            'merchant_id',
+            'store.id',
+            'data.merchant.id',
+            'data.merchant_id',
+            'data.store.id',
+            'data.id',
+            'id',
+        ];
+
+        foreach ($possiblePaths as $path) {
+            $value = data_get($payload, $path);
+            if (is_numeric($value)) {
+                return (int) $value;
+            }
+        }
+
+        return null;
+    }
+
     protected function storeTokenPayload(array $payload, ?int $merchantId = null, ?SallaToken $token = null): SallaToken
     {
         $token ??= new SallaToken();

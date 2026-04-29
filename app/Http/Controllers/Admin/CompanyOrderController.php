@@ -29,7 +29,7 @@ class CompanyOrderController extends Controller
     }
     public function index(Request $request)
     {
-        $all = Order::latest()->get();
+        // $all = Order::latest()->get();
         $orders =  Order::where("company_id", '=', auth()->id())->latest();
         $search = array();
         if (Request()->has('serial') && Request()->get('serial') != '') {

@@ -32,7 +32,7 @@
 }
 
 .shipment-number .lbl,
-.shipment-last-update .lbl{
+.shipment-last-update .lbl{d
     display:block;
     font-weight:700;
     margin-bottom:8px;
@@ -468,14 +468,7 @@
                                                 </td>
                                                 <td>
                                                     <div>{{ $log->details }}</div>
-                                                    <!-- <div style="font-size:12px;color:#888;margin-top:6px;">
-                                                        @if($log->added_by_type === 'driver')
-                                                            @php $d2 = $driversById->get($log->added_by_id); @endphp
-                                                            {{ $d2 ? ('سائق: '.trim($d2->first_name.' '.$d2->last_name)) : 'سائق' }}
-                                                        @else
-                                                            لوحة التحكم
-                                                        @endif
-                                                    </div> -->
+                                                    
                                                 </td>
                                             </tr>
                                         @empty

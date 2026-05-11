@@ -70,12 +70,13 @@ class ExportExcelController extends Controller
         $request->validate([
             'excel' => 'required|file|mimes:xlsx,xls,csv',
             'company_id' => 'required|integer|exists:companies,id',
+            'upload_date' => 'required|date',
         ]);
 
         if ($request->hasFile('excel')) {
             $file = uploadImage($request->file('excel'));
             $excelfile = public_path('/cdn/'.$file);
-            Excel::import(new OrderImport((int) $request->get('company_id')), $excelfile);
+            Excel::import(new OrderImport((int) $request->get('company_id'), $request->get('upload_date')), $excelfile);
         }
             
             return redirect()->back()->with('success', 'All good!');

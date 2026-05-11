@@ -5,12 +5,14 @@ namespace App\Imports;
 use App\Models\City;
 use App\Models\Order;
 use App\Models\OrderStatus;
+use Carbon\Carbon;
 use Maatwebsite\Excel\Concerns\ToModel;
 use Maatwebsite\Excel\Concerns\WithHeadingRow;
 
 class OrderImport implements ToModel, WithHeadingRow
 {
     protected int $companyId;
+    protected Carbon $uploadedAt;
     private const KNOWN_FIELDS = [
         'recipent_name',
         'adress_details',
@@ -26,9 +28,10 @@ class OrderImport implements ToModel, WithHeadingRow
         'can_open',
     ];
 
-    public function __construct(int $companyId)
+    public function __construct(int $companyId, string $uploadDate)
     {
         $this->companyId = $companyId;
+        $this->uploadedAt = Carbon::parse($uploadDate)->startOfDay();
     }
 
     /**
@@ -75,7 +78,7 @@ class OrderImport implements ToModel, WithHeadingRow
             'order_source' => 'sheet',
 
         ]);
-        $s = str_replace(' ', '',date('Y m').$Order->id);
+        $s = str_replace(' ', '', $this->uploadedAt->format('Y m').$Order->id);
         $serial = 'mx-'.$s;
         $status_data = OrderStatus::where('key', 'new')->first();
             $log_data = [
@@ -84,7 +87,13 @@ class OrderImport implements ToModel, WithHeadingRow
                 // 'details' =>  trans('words.'.$request->get('status')) . ' , ' . $request->get('notes')
             ];
         $Order->OrderLog()->create($log_data);
-        $Order->update(['serial' => $serial, 'serial_no' => (int)$s]);
+        $Order->timestamps = false;
+        $Order->forceFill([
+            'serial' => $serial,
+            'serial_no' => (int)$s,
+            'created_at' => $this->uploadedAt,
+            'updated_at' => $this->uploadedAt,
+        ])->save();
         return $Order;
     }
 

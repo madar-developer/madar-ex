@@ -44,6 +44,10 @@
                                     <label for="excel">ملف Excel</label>
                                     <input type="file" name="excel" id="excel" class="form-control" accept=".xlsx,.xls,.csv" required>
                                 </div>
+                                <div class="form-group">
+                                    <label for="upload_date">تاريخ الرفع</label>
+                                    <input type="date" name="upload_date" id="upload_date" class="form-control" value="{{ old('upload_date', date('Y-m-d')) }}" required>
+                                </div>
                                 <button type="submit" class="btn btn-success">
                                     <i class="fa fa-upload"></i> رفع واستيراد
                                 </button>

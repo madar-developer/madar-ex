@@ -14,7 +14,7 @@ class Order extends Model
         'notes' , 'user_id' , 'company_id' , 'status' ,'refrence_no', 'serial', 'serial_no', 'driver_id', 'collected', 'signature',
         'latitude', 'longitude', 'description', 'receive_date', 'delivery_date', 'company_address_id' , 'weight' , 'district_id',
         'pick_up_date', 'cash_type', 'include_delivery_cost', 'order_type', 'return_packages', 'can_open', 'refrence_no_repeated',
-        'order_source', 'source_status'
+        'order_source', 'source_status', 'is_returned',
     ];
     protected $appends = ['status_txt', 'status_image', 'status_color', 'available_statuses', 'company', 'owner_type', 'reason'];
     protected $with = ['PaymentMethod'];

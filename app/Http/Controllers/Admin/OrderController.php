@@ -284,13 +284,13 @@ class OrderController extends Controller
             ->first();
 
         $data = [
-            'recipent_name' => $company->name,
-            'phone' => $company->phone,
-            'city_id' => $companyAddress->city_id ?? $company->city_id ?? $order->city_id,
-            'district_id' => null,
-            'adress_details' => $companyAddress->address ?? $company->adress_details ?? $company->address ?? $order->adress_details,
-            'latitude' => $companyAddress->latitude ?? $company->latitude ?? null,
-            'longitude' => $companyAddress->longitude ?? $company->longitude ?? null,
+            'recipent_name' => $order->recipent_name,
+            'phone' => $order->phone,
+            'city_id' => $order->city_id ?? '',
+            'district_id' => $order->district_id ?? '',
+            'adress_details' =>  $order->adress_details,
+            'latitude' => $order->latitude ?? null,
+            'longitude' => $order->longitude ?? null,
             'notes' => trim('مرتجع من الطلب '.$order->serial.' - '.$order->recipent_name.' - '.$order->phone.' - '.$order->adress_details.($order->notes ? ' | '.$order->notes : '')),
             'company_id' => $order->company_id,
             'driver_id' => null,
@@ -306,6 +306,7 @@ class OrderController extends Controller
             'payment_method_id' => $order->payment_method_id,
             'can_open' => $order->can_open,
             'cash_type' => $order->cash_type,
+            'is_returned' => 1
         ];
 
         $returnOrder = $this->register(new Request($data));
@@ -333,6 +334,9 @@ class OrderController extends Controller
 
     public function bill( $id){
         $order = Order::findOrfail($id);
+        if($order->is_returned == 1){
+            return view('admin.orders.return-print', compact('order'));
+        }
         return view('admin.orders.new-print', compact('order'));
 
     }

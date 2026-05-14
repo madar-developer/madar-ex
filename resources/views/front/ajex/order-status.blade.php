@@ -32,7 +32,7 @@
 }
 
 .shipment-number .lbl,
-.shipment-last-update .lbl{d
+.shipment-last-update .lbl{
     display:block;
     font-weight:700;
     margin-bottom:8px;
@@ -95,6 +95,43 @@
 .shipment-progress-step:not(.done) .step-circle{
     background:#d9d9d9;
     color:#999;
+}
+
+.shipment-progress-step.shipment-progress-step--delivered-final .step-circle{
+    background: #2e7d32;
+}
+
+.shipment-status-alert--failed{
+    background: #ffebee;
+    border: 1px solid #e53935;
+    color: #b71c1c;
+    border-radius: 8px;
+    padding: 12px 14px;
+    margin-bottom: 18px;
+    text-align: right;
+    line-height: 1.6;
+}
+.shipment-status-alert--failed strong{
+    display: block;
+    font-size: 15px;
+    margin-bottom: 4px;
+}
+.shipment-status-alert--failed .reason{
+    font-size: 13px;
+    color: #c62828;
+    margin-top: 6px;
+}
+.shipment-card.shipment-card--failed{
+    border-color: #ffcdd2;
+    box-shadow: 0 0 0 1px rgba(229, 57, 53, 0.12);
+}
+.shipment-progress-step.failed .step-circle{
+    background: #c62828;
+    color: #fff;
+}
+.shipment-progress-step.failed .step-label{
+    color: #c62828;
+    font-weight: 700;
 }
 
 .shipment-progress-step .step-label{
@@ -226,6 +263,34 @@
         z-index: 2;
         border: 2px solid #fff;
         box-shadow: 0 0 0 1px #e53935;
+    }
+    .order-log-table tr.order-log-row--failed .ot-tl-dot{
+        background: #c62828;
+        box-shadow: 0 0 0 1px #c62828;
+    }
+    .order-log-table tr.order-log-row--failed td:last-child{
+        color: #b71c1c;
+        font-weight: 600;
+    }
+    .order-log-table tr.order-log-row--failed{
+        background: #ffebee !important;
+    }
+    .order-log-table tr.order-log-row--failed .ot-tl-rail{
+        background: #c62828;
+    }
+    .order-log-table tr.order-log-row--delivered .ot-tl-rail{
+        background: #43a047;
+    }
+    .order-log-table tr.order-log-row--delivered .ot-tl-dot{
+        background: #2e7d32;
+        box-shadow: 0 0 0 1px #2e7d32;
+    }
+    .order-log-table tr.order-log-row--delivered td:last-child{
+        color: #1b5e20;
+        font-weight: 600;
+    }
+    .order-log-table tr.order-log-row--delivered{
+        background: #e8f5e9 !important;
     }
     .order-log-table .ot-loc-en {
         direction: ltr;
@@ -376,8 +441,11 @@
                                 'at_office' => 6,
 
                                 'delivered' => 7,
+                                'deliver_failed' => 6,
                                 //'deliver_failed' => 8,
                             ];
+
+                            $orderStatusIsFailed = $order->status === 'deliver_failed';
 
                             $currentProgress = $statusMap[$order->status] ?? 1;
 
@@ -394,9 +462,29 @@
                                 $filteredLogs[] = $item;
                                 $last_msg = $item->details;
                             }
+
+                            $latestShownLog = null;
+                            $lmLatest = '';
+                            foreach ($logs as $item) {
+                                if ($lmLatest === $item->details) {
+                                    continue;
+                                }
+                                $latestShownLog = $item;
+                                break;
+                            }
+                            $lastStatusIsDelivered = ($order->status === 'delivered')
+                                || ($latestShownLog && $latestShownLog->status === 'delivered');
                         @endphp
 
-                        <div class="shipment-card">
+                        <div class="shipment-card {{ $orderStatusIsFailed ? 'shipment-card--failed' : '' }}">
+                            @if($orderStatusIsFailed)
+                                <div class="shipment-status-alert shipment-status-alert--failed" role="alert">
+                                    <strong>{{ $order->status_txt ?: 'فشل التسليم' }}</strong>
+                                    @if(trim((string) $order->reason) !== '')
+                                        <div class="reason">{{ $order->reason }}</div>
+                                    @endif
+                                </div>
+                            @endif
                             <!-- <div class="shipment-head row">
                                 <div class="col-xs-12 col-sm-6 text-right">
                                     <div class="shipment-number">
@@ -425,13 +513,17 @@
 
                                 @foreach($progressSteps as $index => $label)
                                     @php
-                                        $stepClass = $index <= $currentProgress ? 'done' : '';
-                                        $isLast = $loop->last;
+                                        if ($orderStatusIsFailed && $loop->last) {
+                                            $stepClass = 'failed';
+                                        } else {
+                                            $stepClass = $index <= $currentProgress ? 'done' : '';
+                                        }
+                                        $deliveredFinal = ! $orderStatusIsFailed && $loop->last && $lastStatusIsDelivered && $index <= $currentProgress;
                                     @endphp
 
-                                    <div class="shipment-progress-step {{$stepClass}}">
+                                    <div class="shipment-progress-step {{ $stepClass }} {{ $deliveredFinal ? 'shipment-progress-step--delivered-final' : '' }}">
                                         <div class="step-circle">
-                                            <i class="fa fa-check"></i>
+                                            <i class="fa {{ ($orderStatusIsFailed && $loop->last) ? 'fa-times' : 'fa-check' }}"></i>
                                         </div>
                                         <div class="step-label">{{$label}}</div>
                                     </div>
@@ -456,11 +548,15 @@
                                         if($last_msg == $log->details){
                                         continue;
                                         }
+                                        $last_msg = $log->details;
+                                        $logRowFailed = $log->status === 'deliver_failed';
+                                        $logRowDelivered = ! $logRowFailed && $log->status === 'delivered';
+                                        $logRowClass = $logRowFailed ? 'order-log-row--failed' : ($logRowDelivered ? 'order-log-row--delivered' : '');
                                         @endphp
-                                            <tr>
+                                            <tr class="{{ $logRowClass }}">
                                                 <td class="ot-tl-cell">
                                                     <span class="ot-tl-rail"></span>
-                                                    <span class="ot-tl-dot"><i class="fa fa-check"></i></span>
+                                                    <span class="ot-tl-dot"><i class="fa {{ $logRowFailed ? 'fa-times' : 'fa-check' }}"></i></span>
                                                 </td>
                                                 <td>
                                                     <div>{{ $log->created_at->format('d/m/Y') }}</div>

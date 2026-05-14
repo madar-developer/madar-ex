@@ -40,7 +40,7 @@
     }
     .order-track-card .ot-badge {
         display: inline-block;
-        background: #ff9800;
+        background: #b71c1c;
         color: #fff;
         font-size: 12px;
         padding: 4px 12px;
@@ -134,46 +134,80 @@
     .ot-step-line {
         flex: 1;
         height: 4px;
-        background: #e0e0e0;
+        background: #d9d9d9;
         min-width: 8px;
         margin-top: 10px;
     }
     .ot-step-line.is-done {
-        background: #e53935;
+        background: #b71c1c;
+        margin-bottom: 3rem;
     }
     .ot-dot {
         width: 22px;
         height: 22px;
         border-radius: 50%;
-        background: #e0e0e0;
-        border: 3px solid #e0e0e0;
+        background: #d9d9d9;
+        border: 3px solid #d9d9d9;
         flex-shrink: 0;
         z-index: 2;
         display: flex;
         align-items: center;
         justify-content: center;
         font-size: 11px;
-        color: #fff;
+        color: #999;
     }
     .ot-dot.is-done {
-        background: #e53935;
-        border-color: #e53935;
+        background: #b71c1c;
+        border-color: #b71c1c;
+        color: #fff;
     }
     .ot-dot.is-current {
         background: #fff;
-        border-color: #e53935;
-        box-shadow: 0 0 0 6px rgba(229, 57, 53, 0.25);
-    }
-    .ot-step-line.is-done {
-        margin-bottom: 3rem;
+        border-color: #b71c1c;
+        box-shadow: 0 0 0 6px rgba(183, 28, 28, 0.25);
     }
     .ot-dot.is-delivered {
-        background: #43a047;
-        border-color: #43a047;
+        background: #2e7d32;
+        border-color: #2e7d32;
+        color: #fff;
     }
     .ot-dot.is-returned {
         background: #fb8c00;
         border-color: #fb8c00;
+        color: #fff;
+    }
+    .ot-dot.is-failed {
+        background: #c62828;
+        border-color: #c62828;
+        color: #fff;
+    }
+    .ot-step.ot-step--failed .ot-step-label {
+        color: #c62828;
+        font-weight: 700;
+    }
+    .order-track-card.order-track-card--failed {
+        border-color: #ffcdd2;
+        box-shadow: 0 0 0 1px rgba(229, 57, 53, 0.12);
+    }
+    .order-status-alert--failed {
+        background: #ffebee;
+        border: 1px solid #e53935;
+        color: #b71c1c;
+        border-radius: 8px;
+        padding: 12px 14px;
+        margin-bottom: 18px;
+        text-align: right;
+        line-height: 1.6;
+    }
+    .order-status-alert--failed strong {
+        display: block;
+        font-size: 15px;
+        margin-bottom: 4px;
+    }
+    .order-status-alert--failed .reason {
+        font-size: 13px;
+        color: #c62828;
+        margin-top: 6px;
     }
     .ot-step-label {
         font-size: 11px;
@@ -202,12 +236,13 @@
         direction: rtl;
     }
     .order-log-table thead th {
-        background: #5c5c5c;
-        color: #fff;
-        font-weight: 600;
+        background: #f3f3f3;
+        color: #222;
+        font-weight: 700;
         padding: 12px 14px;
         text-align: right;
         border: none;
+        border-bottom: 1px solid #e5e5e5;
         font-size: 13px;
     }
     .order-log-table tbody tr:nth-child(even) {
@@ -234,7 +269,7 @@
         top: 0;
         bottom: 0;
         width: 4px;
-        background: #e53935;
+        background: #b71c1c;
     }
     .order-log-table tr:last-child .ot-tl-rail {
         bottom: 50%;
@@ -250,7 +285,7 @@
         width: 22px;
         height: 22px;
         border-radius: 50%;
-        background: #e53935;
+        background: #b71c1c;
         display: flex;
         align-items: center;
         justify-content: center;
@@ -258,7 +293,21 @@
         font-size: 11px;
         z-index: 2;
         border: 2px solid #fff;
-        box-shadow: 0 0 0 1px #e53935;
+        box-shadow: 0 0 0 1px #b71c1c;
+    }
+    .order-log-table tr.order-log-row--failed .ot-tl-dot {
+        background: #c62828;
+        box-shadow: 0 0 0 1px #c62828;
+    }
+    .order-log-table tr.order-log-row--failed td:last-child {
+        color: #b71c1c;
+        font-weight: 600;
+    }
+    .order-log-table tr.order-log-row--failed {
+        background: #ffebee !important;
+    }
+    .order-log-table tr.order-log-row--failed .ot-tl-rail {
+        background: #c62828;
     }
     .order-log-table .ot-loc-en {
         direction: ltr;
@@ -404,15 +453,19 @@
             <!-- new order stepper step + logs -->
             @php
                 $st = $order->status;
+                $lastStepIndex = max(0, count($stepLabels) - 1);
                 if ($st === 'returned') {
-                    $stepLabels[6] = $returnedStepLabel ?? 'تم الإرجاع';
+                    $stepLabels[$lastStepIndex] = $returnedStepLabel ?? 'تم الإرجاع';
                 }
+                $orderStatusIsFailed = ($st === 'deliver_failed');
+                /* Indices follow $stepLabels: 0 new, 1 init, 2 at_madar, 3 at_office, 4 delivered */
                 $currentStepIndex = match ($st) {
                     'new' => 0,
                     'not_received' => 1,
-                    'init' => 2,
-                    'at_madar' => 3,
-                    'at_office', 'reschedule', 'deliver_failed' => 5,
+                    'init' => 1,
+                    'at_madar' => 2,
+                    'at_office', 'reschedule' => 3,
+                    'deliver_failed' => $lastStepIndex,
                     'delivered', 'returned' => 7,
                     'cancelled' => 0,
                     default => 0,
@@ -424,7 +477,7 @@
                 $lastLog = $lastLog ?? $orderLogs->sortByDesc('id')->first();
             @endphp
 
-            <div class="order-track-card order-log-panel">
+            <div class="order-track-card order-log-panel {{ $orderStatusIsFailed ? 'order-track-card--failed' : '' }}">
                 <!-- <span class="ot-badge">
                     @if(($order->order_type ?? '') === 'outside' || ($order->order_type ?? '') === 'external')
                         شحنة دولية
@@ -464,17 +517,27 @@
                     <div class="alert alert-warning m-b-20" style="text-align:right;">تم إلغاء هذا الطلب.</div>
                 @endif
 
+                @if($orderStatusIsFailed)
+                    <div class="order-status-alert--failed" role="alert">
+                        <strong>{{ $order->status_txt ?: 'فشل التسليم' }}</strong>
+                        @if(trim((string) ($order->reason ?? '')) !== '')
+                            <div class="reason">{{ $order->reason }}</div>
+                        @endif
+                    </div>
+                @endif
+
                 <div class="ot-stepper-wrap">
                     <div class="ot-stepper">
                         @foreach($stepLabels as $i => $label)
-                            <div class="ot-step">
+                            <div class="ot-step {{ $orderStatusIsFailed && $i === $lastStepIndex ? 'ot-step--failed' : '' }}">
                                 <div class="ot-step-node">
                                     <div class="ot-dot
-                                        @if($allStepsComplete && $st === 'delivered' && $i === 6) is-delivered
-                                        @elseif($allStepsComplete && $st === 'returned' && $i === 6) is-returned
-                                        @elseif($allStepsComplete && $i < 6) is-done
+                                        @if($orderStatusIsFailed && $i === $lastStepIndex) is-failed
+                                        @elseif($allStepsComplete && $st === 'delivered' && $i === $lastStepIndex) is-delivered
+                                        @elseif($allStepsComplete && $st === 'returned' && $i === $lastStepIndex) is-returned
+                                        @elseif($allStepsComplete && $i < $lastStepIndex) is-done
                                         @elseif(!$allStepsComplete && $i < $currentStepIndex) is-done
-                                        @elseif(!$allStepsComplete && $i === $currentStepIndex) is-current
+                                        @elseif(!$allStepsComplete && $i === $currentStepIndex && ! $orderStatusIsFailed) is-current
                                         @endif
                                     ">
                                     
@@ -485,19 +548,21 @@
                                         $segDone1 = ($i < $currentStepIndex);
                                     }
                                 @endphp
-                                    @if($segDone1)
-                                    <i class="fa fa-check"></i>
+                                    @if($orderStatusIsFailed && $i === $lastStepIndex)
+                                        <i class="fa fa-times"></i>
+                                    @elseif($segDone1)
+                                        <i class="fa fa-check"></i>
                                     @endif
-                                        <!-- @if($allStepsComplete && $st === 'delivered' && $i === 6)
+                                        <!-- @if($allStepsComplete && $st === 'delivered' && $i === $lastStepIndex)
                                             <i class="fa fa-check"></i>
-                                        @elseif($allStepsComplete && $st === 'returned' && $i === 6)
+                                        @elseif($allStepsComplete && $st === 'returned' && $i === $lastStepIndex)
                                             <i class="fa fa-undo"></i>
                                         @endif -->
                                     </div>
                                 </div>
                                 <div class="ot-step-label">{{ $label }}</div>
                             </div>
-                            @if($i < 6)
+                            @if($i < $lastStepIndex)
                                 @php
                                     if ($allStepsComplete) {
                                         $segDone = true;
@@ -531,11 +596,12 @@
                                 @php
                                     $locAr = $order->City ? (string) $order->City->name : '';
                                     $locLine = $locAr ? ($locAr.', Saudi Arabia') : 'Madar Express';
+                                    $logRowFailed = ($log->status ?? '') === 'deliver_failed';
                                 @endphp
-                                <tr>
+                                <tr class="{{ $logRowFailed ? 'order-log-row--failed' : '' }}">
                                     <td class="ot-tl-cell">
                                         <span class="ot-tl-rail"></span>
-                                        <span class="ot-tl-dot"><i class="fa fa-check"></i></span>
+                                        <span class="ot-tl-dot"><i class="fa {{ $logRowFailed ? 'fa-times' : 'fa-check' }}"></i></span>
                                     </td>
                                     <td>
                                         <div>{{ $log->created_at->format('d/m/Y') }}</div>

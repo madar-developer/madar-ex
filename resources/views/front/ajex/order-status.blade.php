@@ -343,8 +343,8 @@
                         </div>
                         <div class="col-xs-6  col-md-4">
                             <div class="item flex-c  ">
-                                <span class="lbl">عدد المنتجات</span>
-                                <span class="val"> {{$order->packages_number}}</span>
+                                <span class="lbl">تاريخ الشحنة </span>
+                                <span class="val"> {{$order->created_at->format('d/m/Y')}}</span>
                             </div>
                         </div>
                         <div class="col-xs-6 col-md-4">

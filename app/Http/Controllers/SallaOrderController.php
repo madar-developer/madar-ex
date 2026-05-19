@@ -59,7 +59,7 @@ class SallaOrderController extends Controller
             $service->updateSingleOrderStatus($orderId, array_filter($data, fn ($v) => $v !== null))
         );
     }
-    public function createShipment (Request $request){
+    public function createOrder (Request $request){
         $payload = $request->all();
 
         Log::info('Salla Webhook received', $payload);
@@ -122,6 +122,21 @@ class SallaOrderController extends Controller
             }
             $order->update($updateData);
         }
+
+        return response()->json(['message' => 'Webhook received'], 200);
+    }
+    public function createShipment (Request $request){
+        $payload = $request->all();
+
+        Log::info('Salla Shipment created received', $payload);
+
+        
+        return response()->json(['message' => 'Webhook received'], 200);
+    }
+    public function updateShipment (Request $request){
+        $payload = $request->all();
+
+        \Log::info('Salla Shipment updated received', $payload);
 
         return response()->json(['message' => 'Webhook received'], 200);
     }

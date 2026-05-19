@@ -128,7 +128,7 @@ class SallaOrderController extends Controller
     public function createShipment (Request $request){
         $payload = $request->all();
 
-        Log::info('Salla Shipment created received', $payload);
+        \Log::info('Salla Shipment created received', $payload);
 
         
         return response()->json(['message' => 'Webhook received'], 200);

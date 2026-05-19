@@ -59,4 +59,70 @@ class SallaOrderController extends Controller
             $service->updateSingleOrderStatus($orderId, array_filter($data, fn ($v) => $v !== null))
         );
     }
+    public function createShipment (Request $request){
+        $payload = $request->all();
+
+        Log::info('Salla Webhook received', $payload);
+
+        $sallaOrderId = data_get($payload, 'data.id');
+        if (empty($sallaOrderId)) {
+            return response()->json(['message' => 'Webhook received'], 200);
+        }
+        if (data_get($payload, 'event') == 'app.installed'){
+            return response()->json(['message' => 'Webhook received'], 200);
+        }
+        $merchantId = data_get($payload, 'merchant');
+        $companyId = null;
+        if (!empty($merchantId)) {
+            $companyId = SallaToken::where('merchant_id', (int) $merchantId)
+                ->whereNotNull('company_id')
+                ->latest('id')
+                ->value('company_id');
+        }
+
+        $order = Order::where('refrence_no', (string) $sallaOrderId)->first();
+        $incomingStatusName = data_get($payload, 'data.status.name')
+            ?? data_get($payload, 'data.status.slug')
+            ?? data_get($payload, 'event');
+
+        if (!$order) {
+            $order = Order::create([
+                'refrence_no' => (string) $sallaOrderId,
+                'recipent_name' => data_get($payload, 'data.customer.full_name', 'Salla Customer'),
+                'phone' => (string) data_get($payload, 'data.customer.mobile', ''),
+                'adress_details' => data_get($payload, 'data.shipping.address.shipping_address'),
+                'notes' => data_get($payload, 'event'),
+                'price' => (int) data_get($payload, 'data.amounts.total.amount', 0),
+                'status' => 'new',
+                'order_source' => 'salla',
+                'source_status' => $incomingStatusName,
+                'company_id' => $companyId,
+            ]);
+
+            $serialBase = str_replace(' ', '', date('Y m') . $order->id);
+            $order->update([
+                'serial' => 'mx-' . $serialBase,
+                'serial_no' => (int) $serialBase,
+            ]);
+
+            $statusData = OrderStatus::where('key', 'new')->first();
+            if ($statusData) {
+                $order->OrderLog()->create([
+                    'status' => 'new',
+                    'details' => $statusData->details,
+                ]);
+            }
+        } else {
+            $updateData = [
+                'order_source' => 'salla',
+                'source_status' => $incomingStatusName,
+            ];
+            if (empty($order->company_id) && !empty($companyId)) {
+                $updateData['company_id'] = $companyId;
+            }
+            $order->update($updateData);
+        }
+
+        return response()->json(['message' => 'Webhook received'], 200);
+    }
 }

@@ -36,6 +36,7 @@ class SallaOrderService
     public function update(int|string $orderId, array $payload, ?int $merchantId = null): array
     {
         $response = $this->client($merchantId)->put("/orders/{$orderId}", $payload);
+        // update shipment details  through shepment id
 
         return $this->handleResponse($response, 'Salla update order failed');
     }

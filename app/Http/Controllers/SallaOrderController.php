@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Services\Salla\SallaOrderActionService;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 
 class SallaOrderController extends Controller
 {
@@ -128,7 +129,7 @@ class SallaOrderController extends Controller
     public function createShipment (Request $request){
         $payload = $request->all();
 
-        \Log::info('Salla Shipment created received', $payload);
+        Log::info('Salla Shipment created received', $payload);
 
         
         return response()->json(['message' => 'Webhook received'], 200);
@@ -136,7 +137,7 @@ class SallaOrderController extends Controller
     public function updateShipment (Request $request){
         $payload = $request->all();
 
-        \Log::info('Salla Shipment updated received', $payload);
+        Log::info('Salla Shipment updated received', $payload);
 
         return response()->json(['message' => 'Webhook received'], 200);
     }

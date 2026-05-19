@@ -98,16 +98,32 @@ Route::get('/webhook/salla', function(Request $request){
    Log::info('Salla Webhook received', $request->all());
     return response()->json(['message' => 'Webhook received'], 200);
 });
-Route::post('/webhook/salla', function(Request $request){
+Route::post('/webhook/salla', function(Request $request, SallaAuthService $sallaAuthService){
     $payload = $request->all();
 
     Log::info('Salla Webhook received', $payload);
 
-    $sallaOrderId = data_get($payload, 'data.id');
-    if (empty($sallaOrderId)) {
+    $event = data_get($payload, 'event');
+
+    if ($event === 'app.installed') {
         return response()->json(['message' => 'Webhook received'], 200);
     }
-    if (data_get($payload, 'event') == 'app.installed'){
+
+    if ($event === 'app.store.authorize') {
+        try {
+            $sallaAuthService->handleStoreAuthorize($payload);
+        } catch (Throwable $e) {
+            Log::error('Salla app.store.authorize failed', [
+                'message' => $e->getMessage(),
+                'merchant' => data_get($payload, 'merchant'),
+            ]);
+        }
+
+        return response()->json(['message' => 'Webhook received'], 200);
+    }
+
+    $sallaOrderId = data_get($payload, 'data.id');
+    if (empty($sallaOrderId)) {
         return response()->json(['message' => 'Webhook received'], 200);
     }
     $merchantId = data_get($payload, 'merchant');

@@ -2,10 +2,13 @@
 
 namespace App\Services\Salla;
 
+use App\Models\Company;
 use App\Models\SallaToken;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Str;
 use RuntimeException;
 
 class SallaAuthService
@@ -104,6 +107,107 @@ class SallaAuthService
         } finally {
             optional($lock)->release();
         }
+    }
+
+    public function fetchUserInfo(string $accessToken): array
+    {
+        $response = Http::withToken($accessToken)
+            ->acceptJson()
+            ->get(rtrim(config('salla.oauth_base_url'), '/') . '/user/info');
+
+        if ($response->failed()) {
+            throw new RuntimeException('Failed to fetch Salla user info: ' . $response->body());
+        }
+
+        $payload = $response->json();
+        if (! data_get($payload, 'success')) {
+            throw new RuntimeException('Salla user info request was not successful: ' . $response->body());
+        }
+
+        return data_get($payload, 'data', []);
+    }
+
+    public function handleStoreAuthorize(array $payload): SallaToken
+    {
+        $tokenData = data_get($payload, 'data', []);
+        $accessToken = data_get($tokenData, 'access_token');
+
+        if (empty($accessToken)) {
+            throw new RuntimeException('Salla authorize webhook missing access_token.');
+        }
+
+        $userInfo = $this->fetchUserInfo($accessToken);
+        $email = trim((string) data_get($userInfo, 'email'));
+
+        if ($email === '') {
+            throw new RuntimeException('Salla user info missing email.');
+        }
+
+        $merchantId = (int) (
+            data_get($payload, 'merchant')
+            ?? data_get($userInfo, 'merchant.id')
+            ?? 0
+        );
+
+        $company = Company::where('email', $email)->first();
+
+        if (! $company) {
+            $merchant = data_get($userInfo, 'merchant', []);
+            $phone = $this->resolveCompanyPhone(data_get($userInfo, 'mobile'));
+
+            $company = Company::create([
+                'name' => data_get($merchant, 'name') ?: data_get($userInfo, 'name') ?: 'Salla Store',
+                'email' => $email,
+                'phone' => $phone,
+                'password' => bcrypt(Str::random(32)),
+                'commercial_record' => data_get($merchant, 'commercial_number') ?: ('salla-' . ($merchantId ?: uniqid())),
+                'adress_details' => data_get($merchant, 'domain'),
+                'active' => 1,
+            ]);
+
+            Log::info('Salla store authorize: created company', [
+                'company_id' => $company->id,
+                'merchant_id' => $merchantId,
+                'email' => $email,
+            ]);
+        }
+
+        $existingToken = $merchantId
+            ? SallaToken::where('merchant_id', $merchantId)->latest('id')->first()
+            : null;
+
+        $token = $this->storeTokenPayload(
+            array_merge($tokenData, ['merchant_id' => $merchantId ?: null]),
+            $merchantId ?: null,
+            $existingToken
+        );
+
+        $token->update([
+            'company_id' => $company->id,
+            'merchant_id' => $merchantId ?: $token->merchant_id,
+        ]);
+
+        Log::info('Salla store authorize: token saved', [
+            'token_id' => $token->id,
+            'company_id' => $company->id,
+            'merchant_id' => $token->merchant_id,
+        ]);
+
+        return $token->fresh();
+    }
+
+    protected function resolveCompanyPhone(?string $mobile): ?string
+    {
+        $phone = trim((string) $mobile);
+        if ($phone === '') {
+            return null;
+        }
+
+        if (Company::where('phone', $phone)->exists()) {
+            return null;
+        }
+
+        return $phone;
     }
 
     public function detectMerchantIdFromApi(string $accessToken): ?int

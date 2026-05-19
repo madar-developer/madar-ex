@@ -175,6 +175,7 @@ Route::prefix('salla/orders')->group(function () {
     Route::get('/{orderId}', [SallaOrderController::class, 'show']);
     Route::put('/{orderId}', [SallaOrderController::class, 'update']);
     Route::post('/actions', [SallaOrderController::class, 'actions']);
+    Route::post('/create-shipment', [SallaOrderController::class, 'createShipment']);
     Route::post('/{orderId}/status', [SallaOrderController::class, 'updateStatus']);
 });
 Route::get('/cache', function(){

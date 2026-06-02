@@ -65,6 +65,10 @@ class SallaOrderController extends Controller
     }
     public function createOrder (Request $request){
         $payload = $request->all();
+        if ($request->has('order')) {
+            $request->merge(['data' => $request->order]);
+            $payload = $request->all();
+        }
 
         Log::channel('salla')->info('Salla Webhook received', $payload);
 

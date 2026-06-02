@@ -62,6 +62,15 @@ class SallaOrderService
         return $this->handleResponse($response, 'Salla update order status failed');
     }
 
+    public function cancel(int|string $shipmentId, array $payload = [], ?int $merchantId = null): array
+    {
+        return $this->updateStatus(
+            $shipmentId,
+            array_merge($payload, ['slug' => 'cancelled']),
+            $merchantId
+        );
+    }
+
     public function changeStatusBulk(
         array $orderIds,
         int $statusId,

@@ -195,6 +195,7 @@ Route::prefix('salla/orders')->group(function () {
     Route::post('/create-shipment', [SallaOrderController::class, 'createShipment']);
     Route::post('/update-shipment', [SallaOrderController::class, 'updateShipment']);
     Route::post('/{orderId}/status', [SallaOrderController::class, 'updateStatus']);
+    Route::post('/{orderId}/cancel', [SallaOrderController::class, 'cancel']);
 });
 Route::get('/cache', function(){
     Artisan::call('cache:clear');

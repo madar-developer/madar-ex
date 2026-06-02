@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Services\Salla\SallaOrderActionService;
+use App\Services\Salla\SallaOrderService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use App\Models\SallaToken;
@@ -63,6 +64,64 @@ class SallaOrderController extends Controller
             $service->updateSingleOrderStatus($orderId, array_filter($data, fn ($v) => $v !== null))
         );
     }
+
+    public function cancel(Request $request, $orderId, SallaOrderService $service)
+    {
+
+        $payload = $request->all();
+        Log::channel('salla')->info('Salla order cancelled received', $payload);
+        $data = $request->validate([
+            'merchant_id' => ['nullable', 'integer'],
+        ]);
+
+        $order = Order::where('order_source', 'salla')
+            ->where(function ($query) use ($orderId) {
+                $query->where('refrence_no', (string) $orderId)
+                    ->orWhere('shipment_ref_id', (string) $orderId);
+
+                if (is_numeric($orderId)) {
+                    $query->orWhere('id', (int) $orderId);
+                }
+            })
+            ->first();
+
+        $merchantId = $data['merchant_id'] ?? null;
+        if (!$merchantId && $order && $order->company_id) {
+            $merchantId = SallaToken::where('company_id', $order->company_id)
+                ->whereNotNull('merchant_id')
+                ->latest('id')
+                ->value('merchant_id');
+        }
+
+        $shipmentId = ($order && $order->shipment_ref_id) ? $order->shipment_ref_id : $orderId;
+        // $sallaResponse = $service->cancel($shipmentId, [], $merchantId ? (int) $merchantId : null);
+
+        if ($order && $order->status !== 'cancelled') {
+            $order->update(['status' => 'cancelled']);
+
+            $statusData = OrderStatus::where('key', 'cancelled')->first();
+            if ($statusData) {
+                $order->OrderLog()->create([
+                    'status' => 'cancelled',
+                    'details' => $statusData->details,
+                ]);
+            }
+        }
+
+        Log::channel('salla')->info('Salla order cancelled', [
+            'order_id' => $order?->id,
+            'salla_order_id' => $orderId,
+            'shipment_id' => $shipmentId,
+            'merchant_id' => $merchantId,
+        ]);
+
+        return response()->json([
+            'message' => 'Order cancelled successfully',
+            'local_order_id' => $order?->id,
+            'salla_response' => $sallaResponse,
+        ]);
+    }
+
     public function createOrder (Request $request){
         $payload = $request->all();
         if ($request->has('order')) {

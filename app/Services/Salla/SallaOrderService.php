@@ -33,12 +33,13 @@ class SallaOrderService
         return $this->handleResponse($response, 'Salla order details failed');
     }
 
-    public function update(int|string $orderId, array $payload, ?int $merchantId = null): array
+    public function update(int|string $shipmentId, array $payload, ?int $merchantId = null): array
     {
-        $response = $this->client($merchantId)->put("/orders/{$orderId}", $payload);
+        // $response = $this->client($merchantId)->put("/orders/{$orderId}", $payload);
+        $response = $this->client($merchantId)->put("/shipments/{$shipmentId}", $payload);
         // update shipment details  through shepment id
 
-        return $this->handleResponse($response, 'Salla update order failed');
+        return $this->handleResponse($response, 'Salla update shipment failed');
     }
 
     public function actions(array $operations, array $filters = [], ?int $merchantId = null): array

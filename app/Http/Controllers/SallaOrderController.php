@@ -65,9 +65,9 @@ class SallaOrderController extends Controller
         );
     }
 
-    public function cancel(Request $request, $orderId, SallaOrderService $service)
+    public function cancel(Request $request, SallaOrderService $service)
     {
-
+        $orderId = $request->get('order_id');
         $payload = $request->all();
         Log::channel('salla')->info('Salla order cancelled received', $payload);
         $data = $request->validate([

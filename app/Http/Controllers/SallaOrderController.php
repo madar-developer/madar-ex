@@ -79,7 +79,7 @@ class SallaOrderController extends Controller
         if (data_get($payload, 'event') == 'app.installed'){
             return response()->json(['message' => 'Webhook received'], 200);
         }
-        $merchantId = data_get($payload, 'merchant');
+        $merchantId = data_get($payload, 'data.store.id');
         $companyId = null;
         if (!empty($merchantId)) {
             $companyId = SallaToken::where('merchant_id', (int) $merchantId)

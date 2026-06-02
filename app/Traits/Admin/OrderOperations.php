@@ -371,11 +371,15 @@ trait OrderOperations
         }
 
         $statusMap = [
-            'new' => 'under_review',
-            'init' => 'under_review',
-            'at_office' => 'shipping_ready',
+            'new' => 'created',
+            'init' => 'in_progress',
+            'at_madar' => 'in_transit',
+            // 'at_office' => 'received_at_final_hub',
+            'at_office' => 'delivering',
+            'reschedule' => 'to_be_reattempted',
+            'deliver_failed' => 'unable_to_deliver',
             'delivered' => 'delivered',
-            'returned' => 'returned',
+            'returned' => 'return_to_origin',
             'cancelled' => 'cancelled',
         ];
 
@@ -383,7 +387,7 @@ trait OrderOperations
 
         try {
             app(SallaOrderService::class)->updateStatus(
-                orderId: $order->refrence_no,
+                shipmentId: $order->shipment_ref_id,
                 payload: ['slug' => $sallaSlug],
                 merchantId: (int) $merchantId
             );

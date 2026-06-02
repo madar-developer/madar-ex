@@ -390,7 +390,7 @@ trait OrderOperations
                 'status' => $sallaSlug,
                 'shipment_number' => $order->shipment_ref_id,
                 'order_id' => $order->refrence_no,
-                'tracking_number' => $order->serial_no,
+                'tracking_number' => $order->serial,
             ];
             app(SallaOrderService::class)->updateStatus(
                 shipmentId: $order->shipment_ref_id,

@@ -386,9 +386,15 @@ trait OrderOperations
         $sallaSlug = $statusMap[$localStatus] ?? $localStatus;
 
         try {
+            $payload = [
+                'status' => $sallaSlug,
+                'shipment_number' => $order->shipment_ref_id,
+                'order_id' => $order->refrence_no,
+                'tracking_number' => $order->serial_no,
+            ];
             app(SallaOrderService::class)->updateStatus(
                 shipmentId: $order->shipment_ref_id,
-                payload: ['slug' => $sallaSlug],
+                payload: $payload,
                 merchantId: (int) $merchantId
             );
         } catch (\Throwable $e) {

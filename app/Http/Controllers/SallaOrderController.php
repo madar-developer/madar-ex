@@ -105,6 +105,8 @@ class SallaOrderController extends Controller
                 'order_source' => 'salla',
                 'source_status' => $incomingStatusName,
                 'company_id' => $companyId,
+                'shipment_ref_id' => data_get($payload, 'data.shipping.shipment_reference'),
+                'order_payload' => json_encode($request->get('order')),
             ]);
 
             $serialBase = str_replace(' ', '', date('Y m') . $order->id);

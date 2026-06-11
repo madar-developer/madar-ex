@@ -129,9 +129,9 @@ trait OrderOperations
         //     $company->notify(new GeneralNotification($message, '/company/company-orders/'.$Order->id ) );
 
         // }
-        // if (auth('admin')->check() && (in_array(auth('admin')->user()->role, ['branch', 'employee']) || (auth('admin')->user()->role == 'employee' && auth()->user()->parent_id != '0'))) {
+        if (auth('admin')->check() && (in_array(auth('admin')->user()->role, ['branch', 'employee']) || (auth('admin')->user()->role == 'employee' && auth()->user()->parent_id != '0'))) {
         
-        if (in_array( auth('admin')->user()->role, ['branch', 'employee']) || (auth('admin')->user()->role == 'employee' && auth()->user()->parent_id != '0' )) {
+        // if (in_array( auth('admin')->user()->role, ['branch', 'employee']) || (auth('admin')->user()->role == 'employee' && auth()->user()->parent_id != '0' )) {
             //
             if (auth('admin')->user()->role == 'branch') {
                 $branch_id = auth('admin')->id();

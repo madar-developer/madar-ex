@@ -196,6 +196,7 @@ class SallaOrderController extends Controller
     }
     public function createShipment (Request $request){
         $payload = $request->all();
+        Log::channel('salla')->info('Salla Shipment created received', $payload);
         $order = Order::where('shipment_ref_id', $request->get('shipment_id'))->first();
         if(!$order){
             $order = Order::where('refrence_no', $request->get('order_id'))->first();
@@ -203,7 +204,6 @@ class SallaOrderController extends Controller
         if(!$order){
             return response()->json(['message' => 'Order not found'], 404);
         }
-        Log::channel('salla')->info('Salla Shipment created received', $payload);
         $pdf_url = $this->orderPdfDownloadUrl($order);
         return response()->json([
             'shipment_id' => $order->serial,

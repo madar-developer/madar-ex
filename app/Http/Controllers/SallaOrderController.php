@@ -197,10 +197,11 @@ class SallaOrderController extends Controller
     public function createShipment (Request $request){
         $payload = $request->all();
         Log::channel('salla')->info('Salla Shipment created received', $payload);
-        $order = Order::where('shipment_ref_id', $request->get('shipment_id'))->first();
-        if(!$order){
-            $order = Order::where('refrence_no', $request->get('order_id'))->first();
-        }
+        // $order = Order::where('shipment_ref_id', $request->get('shipment_id'))->first();
+        // if(!$order){
+        $num = $request->get('order_id');
+            $order = Order::where('refrence_no', $request->get('order_id'))->orwhere('order_payload', 'like',  "%$num%")->first();
+        // }
         if(!$order){
             return response()->json(['message' => 'Order not found'], 404);
         }

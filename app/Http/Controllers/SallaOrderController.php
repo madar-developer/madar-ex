@@ -217,14 +217,14 @@ class SallaOrderController extends Controller
 
         if ($shipmentType === 'return') {
             try {
-                $order->update(['status' => 'returned']);
-                $statusData = OrderStatus::where('key', 'returned')->first();
-                if ($statusData) {
-                    $order->OrderLog()->create([
-                        'status' => 'returned',
-                        'details' => $statusData->details,
-                    ]);
-                }
+                // $order->update(['status' => 'returned']);
+                // $statusData = OrderStatus::where('key', 'returned')->first();
+                // if ($statusData) {
+                //     $order->OrderLog()->create([
+                //         'status' => 'returned',
+                //         'details' => $statusData->details,
+                //     ]);
+                // }
                 $order = $this->createReturnOrderFromSource($order);
             } catch (\Throwable $e) {
                 Log::channel('salla')->error('Salla return shipment failed', [

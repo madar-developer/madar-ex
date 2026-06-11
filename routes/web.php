@@ -194,6 +194,7 @@ Route::prefix('salla/orders')->group(function () {
     Route::post('/create-order', [SallaOrderController::class, 'createOrder']);
     Route::post('/create-shipment', [SallaOrderController::class, 'createShipment']);
     Route::post('/update-shipment', [SallaOrderController::class, 'updateShipment']);
+    Route::get('/{orderId}/pdf', [SallaOrderController::class, 'downloadPdf'])->name('salla.orders.pdf');
     Route::post('/{orderId}/status', [SallaOrderController::class, 'updateStatus']);
     Route::post('/order-cancel', [SallaOrderController::class, 'cancel']);
 });

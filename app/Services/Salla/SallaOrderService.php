@@ -6,6 +6,7 @@ use App\Exceptions\SallaApiException;
 use Illuminate\Http\Client\PendingRequest;
 use Illuminate\Support\Facades\Http;
 
+// order ref id should be reference_id
 class SallaOrderService
 {
     public function __construct(

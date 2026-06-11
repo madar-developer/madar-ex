@@ -9,6 +9,7 @@ use Illuminate\Support\Facades\Log;
 use App\Models\SallaToken;
 use App\Models\Order;
 use App\Models\OrderStatus;
+use PDF;
 
 class SallaOrderController extends Controller
 {
@@ -118,7 +119,6 @@ class SallaOrderController extends Controller
         return response()->json([
             'message' => 'Order cancelled successfully',
             'local_order_id' => $order?->id,
-            'salla_response' => $sallaResponse,
         ]);
     }
 
@@ -131,7 +131,7 @@ class SallaOrderController extends Controller
 
         Log::channel('salla')->info('Salla Webhook received', $payload);
 
-        $sallaOrderId = data_get($payload, 'data.id');
+        $sallaOrderId = data_get($payload, 'data.reference_id');
         if (empty($sallaOrderId)) {
             return response()->json(['message' => 'Webhook received'], 200);
         }
@@ -196,12 +196,62 @@ class SallaOrderController extends Controller
     }
     public function createShipment (Request $request){
         $payload = $request->all();
-
+        $order = Order::where('shipment_ref_id', $request->get('shipment_id'))->first();
+        if(!$order){
+            $order = Order::where('refrence_no', $request->get('order_id'))->first();
+        }
+        if(!$order){
+            return response()->json(['message' => 'Order not found'], 404);
+        }
         Log::channel('salla')->info('Salla Shipment created received', $payload);
-
-        
-        return response()->json(['message' => 'Webhook received'], 200);
+        $pdf_url = $this->orderPdfDownloadUrl($order);
+        return response()->json([
+            'shipment_id' => $order->serial,
+            'pdf_url' => $pdf_url,
+            'invoice_url' => $pdf_url,
+            'message' => 'Webhook received'
+        ], 200);
     }
+
+    public function downloadPdf($orderId)
+    {
+        $order = Order::findOrFail($orderId);
+
+        return $this->orderPdfDownloadUrl($order);
+    }
+
+    protected function orderPdfDownloadUrl(Order $order): string
+    {
+        $title = 'طلب : ' . ($order->serial ?: $order->id);
+        $filename = 'invoice-' . preg_replace('/[^A-Za-z0-9\-_]/', '-', (string) ($order->serial ?: $order->id)) . '.pdf';
+        $path = public_path('cdn/' . $filename);
+
+        if (!is_dir(public_path('cdn'))) {
+            mkdir(public_path('cdn'), 0755, true);
+        }
+
+        ini_set('pcre.backtrack_limit', '5000000');
+        ini_set('memory_limit', '512M');
+
+        PDF::loadView('admin.reports.pdf.order', compact('order', 'title'))
+            ->save($path);
+
+        return url('/cdn/' . $filename);
+    }
+
+    // public function downloadPdf($orderId)
+    // {
+    //     $order = Order::findOrFail($orderId);
+    //     $title = 'طلب : ' . ($order->serial ?: $order->id);
+
+    //     ini_set('pcre.backtrack_limit', '5000000');
+    //     ini_set('memory_limit', '512M');
+
+    //     $pdf = PDF::loadView('admin.reports.pdf.order', compact('order', 'title'));
+
+    //     return $pdf->download('invoice-' . ($order->serial ?: $order->id) . '.pdf');
+    // }
+
     public function updateShipment (Request $request){
         $payload = $request->all();
 

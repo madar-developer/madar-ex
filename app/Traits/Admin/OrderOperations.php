@@ -129,7 +129,8 @@ trait OrderOperations
         //     $company->notify(new GeneralNotification($message, '/company/company-orders/'.$Order->id ) );
 
         // }
-
+        // if (auth('admin')->check() && (in_array(auth('admin')->user()->role, ['branch', 'employee']) || (auth('admin')->user()->role == 'employee' && auth()->user()->parent_id != '0'))) {
+        
         if (in_array( auth('admin')->user()->role, ['branch', 'employee']) || (auth('admin')->user()->role == 'employee' && auth()->user()->parent_id != '0' )) {
             //
             if (auth('admin')->user()->role == 'branch') {
@@ -148,6 +149,66 @@ trait OrderOperations
         return $Order;
     }
 
+    public function createReturnOrderFromSource(Order $order)
+    {
+        if ((int) $order->is_returned === 1) {
+            return $order;
+        }
+
+        // if ($order->status !== 'delivered') {
+        //     throw new \RuntimeException('يمكن ارجاع الطلبات التي تم تسليمها فقط');
+        // }
+
+        // if (!$order->company_id) {
+        //     throw new \RuntimeException('لا يمكن ارجاع الطلب بدون بيانات متجر');
+        // }
+
+        $existingReturn = $this->findExistingReturnOrder($order);
+        if ($existingReturn) {
+            return $existingReturn;
+        }
+
+        return $this->register(new Request($this->buildReturnOrderPayload($order)));
+    }
+
+    protected function findExistingReturnOrder(Order $order): ?Order
+    {
+        return Order::where('is_returned', 1)
+            ->where('company_id', $order->company_id)
+            ->where('notes', 'like', '%مرتجع من الطلب ' . $order->serial . '%')
+            ->latest('id')
+            ->first();
+    }
+
+    protected function buildReturnOrderPayload(Order $order): array
+    {
+        return [
+            'recipent_name' => $order->recipent_name,
+            'phone' => $order->phone,
+            'city_id' => $order->city_id ?? '',
+            'district_id' => $order->district_id ?? '',
+            'adress_details' => $order->adress_details,
+            'latitude' => $order->latitude ?? null,
+            'longitude' => $order->longitude ?? null,
+            'notes' => trim('مرتجع من الطلب ' . $order->serial . ' - ' . $order->recipent_name . ' - ' . $order->phone . ' - ' . $order->adress_details . ($order->notes ? ' | ' . $order->notes : '')),
+            'company_id' => $order->company_id,
+            'driver_id' => null,
+            'status' => 'new',
+            'refrence_no' => $order->refrence_no,
+            'order_type' => $order->order_type,
+            'packages_number' => $order->packages_number,
+            'return_packages' => $order->return_packages,
+            'price' => $order->price,
+            'include_delivery_cost' => $order->include_delivery_cost,
+            'weight' => $order->weight,
+            'description' => $order->description,
+            'payment_method_id' => $order->payment_method_id,
+            'can_open' => $order->can_open,
+            'cash_type' => $order->cash_type,
+            'order_source' => $order->order_source ?: 'salla',
+            'is_returned' => 1,
+        ];
+    }
 
     /**
      * Update Record

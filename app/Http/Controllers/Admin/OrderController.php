@@ -313,7 +313,19 @@ class OrderController extends Controller
 
         return redirect('/dashboard/orders/'.$returnOrder->id.'/edit')->with('success', 'تم انشاء طلب ارجاع جديد للتاجر');
     }
+    /*
+    public function returnToMerchant(Order $order)
+    {
+        try {
+            $returnOrder = $this->createReturnOrderFromSource($order);
+        } catch (\RuntimeException $e) {
+            return redirect()->back()->with('error', $e->getMessage());
+        }
 
+        return redirect('/dashboard/orders/'.$returnOrder->id.'/edit')->with('success', 'تم انشاء طلب ارجاع جديد للتاجر');
+    }
+
+    */
     /**
      * Remove the specified resource from storage.
      *

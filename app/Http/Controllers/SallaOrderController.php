@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Services\Salla\SallaOrderActionService;
 use App\Services\Salla\SallaOrderService;
+use App\Traits\Admin\OrderOperations;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use App\Models\SallaToken;
@@ -13,6 +14,8 @@ use PDF;
 
 class SallaOrderController extends Controller
 {
+    use OrderOperations;
+
     public function bulkChangeStatus(Request $request, SallaOrderActionService $service)
     {
         $data = $request->validate([
@@ -205,6 +208,26 @@ class SallaOrderController extends Controller
         if(!$order){
             return response()->json(['message' => 'Order not found'], 404);
         }
+
+        $shipmentType = strtolower((string) (
+            data_get($payload, 'shipment.type')
+            ?? data_get($payload, 'data.shipment.type')
+            ?? $request->input('shipment.type')
+        ));
+
+        if ($shipmentType === 'return') {
+            try {
+                $order = $this->createReturnOrderFromSource($order);
+            } catch (\Throwable $e) {
+                Log::channel('salla')->error('Salla return shipment failed', [
+                    'order_id' => $order->id,
+                    'message' => $e->getMessage(),
+                ]);
+
+                return response()->json(['message' => $e->getMessage()], 422);
+            }
+        }
+
         $pdf_url = $this->orderPdfDownloadUrl($order);
         return response()->json([
             'shipment_id' => $order->serial,

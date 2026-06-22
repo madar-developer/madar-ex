@@ -60,6 +60,10 @@ class OrderImport implements ToModel, WithHeadingRow
         $price = $row['price'] ?? null;
         $price = $price !== null && $price !== '' ? (float) $price : 0;
 
+        $refrenceNo = $row['refrence_no'] ?? null;
+        if($c = Order::where('refrence_no', $refrenceNo)->where('company_id', $this->companyId)->count() ){
+            $refrenceNo = $refrenceNo . "-$c";
+        }
         $Order =  Order::create([
             'recipent_name' => $recipientName,
             'adress_details'  => $row['adress_details'] ?? null,
@@ -67,7 +71,7 @@ class OrderImport implements ToModel, WithHeadingRow
             'notes'  => $row['notes'] ?? null,
             'city_id'  => $city,
             'district_id' => $district,
-            'refrence_no' => $row['refrence_no'] ?? null,
+            'refrence_no' => $refrenceNo,
             'packages_number'  => $packagesNumber,
             'price'   => $price,
             'payment_method_id'  => $paymentMethod,

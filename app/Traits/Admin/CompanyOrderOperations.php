@@ -41,6 +41,15 @@ trait CompanyOrderOperations
         if ($request->has('delivered_order')) {
             $data['delivered_order'] = Carbon::parse($request->get('delivered_order'));
         }
+        if ($request->has('refrence_no')) {
+            $data['refrence_no'] = $request->get('refrence_no');
+            if($c = Order::where('refrence_no', $data['refrence_no'])->where('company_id', $data['company_id'])->count() ){
+                $data['refrence_no_repeated'] = $data['refrence_no'];
+                $repeated_count = $c + Order::where('refrence_no_repeated', $data['refrence_no'])->where('company_id', $data['company_id'])->count();
+                $data['refrence_no'] = $data['refrence_no'] . "-$repeated_count";
+                $data['price'] = 0;
+            }
+        }
         $data['company_id'] = auth('company')->id();
         $data['status'] = 'new';
         ///////////////////////////////////////////////////////

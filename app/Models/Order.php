@@ -14,7 +14,7 @@ class Order extends Model
         'notes' , 'user_id' , 'company_id' , 'status' ,'refrence_no', 'serial', 'serial_no', 'driver_id', 'collected', 'signature',
         'latitude', 'longitude', 'description', 'receive_date', 'delivery_date', 'company_address_id' , 'weight' , 'district_id',
         'pick_up_date', 'cash_type', 'include_delivery_cost', 'order_type', 'return_packages', 'can_open', 'refrence_no_repeated',
-        'order_source', 'source_status', 'shipment_ref_id', 'order_payload', 'is_returned',
+        'order_source', 'source_status', 'shipment_ref_id', 'order_payload', 'is_returned', 'city_name',
     ];
     protected $appends = ['status_txt', 'status_image', 'status_color', 'available_statuses', 'company', 'owner_type', 'reason'];
     protected $with = ['PaymentMethod'];
@@ -173,7 +173,7 @@ class Order extends Model
         }
     }
     public function getStatusColorAttribute()
-    {
+    { 
         if ($this->OrderStatus()->first()) {
             return $this->OrderStatus()->first()->color;
         } else {
@@ -181,7 +181,7 @@ class Order extends Model
         }
     }
     public function getAvailableStatusesAttribute()
-    {
+    { 
         if (Auth::guard('api-driver')->user()) {
             $levels = Order::getLevels($this->status);
             $statuses = OrderStatus::whereIn('key', $levels)->select('id', 'key', 'name')->get();
@@ -194,6 +194,13 @@ class Order extends Model
     public function getCompanyAttribute()
     {
         return $this->Company()->select('id', 'phone', 'name', 'adress_details')->first();
+    }
+    public function getPriceAttribute($price)
+    {
+        if($this->payment_method_id == 4){
+            return 0;
+        }
+        return $price;
     }
 
 }

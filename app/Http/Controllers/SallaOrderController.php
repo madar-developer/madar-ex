@@ -9,6 +9,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use App\Models\SallaToken;
 use App\Models\Order;
+use App\Models\City;
 use App\Models\OrderStatus;
 use PDF;
 
@@ -72,15 +73,17 @@ class SallaOrderController extends Controller
     public function cancel(Request $request, SallaOrderService $service)
     {
         $orderId = $request->get('order_id');
+        $tracking_number = $request->get('tracking_number');
         $payload = $request->all();
-        Log::channel('salla')->info('Salla order cancelled received', $payload);
+        Log::channel('salla')->info('Salla order cancelled received', $payload); 
         $data = $request->validate([
             'merchant_id' => ['nullable', 'integer'],
-        ]);
-
+        ]); 
+ 
         $order = Order::where('order_source', 'salla')
-            ->where(function ($query) use ($orderId) {
+            ->where(function ($query) use ($orderId, $tracking_number) {
                 $query->where('refrence_no', (string) $orderId)
+                    ->orWhere('serial', (string) $tracking_number)
                     ->orWhere('shipment_ref_id', (string) $orderId);
 
                 if (is_numeric($orderId)) {
@@ -156,14 +159,32 @@ class SallaOrderController extends Controller
             ?? data_get($payload, 'event');
 
         if (!$order) {
+                $payment_method_id = 4;
+            if( data_get($payload, 'data.payment_method', '') == 'cod' ){
+                    $payment_method_id = 1;
+                
+            }
+            $city_id = null;
+            $city_name = "";
+            try{
+                $city_name = data_get($payload, 'data.shipping.address.city','-');
+                $city = City::where('name', 'like', "%$city_name%")->first();
+                if($city){
+                    $city_id = $city->id;
+                }
+                
+            }catch(\Exception $e){}
             $order = Order::create([
                 'refrence_no' => (string) $sallaOrderId,
                 'recipent_name' => data_get($payload, 'data.customer.full_name', 'Salla Customer'),
                 'phone' => (string) data_get($payload, 'data.customer.mobile', ''),
                 'adress_details' => data_get($payload, 'data.shipping.address.shipping_address'),
                 'notes' => data_get($payload, 'event'),
-                'price' => (int) data_get($payload, 'data.amounts.total.amount', 0),
+                'price' =>  data_get($payload, 'data.amounts.total.amount', 0),
+                'payment_method_id' => $payment_method_id,
                 'status' => 'new',
+                'city_id' => $city_id,
+                'city_name' => $city_name,
                 'order_source' => 'salla',
                 'source_status' => $incomingStatusName,
                 'company_id' => $companyId,

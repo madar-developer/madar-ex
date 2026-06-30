@@ -324,7 +324,7 @@
                                         @if (auth('admin')->user()->role == 'admin')
                                         <td>{{$item->BranchData->Admin->name ?? ''  }}</td>
                                         @endif
-                                        <td> {{ $item->City->name ?? '' }}</td>
+                                        <td> {{ $item->City->name ?? $item->city_name ?? '' }}</td>
                                         <td>{{$item->adress_details}} </td>
                                         <td>{{$item->packages_number}} </td>
                                         <td>{{$item->price}}</td>

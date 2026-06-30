@@ -99,7 +99,7 @@
                                         </tr>
                                         <tr>
                                             <th scope="row" style="text-align: right; border: 1px solid gray; color:#000;"> المدينه</th>
-                                            <td style=" text-align:right; border: 1px solid gray;">{{$company->City->name}}</td>
+                                            <td style=" text-align:right; border: 1px solid gray;">{{$company->City->name ?? ''}}</td>
 
                                         </tr>
                                         <tr>

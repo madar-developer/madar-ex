@@ -16,6 +16,7 @@ use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Log;
 use App\Exceptions\SallaApiException;
 use App\Models\Order;
+use App\Models\City;
 use App\Models\OrderStatus;
 use App\Models\SallaToken;
 use App\Http\Controllers\SallaAuthController;
@@ -23,7 +24,30 @@ use App\Http\Controllers\SallaOrderController;
 use App\Services\Salla\SallaAuthService;
 use App\Services\Salla\SallaOrderService;
 // use App\Http\Controllers\SallaAuthController;
-
+Route::get('/fix-orders-salla', function (SallaAuthService $service) {
+    $order = Order::where('order_source', 'salla')->whereNull('city_name')->latest()->first();
+    $payload = json_decode($order->order_payload); 
+    $city_id = null;
+    $city_name = "";
+    try{
+        $city_name = data_get($payload, 'shipping.address.city','-');
+        $city = City::where('name', 'like', "%$city_name%")->first();
+        if($city){
+            $city_id = $city->id;
+        }
+        
+    }catch(\Exception $e){}
+    $order->city_id = $city_id;
+    $order->city_name = $city_name;
+    // $order->payment_method_id = 4;
+    // if($payload->payment_method == 'cod'){
+    //     $order->payment_method_id = 1;
+    // }
+    // $order->city_id = 2;
+    // $order->price = $payload->amounts->total->amount;
+    $order->save();
+    return $order;
+});
 Route::get('/salla/callback', [SallaAuthController::class, 'callback']);
 Route::get('/connect-salla', function (SallaAuthService $service) {
     return redirect(

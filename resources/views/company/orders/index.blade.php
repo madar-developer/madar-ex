@@ -145,7 +145,7 @@
 
                             <div class="col-md-2">
                                 <div class="form-horizontal">
-                                    <a href="{{url('/company/company-orders')}}"
+                                    <a href="{{ !empty($returnedOnly) ? route('company-orders.return-orders') : url('/company/company-orders') }}"
                                         class="btn btn-block btn-sm btn-success waves-effect waves-light b-t-10 b-b-10"><i
                                             class="fa fa-trash"></i> مسح خيارات البحث</a>
                                 </div>
@@ -255,13 +255,18 @@
                                                     <a href="/company/order-bill/{{$item->id}}" target="_blank" type="button" title="طباعة"
                                                         class="btn btn-info   waves-effect waves-light m-b-5 btn-xs"> <i
                                                             class="fa fa-print"></i>    </a>
-                                            {{--  <a href="/dashboard/order-bill/{{$item->id}}" type="button"
-                                            title="طباعة"
-                                            class="btn btn-info waves-effect waves-light m-b-5 btn-xs"> <i
-                                                class="fa fa-print"></i> </a> --}}
-                                            {{--  <a href="{{route('order.pdf',$item->id)}}" title="Export Pdf"
-                                            type="button" class="btn btn-success waves-effect waves-light m-b-5 btn-xs">
-                                            <i class="fa fa-file-pdf-o"></i> </a> --}}
+                                            <a href="{{route('company.order.pdf',$item->id)}}" title="Export Pdf" type="button"
+                                                class="btn btn-success   waves-effect waves-light m-b-5 btn-xs"> <i
+                                                    class="fa fa-file-pdf-o"></i> </a>
+                                            @if($item->status == 'delivered')
+                                            <form action="{{ route('company-orders.return-to-merchant', $item->id) }}" method="POST" style="display:inline-block;" onsubmit="return confirm('هل تريد انشاء طلب ارجاع جديد الى التاجر؟');">
+                                                @csrf
+                                                <button type="submit" title="انشاء طلب ارجاع للتاجر"
+                                                    class="btn btn-warning waves-effect waves-light m-b-5 btn-xs">
+                                                    <i class="fa fa-undo"></i>
+                                                </button>
+                                            </form>
+                                            @endif
 
                                         </td>
 

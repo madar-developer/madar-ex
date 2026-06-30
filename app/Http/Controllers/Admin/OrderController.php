@@ -29,12 +29,17 @@ class OrderController extends Controller
 
     public function __construct()
     {
-        $this->middleware('Permission:order_show'    , ['only' => 'index', 'show', 'ordersRegionMap']);
+        $this->middleware('Permission:order_show'    , ['only' => 'index', 'show', 'ordersRegionMap', 'returnOrders']);
         $this->middleware('Permission:order_add'     , ['only' => 'create', 'store']);
         $this->middleware('Permission:order_edit'    , ['only' => 'edit', 'update']);
         $this->middleware('Permission:order_delete'  , ['only' => 'destroy']);
     }
-    public function index(Request $request)
+    public function returnOrders(Request $request)
+    {
+        return $this->index($request, true);
+    }
+
+    public function index(Request $request, bool $returnedOnly = false)
     {
         // $orders = Order::latest();
         //////////////////// branch or admin
@@ -50,6 +55,11 @@ class OrderController extends Controller
             })->latest();
         } else {
             $orders = Order::latest();
+        }
+        if ($returnedOnly) {
+            $orders = $orders->where('is_returned', 1);
+        }else{
+            $orders = $orders->where('is_returned', 0);
         }
         ///////////////////////////
         // $search=[];
@@ -148,9 +158,9 @@ class OrderController extends Controller
             return Excel::download(new GeneralExport('admin.reports.orders-excel', $orders), 'orders-'.Carbon::now()->toDateString().'.xlsx');
         }
         $orders = $orders->paginate(100);
-        $title = 'الطلبات';
+        $title = $returnedOnly ? 'الطلبات المعاده' : 'الطلبات';
 
-        return view('admin.orders.index', compact('orders', 'title' ,'search'));
+        return view('admin.orders.index', compact('orders', 'title', 'search', 'returnedOnly'));
     }
 
     /**

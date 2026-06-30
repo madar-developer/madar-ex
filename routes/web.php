@@ -285,6 +285,7 @@ Route::group(['namespace' =>'Admin'], function() {
         Route::resource('/company-cache-types', 'CompanyCacheTypeController');
         Route::resource('/carmaintaince', 'CarMaintenanceController');
         Route::get('/orders/region-map', 'OrderController@ordersRegionMap')->name('orders.region-map');
+        Route::get('/orders/return-orders', 'OrderController@returnOrders')->name('orders.return-orders');
         Route::resource('/orders', 'OrderController');
         Route::post('/orders/{order}/return-to-merchant', 'OrderController@returnToMerchant')->name('orders.return-to-merchant');
         Route::get('/orders-charts', 'OrderController@charts')->name('orders-charts');
@@ -427,7 +428,10 @@ Route::group(['namespace' =>'Admin'], function() {
 Route::group(['prefix' => 'company', 'namespace' => 'Admin', 'middleware' => 'auth:company'], function() {
     Route::get('/', 'CompanyHomeController@index');
     Route::get('/connect-salla', [SallaAuthController::class, 'companyConnect'])->name('company.connect-salla');
+    Route::get('/company-orders/return-orders', 'CompanyOrderController@returnOrders')->name('company-orders.return-orders');
     Route::resource('/company-orders', 'CompanyOrderController');
+    Route::post('/company-orders/{order}/return-to-merchant', 'CompanyOrderController@returnToMerchant')->name('company-orders.return-to-merchant');
+    Route::get('/order-pdf/{id}', 'CompanyOrderController@orderPdf')->name('company.order.pdf');
     Route::get('/order-bill/{id}','CompanyOrderController@bill');
     Route::get('/noti-count-com', 'CompanyOrderController@notiCount')->name('noti-count-company');
     Route::post('/company-orders-excel', 'ExportExcelController@CompanyImport');

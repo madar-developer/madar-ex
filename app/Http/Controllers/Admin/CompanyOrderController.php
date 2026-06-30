@@ -27,10 +27,20 @@ class CompanyOrderController extends Controller
     public function __construct()
     {
     }
-    public function index(Request $request)
+    public function returnOrders(Request $request)
+    {
+        return $this->index($request, true);
+    }
+
+    public function index(Request $request, bool $returnedOnly = false)
     {
         // $all = Order::latest()->get();
         $orders =  Order::where("company_id", '=', auth()->id())->latest();
+        if ($returnedOnly) {
+            $orders = $orders->where('is_returned', 1);
+        }else{
+            $orders = $orders->where('is_returned', 0);
+        }
         $search = array();
         if (Request()->has('serial') && Request()->get('serial') != '') {
             $serial = Request()->get('serial');
@@ -92,9 +102,9 @@ class CompanyOrderController extends Controller
             return Excel::download(new GeneralExport('admin.reports.orders-excel', $orders), 'orders-'.Carbon::now()->toDateString().'.xlsx');
         }
         $orders = $orders->paginate(40);
-        $title = 'الطلبات';
+        $title = $returnedOnly ? 'الطلبات المعاده' : 'الطلبات';
 
-        return view('company.orders.index', compact('orders', 'title' ,'search'));
+        return view('company.orders.index', compact('orders', 'title', 'search', 'returnedOnly'));
     }
 
     /**
@@ -189,5 +199,58 @@ class CompanyOrderController extends Controller
         $order = Order::findOrfail($id);
         return view('admin.orders.new-print', compact('order'));
 
+    }
+
+    public function orderPdf($id)
+    {
+        Order::where('company_id', auth('company')->id())->findOrFail($id);
+
+        return app(PdfController::class)->orderPdf($id);
+    }
+
+    public function returnToMerchant(Order $order)
+    {
+        if ($order->company_id !== auth('company')->id()) {
+            abort(403);
+        }
+
+        if ($order->status !== 'delivered') {
+            return redirect()->back()->with('error', 'يمكن ارجاع الطلبات التي تم تسليمها فقط');
+        }
+
+        $company = $order->Company()->first();
+        if (!$company) {
+            return redirect()->back()->with('error', 'لا يمكن ارجاع الطلب بدون بيانات متجر');
+        }
+
+        $data = [
+            'recipent_name' => $order->recipent_name,
+            'phone' => $order->phone,
+            'city_id' => $order->city_id ?? '',
+            'district_id' => $order->district_id ?? '',
+            'adress_details' => $order->adress_details,
+            'latitude' => $order->latitude ?? null,
+            'longitude' => $order->longitude ?? null,
+            'notes' => trim('مرتجع من الطلب '.$order->serial.' - '.$order->recipent_name.' - '.$order->phone.' - '.$order->adress_details.($order->notes ? ' | '.$order->notes : '')),
+            'company_id' => $order->company_id,
+            'driver_id' => null,
+            'status' => 'new',
+            'refrence_no' => $order->refrence_no,
+            'order_type' => $order->order_type,
+            'packages_number' => $order->packages_number,
+            'return_packages' => $order->return_packages,
+            'price' => $order->price,
+            'include_delivery_cost' => $order->include_delivery_cost,
+            'weight' => $order->weight,
+            'description' => $order->description,
+            'payment_method_id' => $order->payment_method_id,
+            'can_open' => $order->can_open,
+            'cash_type' => $order->cash_type,
+            'is_returned' => 1,
+        ];
+
+        $returnOrder = $this->register(new Request($data));
+
+        return redirect('/company/company-orders/'.$returnOrder->id.'/edit')->with('success', 'تم انشاء طلب ارجاع جديد للتاجر');
     }
 }

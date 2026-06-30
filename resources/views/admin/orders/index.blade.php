@@ -239,7 +239,7 @@
                                                 لExcel</button>
 
 
-                                                <a href="{{url('/dashboard/orders')}}"
+                                                <a href="{{ !empty($returnedOnly) ? route('orders.return-orders') : url('/dashboard/orders') }}"
                                                 class="btn btn-sm btn-success waves-effect waves-light b-t-10 b-b-10"><i
                                                     class="fa fa-trash"></i> مسح خيارات البحث</a>
 

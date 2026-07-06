@@ -40,8 +40,8 @@
 
             </tr>
             <tr>
-                <th scope="row" style="  border: 1px solid gray; font-weight:bold;">   الحساب الكلي</th>
-                <td style="  border: 1px solid gray;">{{$items['row']->OrdersNetProfit()}}</td>
+                <th scope="row" style="  border: 1px solid gray; font-weight:bold;">   الحساب الكلي (COD)</th>
+                <td style="  border: 1px solid gray;">{{$items['row']->total_amount}}</td>
 
             </tr>
             <tr>
@@ -51,7 +51,7 @@
             </tr>
             <tr>
                 <th scope="row" style="  border: 1px solid gray; font-weight:bold;">صافي الربح</th>
-                <td style="  border: 1px solid gray;">{{$items['row']->OrdersNetProfit()}}</td>
+                <td style="  border: 1px solid gray;">{{$items['row']->net_profit}}</td>
 
             </tr>
         </tbody>
@@ -75,6 +75,10 @@
             <th  style="  border: 1px solid gray; font-weight:bold;">   العنوان بالتفصيل	   </th>
             <th  style="  border: 1px solid gray; font-weight:bold;">    عدد المنتجات	   </th>
             <th  style="  border: 1px solid gray; font-weight:bold;">  السعر</th>
+            <th  style="  border: 1px solid gray; font-weight:bold;">  تكلفة الشحن</th>
+            <th  style="  border: 1px solid gray; font-weight:bold;">  عمولة السائق</th>
+            <th  style="  border: 1px solid gray; font-weight:bold;">  صافي الشحن</th>
+            <th  style="  border: 1px solid gray; font-weight:bold;">  مبلغ الطلب (COD)</th>
             <th  style="  border: 1px solid gray; font-weight:bold;">  طريقه الدفع </th>
             {{--  <th  style="  border: 1px solid gray; font-weight:bold;">   ملحوظات </th>  --}}
             <th  style="  border: 1px solid gray; font-weight:bold;">    الحالة </th>
@@ -101,6 +105,7 @@
             <td>{{$item->adress_details}} </td>
             <td>{{$item->packages_number}} </td>
             <td>{{$item->price}}</td>
+            @include('admin.partials.driver-finance-order-cells', ['financeDriver' => $items['driver']])
             <td>{{$item->PaymentMethod->name ?? '' }}</td>
             <td>
                 {{__('words.'.$item->status)}}

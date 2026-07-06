@@ -48,8 +48,8 @@
 
             </tr>
             <tr>
-                <th scope="row" style="  border: 1px solid gray; color:#000;">   الحساب الكلي</th>
-                <td style="  border: 1px solid gray;">{{$row->OrdersNetProfit()}}</td>
+                <th scope="row" style="  border: 1px solid gray; color:#000;">   الحساب الكلي (COD)</th>
+                <td style="  border: 1px solid gray;">{{$row->total_amount}}</td>
 
             </tr>
             <tr>
@@ -59,7 +59,7 @@
             </tr>
             <tr>
                 <th scope="row" style="  border: 1px solid gray; color:#000;">صافي الربح</th>
-                <td style="  border: 1px solid gray;">{{$row->OrdersNetProfit()}}</td>
+                <td style="  border: 1px solid gray;">{{$row->net_profit}}</td>
 
             </tr>
         </tbody>
@@ -89,6 +89,10 @@
                 <th>   العنوان بالتفصيل	   </th>
                 <th>    عدد المنتجات	   </th>
                 <th>  السعر</th>
+                <th>  تكلفة الشحن</th>
+                <th>  عمولة السائق</th>
+                <th>  صافي الشحن</th>
+                <th>  مبلغ الطلب (COD)</th>
                 <th>  طريقه الدفع </th>
                 {{--  <th>   ملحوظات </th>  --}}
                 <th>    الحالة </th>
@@ -115,6 +119,7 @@
                 <td>{{$item->adress_details}} </td>
                 <td>{{$item->packages_number}} </td>
                 <td>{{$item->price}}</td>
+                @include('admin.partials.driver-finance-order-cells', ['financeDriver' => $driver])
                 <td>{{$item->PaymentMethod->name ?? '' }}</td>
                 <td>
                     {{__('words.'.$item->status)}}

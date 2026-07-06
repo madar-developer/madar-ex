@@ -561,17 +561,7 @@ class OrderController extends Controller
     {
         $order = Order::find($id);
         $cost = Request()->get('cost');
-        if ($order->City()->first() && $order->Driver()->first()) {
-            $driver_cost = $order->Driver->DriverCityPrice()->where('city_id', $order->city_id)->first();
-            if ($driver_cost) {
-                $driver_cost = $driver_cost->delivery_cost;
-            } else {
-                $driver_cost = 0;
-            }
-        } else {
-
-            $driver_cost = 0;
-        }
+        $driver_cost = \App\Support\DriverFinance::driverCommission($order);
         $madar_price = $cost;
         $total_price = 0;
         $company_price = -1 * $madar_price;

@@ -47,6 +47,17 @@ class DriverFianance extends Model
     }
     public function OrdersNetProfit()
     {
-        return Order::whereIn('id', explode(',', $this->orders))->sum('price');
+        return $this->codOrdersAmount();
+    }
+
+    public function codOrdersAmount()
+    {
+        if (!$this->orders) {
+            return 0;
+        }
+
+        return Order::whereIn('id', explode(',', $this->orders))
+            ->where('payment_method_id', 1)
+            ->sum('price');
     }
 }

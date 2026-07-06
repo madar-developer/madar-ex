@@ -493,7 +493,7 @@
                                                         <td>{{$item->adress_details}} </td>
                                                         <td>{{$item->packages_number}} </td>
                                                         <td>{{$item->price}}</td>
-                                                        <td>{{$item->Invoice->madar_price ?? ''}}</td>
+                                                        <td>{{ \App\Support\DriverFinance::codShipmentCost($item) }}</td>
                                                         <td>{{@$item['PaymentMethod']['name']}}</td>
                                                         <td>
                                                             {{__('words.'.$item->status)}}
@@ -858,7 +858,7 @@
                                               <td>{{$item->total_amount}} </td>
                                               <td>{{\App\Models\Order::whereIn('id', explode(',', $item->orders))->count() }} </td>
                                               <!--<td>{{$item->driver_amount}} </td>-->
-                                              <td>{{$item->OrdersNetProfit()}} </td>
+                                              <td>{{$item->net_profit}} </td>
                                               <td>
                                                 {!!Form::model($item , ['url' => ['/dashboard/driver-finances/'.$item->id] , 'method' => 'PATCH', 'class'=>'form']) !!}
                                                     {!! Form::hidden('update_row', '1', []) !!}
@@ -961,7 +961,7 @@
                                                             {{$i++}}
                                                             <input type="checkbox" name="ids[]" value="{{$item->id}}" class="ids"/>
                                                         </td>
-                                                        <td>{{@$item['Invoice']['driver_cost']}} </td>
+                                                        <td>{{ \App\Support\DriverFinance::driverCommission($item, $driver) }} </td>
                                                         <td>{{@$item['company']['name']}} </td>
                                                         <td>{{@$item['company']['phone']}} </td>
                                                         <td>{{$item->recipent_name}} </td>
@@ -970,7 +970,7 @@
                                                         <td>{{$item->adress_details}} </td>
                                                         <td>{{$item->packages_number}} </td>
                                                         <td>{{$item->price}}</td>
-                                                        <td>{{$item->Invoice->madar_price ?? ''}}</td>
+                                                        <td>{{ \App\Support\DriverFinance::codShipmentCost($item) }}</td>
                                                         <td>{{@$item['PaymentMethod']['name']}}</td>
                                                         <td>
                                                             {{__('words.'.$item->status)}}
@@ -1045,7 +1045,7 @@
                                                         <td>
                                                             {{$i++}}
                                                         </td>
-                                                        <td>{{@$item['Invoice']['driver_cost']}} </td>
+                                                        <td>{{ \App\Support\DriverFinance::driverCommission($item, $driver) }} </td>
                                                         <td>{{@$item['company']['name']}} </td>
                                                         <td>{{@$item['company']['phone']}} </td>
                                                         <td>{{$item->recipent_name}} </td>

@@ -336,17 +336,6 @@ trait OrderOperations
             // }
             // **
             if ($Order->City()->first()) {
-                if ($Order->Driver()->first()) {
-                    $driver_cost = $Order->Driver->DriverCityPrice()->where('city_id', $Order->city_id)->first();
-                    if ($driver_cost) {
-                        $driver_cost = $driver_cost->delivery_cost;
-                    } else {
-                        $driver_cost = 0;
-                    }
-                } else {
-                    $driver_cost = 0;
-                }
-
                 if ($Order->City()->first()->delivery_cost == '1') {
                     $city =  $Order->City()->first();
                 } else {
@@ -372,8 +361,6 @@ trait OrderOperations
                 }
             } else {
                 $city_cost = 0;
-
-                $driver_cost = 0;
             }
             // **
             $cost = 0;
@@ -388,6 +375,7 @@ trait OrderOperations
             $madar_price = $city_cost + $cost;
             $total_price = $Order->price;
             $company_price = $Order->price - $madar_price;
+            $driver_cost = \App\Support\DriverFinance::driverCommission($Order);
             // here we will create invoice start
             $Order->Invoice()->create([
                 'total_price'=>$total_price ,

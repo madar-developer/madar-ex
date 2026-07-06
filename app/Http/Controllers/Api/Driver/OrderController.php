@@ -28,6 +28,35 @@ class OrderController extends Controller
         $driver->save();
     }
 
+    protected function createDeliveryInvoice(Order $order, string $status): void
+    {
+        if ($order->city_id == $order->Company->city_id) {
+            $city_cost = $order->Company->inside_price ?? 0;
+        } else {
+            $city_cost = $order->Company->outside_price ?? 0;
+        }
+
+        $cost = 0;
+        if ($order->payment_method_id == '1') {
+            $cost = $order->Company->c_o_d_cost ?? 0;
+        }
+
+        if ($status === 'returned') {
+            $cost = 0;
+            $city_cost = $order->Company->return_cost ?? 0;
+        }
+
+        $madar_price = $city_cost + $cost;
+
+        $order->Invoice()->create([
+            'total_price' => $order->price,
+            'company_price' => $order->price - $madar_price,
+            'madar_price' => $madar_price,
+            'driver_cost' => \App\Support\DriverFinance::driverCommission($order),
+            'active' => 0,
+        ]);
+    }
+
     public function index()
     {
         $driver = Auth::guard('api-driver')->user();
@@ -278,30 +307,7 @@ class OrderController extends Controller
             if ($request->get('status') == 'delivered') {
                 $Order->update(['delivery_date' => Carbon::now()]);
             }
-            if ($Order->city_id == $Order->Company->city_id) {
-                $city_cost = $Order->Company->inside_price ?? 0;
-            }else{
-                $city_cost = $Order->Company->outside_price ?? 0;
-            }
-            $cost = 0;
-            if ($Order->payment_method_id == '1') {
-                $cost = 5;
-            }
-            if ($request->get('status') == 'returned') {
-                $cost = 0;
-                $city_cost = $Order->Company->return_cost ?? 0;
-            }
-            $madar_price = $city_cost + $cost;
-            $total_price = $Order->price;
-            $company_price = $Order->price - $madar_price;
-            // here we will create invoice start
-            $Order->Invoice()->create([
-                'total_price'=>$total_price ,
-                'company_price'=>$company_price ,
-                'madar_price' => $madar_price ,
-                'active' => 0,
-            ]);
-            // here we will create invoice end
+            $this->createDeliveryInvoice($Order, $request->get('status'));
         }
         // ******************************************************
         $order->update($data);
@@ -442,30 +448,7 @@ class OrderController extends Controller
             if ($request->get('status') == 'delivered') {
                 $Order->update(['delivery_date' => Carbon::now()]);
             }
-            if ($Order->city_id == $Order->Company->city_id) {
-                $city_cost = $Order->Company->inside_price ?? 0;
-            }else{
-                $city_cost = $Order->Company->outside_price ?? 0;
-            }
-            $cost = 0;
-            if ($Order->payment_method_id == '1') {
-                $cost = 5;
-            }
-            if ($request->get('status') == 'returned') {
-                $cost = 0;
-                $city_cost = $Order->Company->return_cost ?? 0;
-            }
-            $madar_price = $city_cost + $cost;
-            $total_price = $Order->price;
-            $company_price = $Order->price - $madar_price;
-            // here we will create invoice start
-            $Order->Invoice()->create([
-                'total_price'=>$total_price ,
-                'company_price'=>$company_price ,
-                'madar_price' => $madar_price ,
-                'active' => 0,
-            ]);
-            // here we will create invoice end
+            $this->createDeliveryInvoice($Order, $request->get('status'));
         }
         // ******************************************************
         $order->update($data);
@@ -596,30 +579,7 @@ class OrderController extends Controller
                 if ($request->get('status') == 'delivered') {
                     $Order->update(['delivery_date' => Carbon::now()]);
                 }
-                if ($Order->city_id == $Order->Company->city_id) {
-                    $city_cost = $Order->Company->inside_price ?? 0;
-                }else{
-                    $city_cost = $Order->Company->outside_price ?? 0;
-                }
-                $cost = 0;
-                if ($Order->payment_method_id == '1') {
-                    $cost = 5;
-                }
-                if ($request->get('status') == 'returned') {
-                    $cost = 0;
-                    $city_cost = $Order->Company->return_cost ?? 0;
-                }
-                $madar_price = $city_cost + $cost;
-                $total_price = $Order->price;
-                $company_price = $Order->price - $madar_price;
-                // here we will create invoice start
-                $Order->Invoice()->create([
-                    'total_price'=>$total_price ,
-                    'company_price'=>$company_price ,
-                    'madar_price' => $madar_price ,
-                    'active' => 0,
-                ]);
-                // here we will create invoice end
+                $this->createDeliveryInvoice($Order, $request->get('status'));
             }
             // ******************************************************
         }
@@ -756,7 +716,7 @@ class OrderController extends Controller
         $driver_finances->data = InvoicesResource::collection($driver_finances);
         $t_amount = 0;
         foreach($driver->DriverFianance()->where('collected_from_driver', '0')->get() as $e){
-            $t_amount += $e->OrdersNetProfit();
+            $t_amount += $e->total_amount;
         }
         return Response()->json([
                 'data' => [
@@ -836,7 +796,7 @@ class OrderController extends Controller
         
         $t_amount = 0;
         foreach($driver->DriverFianance()->where('collected_from_driver', '0')->get() as $e){
-            $t_amount += $e->OrdersNetProfit();
+            $t_amount += $e->total_amount;
         }
         return Response()->json([
                 'data' => [

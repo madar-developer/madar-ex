@@ -9,23 +9,23 @@
         <tbody>
             <tr>
                 <td>السائق</td>
-                <td>{{$row->Driver->first_name ?? ''}} {{$row->Driver->last_name ?? ''}}</td>
+                <td colspan="3">{{$driver->first_name ?? ''}} {{$driver->last_name ?? ''}} ({{ $driver->commission ?? 0 }}%)</td>
             </tr>
             <tr>
-                <td> الحساب الكلي</td>
-                <td>{{$row->total_amount}}</td>
+                <td>الحساب الكلي (COD)</td>
+                <td colspan="3">{{$row->total_amount}}</td>
             </tr>
             <tr>
                 <td>حساب السائق</td>
-                <td>{{$row->driver_amount}}</td>
+                <td colspan="3">{{$row->driver_amount}}</td>
             </tr>
             <tr>
-                <td>   صافي الربح</td>
-                <td>{{$row->net_profit}}</td>
+                <td>صافي الربح</td>
+                <td colspan="3">{{$row->net_profit}}</td>
             </tr>
             <tr>
                 <td>تاريخ الانشاء</td>
-                <td>{{$row->created_at->toDateString()}}</td>
+                <td colspan="3">{{$row->created_at->toDateString()}}</td>
             </tr>
 
         </tbody>
@@ -53,18 +53,13 @@
                                         @endif
 
                                         <th> المدينه </th>
-                                        {{-- <th> العنوان بالتفصيل </th> --}}
-                                        {{-- <th> عدد المنتجات </th> --}}
                                         <th> السعر</th>
+                                        @include('admin.partials.driver-finance-order-headers')
                                         <th> طريقه الدفع </th>
-                                        {{-- <th> اسم السائق </th> --}}
-                                        {{-- <th> السياره </th> --}}
-                                        {{--  <th>   ملحوظات </th>  --}}
                                         <th> الحالة </th>
                                         <th> رقم المرجع </th>
                                         <th> رقم التسلسل </th>
                                         <th> تاريخ الانشاء</th>
-                                        {{-- <th> العمليات </th> --}}
 
 
 
@@ -87,9 +82,9 @@
                                             @endif
                                             <td> {{ $item->City->name ?? '' }}</td>
                                             <td>{{$item->price}}</td>
+                                            @include('admin.partials.driver-finance-order-cells', ['financeDriver' => $driver])
                                             <td>{{$item->PaymentMethod->name ?? '' }}</td>
 
-                                            {{--  <td>{{$item->notes}}</td> --}}
                                             <td>
                                                 {{@$item->OrderLog()->where('status', $item->status)->latest()->first()->details}}
                                             </td>

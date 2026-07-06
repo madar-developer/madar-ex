@@ -15,6 +15,7 @@ use Excel;
 use App\Exports\GeneralExport;
 use App\Models\DriverFianance;
 use App\Models\Invoice;
+use App\Support\DriverFinance;
 use Carbon\Carbon;
 
 class DriverController extends Controller
@@ -232,8 +233,12 @@ class DriverController extends Controller
     public function DFOrders($id)
     {
         $row = DriverFianance::findOrfail($id);
-        $orders = Order::whereIn('id', explode(',', $row->orders))->get();
-        return view('admin.drivers.show-orders', compact('row', 'orders'));
+        $driver = $row->Driver;
+        $orders = Order::whereIn('id', explode(',', $row->orders))
+            ->with(['Company', 'PaymentMethod', 'City', 'Driver', 'Invoice'])
+            ->get();
+
+        return view('admin.drivers.show-orders', compact('row', 'orders', 'driver'));
     }
 
     /**
@@ -329,27 +334,39 @@ class DriverController extends Controller
     public function CashedOrders($id)
     {
         $driver = Driver::find($id);
-        if ($driver->Order()->where('status', 'delivered')->where('collected', 0)->count() > 0) {
-            $ids = Request()->get('ids'); //$driver->Order()->where('status', 'delivered')->where('collected', 0)->pluck('id')->toArray();
-            $total_amount = $driver->Invoice()->whereHas('Order', function($q)use($ids){
-                $q->whereIn('id', $ids);
-            })->where('orders.status', 'delivered')->where('orders.collected', 0)->sum('total_price');
-            $driver_amount = $driver->Invoice()->whereHas('Order', function($q)use($ids){
-                $q->whereIn('id', $ids);
-            })->where('orders.status', 'delivered')->where('orders.collected', 0)->sum('driver_cost');
-            $driver->DriverFianance()->create([
-                'branch_id' => null,
-                'driver_id' => $driver->id,
-                'total_amount'  => $total_amount,
-                'driver_amount'  => $driver_amount,
-                'net_profit'  => $total_amount - $driver_amount,
-                'orders'  => implode(',' ,$ids),
-                'status'  => 'init',
-                'verified'  => 0,
-            ]);
-            $driver->Order()->whereIn('id', $ids)->where('status', 'delivered')->where('collected', 0)->update(['collected' => 1]);
-            Invoice::whereIn('order_id', $ids)->update(['driver_paied' => '1']);
+        $ids = Request()->get('ids', []);
+
+        if (!$driver || empty($ids)) {
+            return redirect()->back()->with('success', '  successfully');
         }
+
+        $orders = Order::whereIn('id', $ids)
+            ->where('driver_id', $driver->id)
+            ->where('status', 'delivered')
+            ->where('collected', 0)
+            ->with('Company')
+            ->get();
+
+        if ($orders->isEmpty()) {
+            return redirect()->back()->with('success', '  successfully');
+        }
+
+        $orderIds = $orders->pluck('id')->all();
+        $totals = DriverFinance::batchTotals($orders, $driver);
+
+        $driver->DriverFianance()->create([
+            'branch_id' => null,
+            'driver_id' => $driver->id,
+            'total_amount'  => $totals['total_amount'],
+            'driver_amount'  => $totals['driver_amount'],
+            'net_profit'  => $totals['net_profit'],
+            'orders'  => implode(',', $orderIds),
+            'status'  => 'init',
+            'verified'  => 0,
+        ]);
+        $driver->Order()->whereIn('id', $orderIds)->update(['collected' => 1]);
+        Invoice::whereIn('order_id', $orderIds)->update(['driver_paied' => '1']);
+
         return redirect()->back()->with('success', '  successfully');
     }
     public function files(Request $request, $id)
@@ -368,7 +385,9 @@ class DriverController extends Controller
         $title = 'سائق : '. $driver->name;
         $data['driver'] = $driver;
         $data['row'] = $row;
-        $data['orders'] = Order::whereIn('id', explode(',', $row->orders))->get();
+        $data['orders'] = Order::whereIn('id', explode(',', $row->orders))
+            ->with(['Company', 'PaymentMethod', 'City', 'Driver', 'Invoice'])
+            ->get();
         return Excel::download(new GeneralExport('admin.reports.driver-finance-collect-excel', $data), 'driver-finance-collect-'.Carbon::now()->toDateString().'.xlsx');
 
     }

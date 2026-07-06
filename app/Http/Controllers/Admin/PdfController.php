@@ -93,7 +93,9 @@ ini_set('memory_limit', '512M');
         $row = DriverFianance::findOrfail($id);
         $driver = $row->Driver()->first();
         $title = 'سائق : '. $driver->name;
-        $orders = Order::whereIn('id', explode(',', $row->orders))->get();
+        $orders = Order::whereIn('id', explode(',', $row->orders))
+            ->with(['Company', 'PaymentMethod', 'City', 'Driver', 'Invoice'])
+            ->get();
         config(['pdf.format'                => 'A4']);ini_set('pcre.backtrack_limit', '5000000');
 ini_set('memory_limit', '512M');
         $pdf = PDF::loadView('admin.reports.pdf.driver-finance-collect', compact('driver', 'title', 'row', 'orders'));

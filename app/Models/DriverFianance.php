@@ -67,6 +67,24 @@ class DriverFianance extends Model
             ->sum('price');
     }
 
+    public function getShipmentCostAttribute(): float
+    {
+        return $this->ordersShipmentCost();
+    }
+
+    public function ordersShipmentCost(): float
+    {
+        if (!$this->orders) {
+            return 0;
+        }
+
+        $orders = Order::whereIn('id', explode(',', $this->orders))
+            ->with(['Company', 'City.Parent', 'Invoice'])
+            ->get();
+
+        return \App\Support\DriverFinance::batchShipmentCost($orders);
+    }
+
     public function recalculateTotals(): self
     {
         if (!$this->orders) {
@@ -79,7 +97,7 @@ class DriverFianance extends Model
         }
 
         $orders = Order::whereIn('id', explode(',', $this->orders))
-            ->with(['Company', 'Driver', 'Invoice'])
+            ->with(['Company', 'Driver', 'Invoice', 'City.Parent'])
             ->get();
 
         if ($orders->isEmpty()) {

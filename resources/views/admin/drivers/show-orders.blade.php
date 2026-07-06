@@ -22,7 +22,7 @@
             </tr>
             <tr>
                 <td>تكلفة الشحن</td>
-                <td colspan="3">{{ number_format($row->shipment_cost, 2) }}</td>
+                <td colspan="3">{{ number_format(\App\Support\DriverFinance::batchShipmentCost($orders), 2) }}</td>
             </tr>
             <tr>
                 <td>حساب السائق</td>
@@ -30,7 +30,7 @@
             </tr>
             <tr>
                 <td>صافي الربح</td>
-                <td colspan="3">{{ number_format($row->net_profit, 2) }}</td>
+                <td colspan="3">{{ number_format(\App\Support\DriverFinance::batchShipmentCost($orders) - $row->driver_amount, 2) }}</td>
             </tr>
             <tr>
                 <td>تاريخ الانشاء</td>

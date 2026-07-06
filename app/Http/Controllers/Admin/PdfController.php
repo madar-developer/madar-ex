@@ -94,7 +94,7 @@ ini_set('memory_limit', '512M');
         $driver = $row->Driver;
         $title = 'سائق : '. $driver->name;
         $orders = Order::whereIn('id', explode(',', $row->orders))
-            ->with(['Company', 'PaymentMethod', 'City', 'Driver', 'Invoice'])
+            ->with(['Company', 'PaymentMethod', 'City.Parent', 'Driver', 'Invoice'])
             ->get();
         config(['pdf.format'                => 'A4']);ini_set('pcre.backtrack_limit', '5000000');
 ini_set('memory_limit', '512M');

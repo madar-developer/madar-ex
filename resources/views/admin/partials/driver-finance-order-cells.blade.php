@@ -1,6 +1,6 @@
 @php
     $financeDriver = $financeDriver ?? ($item->Driver ?? null);
-    $shipmentCost = \App\Support\DriverFinance::codShipmentCost($item);
+    $shipmentCost = \App\Support\DriverFinance::shipmentCost($item);
     $driverCommission = \App\Support\DriverFinance::driverCommission($item, $financeDriver);
     $shipmentNet = \App\Support\DriverFinance::shipmentNet($item, $financeDriver);
     $codAmount = \App\Support\DriverFinance::codOrderAmount($item);

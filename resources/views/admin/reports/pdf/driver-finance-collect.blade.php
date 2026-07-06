@@ -49,17 +49,23 @@
             </tr>
             <tr>
                 <th scope="row" style="  border: 1px solid gray; color:#000;">   الحساب الكلي (COD)</th>
-                <td style="  border: 1px solid gray;">{{$row->total_amount}}</td>
+                <td style="  border: 1px solid gray;">{{ number_format($row->total_amount, 2) }}</td>
+
+            </tr>
+            @include('admin.partials.driver-finance-summary-vars', ['financeOrders' => $orders, 'financeRow' => $row])
+            <tr>
+                <th scope="row" style="  border: 1px solid gray; color:#000;">تكلفة الشحن</th>
+                <td style="  border: 1px solid gray;">{{ number_format($financeShipmentCost, 2) }}</td>
 
             </tr>
             <tr>
-                <th scope="row" style="  border: 1px solid gray; color:#000;">حساب السائق</th>
-                <td style="  border: 1px solid gray;">{{$row->driver_amount}}</td>
+                <th scope="row" style="  border: 1px solid gray; color:#000;">حساب السائق ({{ $driver->commission ?? 0 }}%)</th>
+                <td style="  border: 1px solid gray;">{{ number_format($row->driver_amount, 2) }}</td>
 
             </tr>
             <tr>
                 <th scope="row" style="  border: 1px solid gray; color:#000;">صافي الربح</th>
-                <td style="  border: 1px solid gray;">{{$row->net_profit}}</td>
+                <td style="  border: 1px solid gray;">{{ number_format($financeNetProfit, 2) }}</td>
 
             </tr>
         </tbody>

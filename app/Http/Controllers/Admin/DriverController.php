@@ -235,7 +235,7 @@ class DriverController extends Controller
         $row = DriverFianance::with('Driver')->findOrfail($id);
         $driver = $row->Driver;
         $orders = Order::whereIn('id', explode(',', $row->orders))
-            ->with(['Company', 'PaymentMethod', 'City', 'Driver', 'Invoice'])
+            ->with(['Company', 'PaymentMethod', 'City.Parent', 'Driver', 'Invoice'])
             ->get();
 
         return view('admin.drivers.show-orders', compact('row', 'orders', 'driver'));
@@ -386,7 +386,7 @@ class DriverController extends Controller
         $data['driver'] = $driver;
         $data['row'] = $row;
         $data['orders'] = Order::whereIn('id', explode(',', $row->orders))
-            ->with(['Company', 'PaymentMethod', 'City', 'Driver', 'Invoice'])
+            ->with(['Company', 'PaymentMethod', 'City.Parent', 'Driver', 'Invoice'])
             ->get();
         return Excel::download(new GeneralExport('admin.reports.driver-finance-collect-excel', $data), 'driver-finance-collect-'.Carbon::now()->toDateString().'.xlsx');
 

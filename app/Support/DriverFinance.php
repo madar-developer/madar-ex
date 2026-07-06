@@ -71,9 +71,9 @@ class DriverFinance
      */
     public static function codFee(Order $order): float
     {
-        if ((int) $order->payment_method_id !== 1) {
-            return 0;
-        }
+        // if ((int) $order->payment_method_id !== 1) {
+        //     return 0;
+        // }
 
         $company = self::resolveCompany($order);
 

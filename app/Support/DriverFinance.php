@@ -33,7 +33,7 @@ class DriverFinance
 
     public static function codShipmentCost(Order $order): float
     {
-        if ((int) $order->payment_method_id !== 1) {
+        if ((int) $order->payment_method_id != '1') {
             return 0;
         }
 

@@ -21,6 +21,10 @@
                 <td colspan="3">{{ number_format($row->total_amount, 2) }}</td>
             </tr>
             <tr>
+                <td>تكلفة الشحن</td>
+                <td colspan="3">{{ number_format($row->shipment_cost, 2) }}</td>
+            </tr>
+            <tr>
                 <td>حساب السائق</td>
                 <td colspan="3">{{ number_format($row->driver_amount, 2) }}</td>
             </tr>

@@ -11,6 +11,12 @@ class DriverFianance extends Model
         'branch_id', 'driver_id', 'total_amount' , 'driver_amount' , 'net_profit' ,
         'orders' , 'status' , 'verified'
     ];
+
+    protected $casts = [
+        'total_amount' => 'float',
+        'driver_amount' => 'float',
+        'net_profit' => 'float',
+    ];
     public static function getLevels($status)
     {
         $levels = [];
@@ -56,8 +62,42 @@ class DriverFianance extends Model
             return 0;
         }
 
-        return Order::whereIn('id', explode(',', $this->orders))
+        return (float) Order::whereIn('id', explode(',', $this->orders))
             ->where('payment_method_id', 1)
             ->sum('price');
+    }
+
+    public function recalculateTotals(): self
+    {
+        if (!$this->orders) {
+            return $this;
+        }
+
+        $driver = $this->Driver()->first();
+        if (!$driver) {
+            return $this;
+        }
+
+        $orders = Order::whereIn('id', explode(',', $this->orders))
+            ->with(['Company', 'Driver', 'Invoice'])
+            ->get();
+
+        if ($orders->isEmpty()) {
+            return $this;
+        }
+
+        $totals = \App\Support\DriverFinance::batchTotals($orders, $driver);
+
+        foreach ($orders as $order) {
+            $commission = \App\Support\DriverFinance::driverCommission($order, $driver);
+            $invoice = $order->relationLoaded('Invoice') ? $order->Invoice : $order->Invoice()->first();
+            if ($invoice) {
+                $invoice->update(['driver_cost' => $commission]);
+            }
+        }
+
+        $this->update($totals);
+
+        return $this->refresh();
     }
 }

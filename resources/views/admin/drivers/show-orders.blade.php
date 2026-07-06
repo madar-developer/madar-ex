@@ -1,5 +1,10 @@
 
 <div class="col-md-12">
+    <div class="text-left m-b-10">
+        <a href="{{ route('driver-finance.recalculate', $row->id) }}" class="btn btn-warning btn-sm" onclick="return confirm('إعادة حساب المبالغ لهذه التصفية؟')">
+            <i class="fa fa-refresh"></i> إعادة الحساب
+        </a>
+    </div>
     <table class="table table-bordered table-striped text-center m-0">
         <thead >
             <tr>
@@ -13,15 +18,15 @@
             </tr>
             <tr>
                 <td>الحساب الكلي (COD)</td>
-                <td colspan="3">{{$row->total_amount}}</td>
+                <td colspan="3">{{ number_format($row->total_amount, 2) }}</td>
             </tr>
             <tr>
                 <td>حساب السائق</td>
-                <td colspan="3">{{$row->driver_amount}}</td>
+                <td colspan="3">{{ number_format($row->driver_amount, 2) }}</td>
             </tr>
             <tr>
                 <td>صافي الربح</td>
-                <td colspan="3">{{$row->net_profit}}</td>
+                <td colspan="3">{{ number_format($row->net_profit, 2) }}</td>
             </tr>
             <tr>
                 <td>تاريخ الانشاء</td>

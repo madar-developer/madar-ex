@@ -880,6 +880,7 @@
                                                 <button type="button" data-url="{{url('/dashboard/driver-finance-orders/'.$item->id)}}" class="btn btn-primary btn-lg invoice transfer-info" data-toggle="modal" data-target="#myModal">
                                                     عرض الفواتير
                                                   </button>
+                                                  <a href="{{ route('driver-finance.recalculate', $item->id) }}" class="btn btn-warning waves-effect waves-light m-b-5 btn-xs" title="إعادة الحساب" onclick="return confirm('إعادة حساب المبالغ لهذه التصفية؟')"> <i class="fa fa-refresh"></i> </a>
                                                   <a href="{{route('driver-finance-collect.pdf', $item->id)}}" class="btn btn-info   waves-effect waves-light m-b-5 btn-xs" title="ExportPDF"> <i class="fa fa-download"></i>  </a>
                                                   <a href="{{route('driver-finance-collect.excel', $item->id)}}" class="btn btn-info   waves-effect waves-light m-b-5 btn-xs" title="Export Excel"> <i class="fa fa-file-excel-o"></i>  </a>
                                               </td>

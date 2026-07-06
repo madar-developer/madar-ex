@@ -90,8 +90,8 @@ ini_set('memory_limit', '512M');
     }
     public function driverFinanceCollectPdf( $id)
     {
-        $row = DriverFianance::findOrfail($id);
-        $driver = $row->Driver()->first();
+        $row = DriverFianance::with('Driver')->findOrfail($id);
+        $driver = $row->Driver;
         $title = 'سائق : '. $driver->name;
         $orders = Order::whereIn('id', explode(',', $row->orders))
             ->with(['Company', 'PaymentMethod', 'City', 'Driver', 'Invoice'])

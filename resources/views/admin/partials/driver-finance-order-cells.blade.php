@@ -5,7 +5,7 @@
     $shipmentNet = \App\Support\DriverFinance::shipmentNet($item, $financeDriver);
     $codAmount = \App\Support\DriverFinance::codOrderAmount($item);
 @endphp
-<td>{{ $shipmentCost }}</td>
-<td>{{ $driverCommission }}</td>
-<td>{{ $shipmentNet }}</td>
-<td>{{ $codAmount > 0 ? $codAmount : '-' }}</td>
+<td>{{ number_format($shipmentCost, 2) }}</td>
+<td>{{ number_format($driverCommission, 2) }}</td>
+<td>{{ number_format($shipmentNet, 2) }}</td>
+<td>{{ $codAmount > 0 ? number_format($codAmount, 2) : '-' }}</td>

@@ -133,6 +133,14 @@ class DriverFinanceController extends Controller
         return 'success';
     }
 
+    public function recalculate($id)
+    {
+        $row = DriverFianance::findOrFail($id);
+        $row->recalculateTotals();
+
+        return back()->with('success', 'تم إعادة حساب المبالغ بنجاح');
+    }
+
 
 
 }

@@ -304,6 +304,7 @@ Route::group(['namespace' =>'Admin'], function() {
         Route::resource('/drivers', 'DriverController');
         Route::get('/drivers-charts', 'DriverController@charts')->name('drivers-charts');
         Route::get('/driver-finance-orders/{id}', 'DriverController@DFOrders');
+        Route::get('/driver-finance-recalculate/{id}', 'DriverFinanceController@recalculate')->name('driver-finance.recalculate');
         Route::resource('/driver-prices', 'DriverPriceController');
         Route::post('/drivers-files/{id}', 'DriverController@files')->name('drivers-files');
         // Route::resource('/driver-finances', 'DriverFinanceController');

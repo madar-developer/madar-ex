@@ -89,7 +89,7 @@
                                                                 <th> حساب السائق</th>
                                                                 <th>  صافي الربح</th>
                                                                 <th>   الحاله</th>
-                                                                {{-- <th>العمليات</th> --}}
+                                                                <th>العمليات</th>
 
 
                                                             </tr>
@@ -115,6 +115,9 @@
                                                                         select2", "autocomplete"=> 'off', "onchange" =>
                                                                         "$(this).closest('form').submit()"]) !!}
                                                                     {!!Form::close() !!}
+                                                                  </td>
+                                                                  <td>
+                                                                    <a href="{{ route('driver-finance.recalculate', $item->id) }}" class="btn btn-warning waves-effect waves-light m-b-5 btn-xs" title="إعادة الحساب" onclick="return confirm('إعادة حساب المبالغ؟')"> <i class="fa fa-refresh"></i> </a>
                                                                   </td>
                                                                 {{-- <td class="btns">
 

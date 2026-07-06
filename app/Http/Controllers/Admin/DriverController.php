@@ -232,7 +232,7 @@ class DriverController extends Controller
 
     public function DFOrders($id)
     {
-        $row = DriverFianance::findOrfail($id);
+        $row = DriverFianance::with('Driver')->findOrfail($id);
         $driver = $row->Driver;
         $orders = Order::whereIn('id', explode(',', $row->orders))
             ->with(['Company', 'PaymentMethod', 'City', 'Driver', 'Invoice'])
@@ -380,8 +380,8 @@ class DriverController extends Controller
     }
     public function driverFinanceCollectExcel( $id)
     {
-        $row = DriverFianance::findOrfail($id);
-        $driver = $row->Driver()->first();
+        $row = DriverFianance::with('Driver')->findOrfail($id);
+        $driver = $row->Driver;
         $title = 'سائق : '. $driver->name;
         $data['driver'] = $driver;
         $data['row'] = $row;

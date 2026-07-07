@@ -1,5 +1,9 @@
 @extends('admin.reports.pdf.master')
 @section('content')
+@php
+    $financeShipmentCost = \App\Support\DriverFinance::batchShipmentCost($orders);
+    $financeNetProfit = $financeShipmentCost - $row->driver_amount;
+@endphp
 <br>
 <br>
 <br>
@@ -52,7 +56,6 @@
                 <td style="  border: 1px solid gray;">{{ number_format($row->total_amount, 2) }}</td>
 
             </tr>
-            @include('admin.partials.driver-finance-summary-vars', ['financeOrders' => $orders, 'financeRow' => $row])
             <tr>
                 <th scope="row" style="  border: 1px solid gray; color:#000;">تكلفة الشحن</th>
                 <td style="  border: 1px solid gray;">{{ number_format($financeShipmentCost, 2) }}</td>

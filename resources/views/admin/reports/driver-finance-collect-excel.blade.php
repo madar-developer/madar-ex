@@ -1,4 +1,8 @@
 
+@php
+    $financeShipmentCost = \App\Support\DriverFinance::batchShipmentCost($items['orders']);
+    $financeNetProfit = $financeShipmentCost - $items['row']->driver_amount;
+@endphp
     <table class="table table-striped" style="  border: 1px solid gray;">
         <thead>
 
@@ -44,7 +48,6 @@
                 <td style="  border: 1px solid gray;">{{ number_format($items['row']->total_amount, 2) }}</td>
 
             </tr>
-            @include('admin.partials.driver-finance-summary-vars', ['financeOrders' => $items['orders'], 'financeRow' => $items['row']])
             <tr>
                 <th scope="row" style="  border: 1px solid gray; font-weight:bold;">تكلفة الشحن</th>
                 <td style="  border: 1px solid gray;">{{ number_format($financeShipmentCost, 2) }}</td>

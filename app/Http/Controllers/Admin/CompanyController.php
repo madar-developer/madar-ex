@@ -28,58 +28,93 @@ class CompanyController extends Controller
 
     public function __construct()
     {
-        $this->middleware('Permission:company_show'    , ['only' => 'index', 'show', 'exportCompanyOrdersShipments']);
+        $this->middleware('Permission:company_show'    , ['only' => 'index', 'show', 'exportCompanyOrdersShipments', 'archived']);
         $this->middleware('Permission:company_add'     , ['only' => 'create', 'store']);
-        $this->middleware('Permission:company_edit'    , ['only' => 'edit', 'update']);
+        $this->middleware('Permission:company_edit'    , ['only' => 'edit', 'update', 'restore']);
         $this->middleware('Permission:company_delete'  , ['only' => 'destroy']);
     }
-    public function index()
-    {
 
-        if (in_array( auth('admin')->user()->role, ['branch', 'employee']) || (auth('admin')->user()->role == 'employee' && auth()->user()->parent_id != '0' )) {
-            //
+    protected function companiesQuery(bool $onlyTrashed = false)
+    {
+        if ($onlyTrashed) {
+            $companies = Company::onlyTrashed()->latest();
+        } elseif (in_array(auth('admin')->user()->role, ['branch', 'employee']) || (auth('admin')->user()->role == 'employee' && auth()->user()->parent_id != '0')) {
             if (auth('admin')->user()->role == 'branch') {
                 $branch_id = auth('admin')->id();
             } else {
                 $branch_id = auth('admin')->user()->parent_id;
             }
-                $companies = Company::whereHas('BranchData', function($q) use( $branch_id ){
-                    $q->where('admin_id', $branch_id);
-                })->latest();
-            } else {
-                $companies = Company::latest();
+            $companies = Company::whereHas('BranchData', function ($q) use ($branch_id) {
+                $q->where('admin_id', $branch_id);
+            })->latest();
+        } else {
+            $companies = Company::latest();
+        }
 
-            }
+        return $companies;
+    }
 
-        $search = array();
+    protected function filterCompaniesQuery($companies)
+    {
+        $search = [];
+
         if (Request()->has('name') && Request()->get('name') != '') {
             $name = Request()->get('name');
             $search['name'] = $name;
-            $companies = $companies->where('name'     , 'LIKE', '%'.$name.'%');
+            $companies = $companies->where('name', 'LIKE', '%'.$name.'%');
         }
         if (Request()->has('id') && Request()->get('id') != '') {
             $id = Request()->get('id');
             $search['id'] = $id;
-            $companies = $companies->where('id'     , $id);
+            $companies = $companies->where('id', $id);
         }
         if (Request()->has('phone') && Request()->get('phone') != '') {
             $phone = Request()->get('phone');
             $search['phone'] = $phone;
-            $companies = $companies->where('phone'     , 'LIKE', '%'.$phone.'%');
+            $companies = $companies->where('phone', 'LIKE', '%'.$phone.'%');
         }
         if (Request()->has('active') && Request()->get('active') != '') {
             $active = Request()->get('active');
             $search['active'] = $active;
-            $companies = $companies->where('active'     , $active);
+            $companies = $companies->where('active', $active);
         }
+
+        return [$companies, $search];
+    }
+
+    public function index()
+    {
+        [$companies, $search] = $this->filterCompaniesQuery($this->companiesQuery());
         $title = 'المتاجر والشركات';
+        $archived = false;
 
         if (Request()->has('excel') && Request()->get('excel') != '') {
             $companies = $companies->get();
-        return Excel::download(new GeneralExport('admin.reports.companies-excel', $companies), 'companies-'.Carbon::now()->toDateString().'.xlsx');
+
+            return Excel::download(new GeneralExport('admin.reports.companies-excel', $companies), 'companies-'.Carbon::now()->toDateString().'.xlsx');
         }
-            $companies = $companies->paginate(40);
-        return view('admin.companies.index', compact('companies', 'title' ,'search'));
+
+        $companies = $companies->paginate(40);
+
+        return view('admin.companies.index', compact('companies', 'title', 'search', 'archived'));
+    }
+
+    public function archived()
+    {
+        [$companies, $search] = $this->filterCompaniesQuery($this->companiesQuery(true));
+        $title = 'المتاجر المؤرشفة';
+        $archived = true;
+        $companies = $companies->paginate(40);
+
+        return view('admin.companies.index', compact('companies', 'title', 'search', 'archived'));
+    }
+
+    public function restore($id)
+    {
+        $company = Company::onlyTrashed()->findOrFail($id);
+        $company->restore();
+
+        return redirect('/dashboard/companies-archived')->with('success', 'تم استعادة المتجر بنجاح');
     }
 
     /**
@@ -192,10 +227,8 @@ class CompanyController extends Controller
      */
     public function destroy(Company $company)
     {
-        if ($company->image) {
-            @unlink(public_path('/cdn/'.$company->image));
-        }
         $company->delete();
+
         return 'success';
     }
     public function files(Request $request, $id)

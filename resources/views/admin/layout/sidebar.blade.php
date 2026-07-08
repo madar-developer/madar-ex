@@ -46,6 +46,7 @@
                                 <a href="javascript:void(0);" class="waves-effect"><i class="zmdi zmdi-view-list"></i> <span> المتاجر والشركات  </span> <span class="menu-arrow"></span></a>
                                 <ul class="list-unstyled">
                                     <li><a href="{{url('/dashboard/companies')}}"> عرض  المتاجر والشركات </a></li>
+                                    <li><a href="{{ route('companies.archived') }}"> المتاجر المؤرشفة </a></li>
                                     <li class=" {!! (CheckPermission(['company_add']))? '' : 'hidden'  !!}"><a href="{{ url('/dashboard/companies/create') }}">  اضافة متجر او شركة </a></li>
                                 </ul>
                             </li>

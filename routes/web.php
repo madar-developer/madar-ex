@@ -277,6 +277,8 @@ Route::group(['namespace' =>'Admin'], function() {
         Route::resource('/contact_us', 'ContactUsController');
         Route::resource('/users', 'UserController');
         Route::resource('/shops', 'ShopController');
+        Route::get('/companies-archived', 'CompanyController@archived')->name('companies.archived');
+        Route::patch('/companies/{id}/restore', 'CompanyController@restore')->name('companies.restore');
         Route::get('/companies/{company}/orders-export', 'CompanyController@exportCompanyOrdersShipments')->name('companies.orders-export');
         Route::resource('/companies', 'CompanyController');
         Route::post('/companies-files/{id}', 'CompanyController@files')->name('companies-files');

@@ -4,11 +4,11 @@
 @section('header')
 <!-- Page title -->
 
-
-
+@if(empty($archived))
                                     <div class="add-btn">
                                         <a href="{{ url('/dashboard/companies/create') }}" type="button" class="btn btn-custom btn-rounded waves-effect waves-light w-md m-b-5"> <i class="fa fa-check"></i> اضافة </a>
                                     </div>
+@endif
 
 @endsection
 @section('content')
@@ -17,7 +17,7 @@
 
     <div class="col-sm-12">
         <div class="card-box">
-            <form action="" method="get">
+            <form action="{{ !empty($archived) ? route('companies.archived') : url('/dashboard/companies') }}" method="get">
                 <div class="row">
                     <div class="col-md-12 part-top">
                         <div class="row">
@@ -72,16 +72,18 @@
                                     <button type="button" onclick="$(this).closest('form').find('#excel').remove(); $(this).closest('form').submit();" class="btn btn-block btn-sm btn-success waves-effect waves-light b-t-10 b-b-10"><i class="fa fa-search"></i> بحث</button>
                                 </div>
                             </div>
+                            @if(empty($archived))
                             <div class="col-md-2">
                                 <div class="form-horizontal">
                                     <button type="button" target="_blank" onclick="$(this).closest('form').prepend(`<input name='excel' id='excel' type='hidden' value='1' />`); $(this).closest('form').submit();" class="btn btn-block btn-sm btn-success waves-effect waves-light b-t-10 b-b-10">تصدير لExcel</button>
 
                                 </div>
                             </div>
+                            @endif
 
                             <div class="col-md-2">
                                 <div class="form-horizontal">
-                                    <a href="{{url('/dashboard/companies')}}" class="btn btn-block btn-sm btn-success waves-effect waves-light b-t-10 b-b-10"><i class="fa fa-trash"></i> مسح خيارات البحث</a>
+                                    <a href="{{ !empty($archived) ? route('companies.archived') : url('/dashboard/companies') }}" class="btn btn-block btn-sm btn-success waves-effect waves-light b-t-10 b-b-10"><i class="fa fa-trash"></i> مسح خيارات البحث</a>
                                 </div>
                             </div>
 
@@ -119,6 +121,9 @@
                                                                 <th> السجل التجارى</th>
                                                                 <th> حاله المتجر</th>
                                                                 <th>  عدد الطلبات</th>
+                                                                @if(!empty($archived))
+                                                                <th> تاريخ الأرشفة</th>
+                                                                @endif
                                                                 {{-- <th>   تكلفه ارجاع الطلب</th> --}}
                                                                 <th>العمليات</th>
 
@@ -143,14 +148,24 @@
                                                                 <td> {{$item->commercial_record}} </td>
                                                                 <td>{{($item->active == '1')? 'مفعل' : 'غير مفعل'}}</td>
                                                                 <td>{{$item->Order()->count()}}</td>
-                                                                {{-- <td>{{$item->return_cost}}</td> --}}
+                                                                @if(!empty($archived))
+                                                                <td>{{ $item->deleted_at ? $item->deleted_at->format('Y-m-d H:i') : '' }}</td>
+                                                                @endif
                                                                 <td class="btns">
 
+                                                                    @if(!empty($archived))
+                                                                    <form action="{{ route('companies.restore', $item->id) }}" method="POST" style="display:inline" onsubmit="return confirm('هل تريد استعادة هذا المتجر؟');">
+                                                                        @csrf
+                                                                        @method('PATCH')
+                                                                        <button type="submit" class="btn btn-success waves-effect waves-light m-b-5 btn-xs" title="استعادة"> <i class="fa fa-undo"></i> </button>
+                                                                    </form>
+                                                                    @else
                                                                     <a href="/dashboard/companies/{{$item->id}}" type="button" class="btn btn-info   waves-effect waves-light m-b-5 btn-xs" title="عرض"> <i class="fa fa-eye"></i>  </a>
                                                                     <a href="/dashboard/companies/{{$item->id}}/edit" type="button" class="btn btn-info   waves-effect waves-light m-b-5 btn-xs" title="تعديل"> <i class="fa fa-pencil"></i>  </a>
-                                                                    <a href="{{route('companies.destroy',$item)}}" id="delete-btn" type="button" class="btn btn-danger   waves-effect waves-light m-b-5 btn-xs" title="حذف"> <i class="fa fa-times"></i>  </a>
+                                                                    <a href="{{route('companies.destroy',$item)}}" id="delete-btn" type="button" class="btn btn-danger   waves-effect waves-light m-b-5 btn-xs" title="أرشفة"> <i class="fa fa-times"></i>  </a>
                                                                     <a href="{{route('company.pdf',$item->id)}}" type="button" class="btn btn-success   waves-effect waves-light m-b-5 btn-xs" title="ExportPDF"> <i class="fa fa-download"></i>  </a>
                                                                     <a href="{{route('company-finance.pdf',$item->id)}}" type="button" class="btn btn-success   waves-effect waves-light m-b-5 btn-xs" title="تقرير مالي"> <i class="fa fa-file-o"></i>  </a>
+                                                                    @endif
 
                                                                 </td>
 
@@ -195,11 +210,11 @@
                         <div class="modal-content">
                             <div class="modal-header">
                                 <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
-                                <h4 class="modal-title" id="custom-width-modalLabel">هل تريد الحذف </h4>
+                                <h4 class="modal-title" id="custom-width-modalLabel">هل تريد أرشفة هذا المتجر؟</h4>
                             </div>
                             <div class="modal-footer">
                                 <button type="button" class="btn btn-default waves-effect" data-dismiss="modal">إلغاء الامر</button>
-                                <button type="button" class="btn btn-primary buunton-notofication waves-effect waves-light" data-type="success"  data-message="تم الحذف">حذف</button>
+                                <button type="button" class="btn btn-primary buunton-notofication waves-effect waves-light" data-type="success"  data-message="تمت الأرشفة">أرشفة</button>
                             </div>
                         </div><!-- /.modal-content -->
                     </div><!-- /.modal-dialog -->

@@ -46,12 +46,12 @@ trait TransactionOperations
         if ($request->has('confirmed') && $request->has('order_id') && !in_array($request->get('order_id'), ['0', null]) ) {
             $Transaction->Order()->update(['paied' => '1']);
             // send notification
-            $title = "تم قبول الدفع .";
-            $content = ' تم قبول الدفع رقم : '. $Transaction->id;
+            $title = notificationMessage('transaction.payment_accepted');
+            $content = notificationMessage('transaction.payment_accepted_detail', ['transaction_id' => $Transaction->id]);
             
-            $title_ar = "تم قبول الدفع .";
+            $title_ar = $title;
             $title_en = "payment transaction accepted";
-            $content_ar = ' تم قبول الدفع رقم : '. $Transaction->id;
+            $content_ar = $content;
             $content_en = "payment transaction accepted num " . $Transaction->id;
         	$activity = "subscription_details";
             $type = "transaction_accepted";

@@ -64,7 +64,7 @@ trait OrderOperations
             ];
         $Order->OrderLog()->create($log_data);
         $admin = Admin::first();
-        $message = 'تم اضافة طلب جديد : '.$Order->id;
+        $message = notificationMessage('order.created', ['order_id' => $Order->id]);
         if($admin)
         {
             $admin->notify(new GeneralNotification($message, '/dashboard/orders/'.$Order->id ) );
@@ -101,7 +101,10 @@ trait OrderOperations
                 'details' =>  trans('words.'.$request->get('status')) . ' , ' . $request->get('notes')
             ]);
             $admin = Admin::first();
-            $message = 'تم تغيير حالة الطلب  : '.$Order->id  . ' الي ' . trans('words.'.$request->get('status'));
+            $message = notificationMessage('order.status_changed', [
+                'order_id' => $Order->id,
+                'status' => trans('words.'.$request->get('status')),
+            ]);
             if($admin)
             {
                 $admin->notify(new GeneralNotification($message, '/dashboard/orders/'.$Order->id ) );
@@ -111,7 +114,11 @@ trait OrderOperations
                 $Order->Company()->first()->notify(new GeneralNotification($message, '/company/company-orders/'.$Order->id ) );
             }
             if ($request->get('status') == 'init') {
-                $msg = "تم خروج الطلب رقم $Order->refrence_no من المتجر و جاري توصيلها اليكم.";
+                $msg = notificationMessage('order.sms.out_for_delivery', [
+                    'recipient_name' => $Order->recipent_name,
+                    'serial' => $Order->refrence_no,
+                    'company_name' => $Order->Company->name ?? '',
+                ]);
                 $Order->update(['receive_date' => Carbon::now()]);
                 sendSMS($Order->phone, $msg);
             }

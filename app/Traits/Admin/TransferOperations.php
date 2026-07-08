@@ -70,7 +70,7 @@ trait TransferOperations
             DB::commit();
             if($Transfer->Company()->first())
             {
-                $message = "تم انشاء حوالة جديده لمتجرك.";
+                $message = notificationMessage('transfer.created');
                 $Transfer->Company()->first()->notify(new GeneralNotification($message, '/company/company-transfers/'.$Transfer->id ) );
             }
         return $Transfer;

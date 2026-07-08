@@ -119,7 +119,7 @@ trait OrderOperations
             ];
         $Order->OrderLog()->create($log_data);
         $admin = Admin::first();
-        $message = 'تم اضافة طلب جديد : '.$Order->id;
+        $message = notificationMessage('order.created', ['order_id' => $Order->id]);
         if($admin)
         {
             $admin->notify(new GeneralNotification($message, '/dashboard/orders/'.$Order->id ) );
@@ -279,7 +279,10 @@ trait OrderOperations
             ];
             $Order->OrderLog()->create($log_data);
             $admin = Admin::first();
-            $message = 'تم تغيير حالة الطلب  : '.$Order->id  . ' الي ' . trans('words.'.$request->get('status'));
+            $message = notificationMessage('order.status_changed', [
+                'order_id' => $Order->id,
+                'status' => trans('words.'.$request->get('status')),
+            ]);
             if($admin)
             {
                 $admin->notify(new GeneralNotification($message, '/dashboard/orders/'.$Order->id ) );
@@ -294,8 +297,11 @@ trait OrderOperations
                 {
                     $com_name = $Order->Company->name;
                 }
-                $msg = "تم خروج الطلب رقم $Order->serial من المتجر و جاري توصيلها اليكم.";
-                $msg = "مرحبا $Order->recipent_name  ، شحنتك  $Order->serial  من  $com_name  في طريقها إليك وسيتم التواصل معكم عند اتجاه المندوب للعنوان";
+                $msg = notificationMessage('order.sms.out_for_delivery', [
+                    'recipient_name' => $Order->recipent_name,
+                    'serial' => $Order->serial,
+                    'company_name' => $com_name,
+                ]);
                 sendSMS(FormatPhone($Order->phone), $msg);
             }
             if ($request->get('status') == 'init') {

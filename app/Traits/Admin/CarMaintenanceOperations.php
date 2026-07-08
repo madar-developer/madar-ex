@@ -42,7 +42,7 @@ trait CarMaintenanceOperations
         }
             ///////////////// branch or admin
             $admin = Admin::first();
-            $message = 'تم اضافة قسم صيانه  : '.$CarMaintenance->name;
+            $message = notificationMessage('car_maintenance.created', ['name' => $CarMaintenance->name]);
             if($admin)
             {
                 $admin->notify(new GeneralNotification($message, '/dashboard/carmaintaince/'.$CarMaintenance->id ) );

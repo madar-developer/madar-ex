@@ -28,6 +28,23 @@ class OrderController extends Controller
         $driver->save();
     }
 
+    protected function orderStatusChangedMessage(Order $order, string $statusKey): string
+    {
+        return notificationMessage('order.status_changed', [
+            'order_id' => $order->id,
+            'status' => trans('words.'.$statusKey),
+        ]);
+    }
+
+    protected function orderOutForDeliverySms(Order $order): string
+    {
+        return notificationMessage('order.sms.out_for_delivery', [
+            'recipient_name' => $order->recipent_name,
+            'serial' => $order->refrence_no ?: $order->serial,
+            'company_name' => $order->Company->name ?? '',
+        ]);
+    }
+
     protected function createDeliveryInvoice(Order $order, string $status): void
     {
         if ($order->city_id == $order->Company->city_id) {
@@ -283,7 +300,7 @@ class OrderController extends Controller
                 }
             }
             $admin = Admin::first();
-            $message = 'تم تغيير حالة الطلب  : '.$Order->id  . ' الي ' . trans('words.'.$request->get('status'));
+            $message = $this->orderStatusChangedMessage($Order, $request->get('status'));
             if($admin)
             {
                 $admin->notify(new GeneralNotification($message, '/dashboard/orders/'.$Order->id ) );
@@ -294,8 +311,7 @@ class OrderController extends Controller
             }
 
             if ($request->get('status') == 'init') {
-                $msg = "تم خروج الطلب رقم $Order->refrence_no من المتجر و جاري توصيلها اليكم.";
-                $msg = "مرحبا $Order->recipent_name  ، شحنتك  $Order->refrence_no  من  $Order->Company->name  في طريقها إليك وسيتم التواصل معكم عند اتجاه المندوب للعنوان";
+                $msg = $this->orderOutForDeliverySms($Order);
                 sendSMS(FormatPhone($Order->phone), $msg);
                 $Order->update(['receive_date' => Carbon::now()]);
             }
@@ -424,7 +440,7 @@ class OrderController extends Controller
                 }
             }
             $admin = Admin::first();
-            $message = 'تم تغيير حالة الطلب  : '.$Order->id  . ' الي ' . trans('words.'.$request->get('status'));
+            $message = $this->orderStatusChangedMessage($Order, $request->get('status'));
             if($admin)
             {
                 $admin->notify(new GeneralNotification($message, '/dashboard/orders/'.$Order->id ) );
@@ -435,8 +451,7 @@ class OrderController extends Controller
             }
 
             if ($request->get('status') == 'init') {
-                $msg = "تم خروج الطلب رقم $Order->refrence_no من المتجر و جاري توصيلها اليكم.";
-                $msg = "مرحبا $Order->recipent_name  ، شحنتك  $Order->refrence_no  من  $Order->Company->name  في طريقها إليك وسيتم التواصل معكم عند اتجاه المندوب للعنوان";
+                $msg = $this->orderOutForDeliverySms($Order);
                 sendSMS(FormatPhone($Order->phone), $msg);
                 $Order->update(['receive_date' => Carbon::now()]);
             }
@@ -555,7 +570,7 @@ class OrderController extends Controller
                     }
                 }
                 $admin = Admin::first();
-                $message = 'تم تغيير حالة الطلب  : '.$Order->id  . ' الي ' . trans('words.'.$request->get('status'));
+                $message = $this->orderStatusChangedMessage($Order, $request->get('status'));
                 if($admin)
                 {
                     $admin->notify(new GeneralNotification($message, '/dashboard/orders/'.$Order->id ) );
@@ -566,8 +581,7 @@ class OrderController extends Controller
                 }
 
                 if ($request->get('status') == 'init') {
-                    $msg = "تم خروج الطلب رقم $Order->refrence_no من المتجر و جاري توصيلها اليكم.";
-                    $msg = "مرحبا $Order->recipent_name  ، شحنتك  $Order->refrence_no  من  $Order->Company->name  في طريقها إليك وسيتم التواصل معكم عند اتجاه المندوب للعنوان";
+                    $msg = $this->orderOutForDeliverySms($Order);
                     sendSMS(FormatPhone($Order->phone), $msg);
                     $Order->update(['receive_date' => Carbon::now()]);
                 }
@@ -623,7 +637,10 @@ class OrderController extends Controller
             $data['details'] = $status_data->details . ' (' .$request->date. ') ';
             $order->update(['delivery_date' => Carbon::parse($request->get('date'))]);
             $admin = Admin::first();
-            $message = 'تم تغيير حالة الطلب  : '.$order->id  . ' الي ' . trans('words.reschedule');
+            $message = notificationMessage('order.reschedule', [
+                'order_id' => $order->id,
+                'status' => trans('words.reschedule'),
+            ]);
             if($admin)
             {
                 $admin->notify(new GeneralNotification($message, '/dashboard/orders/'.$order->id ) );

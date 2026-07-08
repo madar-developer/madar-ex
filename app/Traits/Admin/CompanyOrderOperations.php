@@ -64,7 +64,7 @@ trait CompanyOrderOperations
             ];
         $Order->OrderLog()->create($log_data);
         $admin = Admin::first();
-        $message = 'تم اضافة طلب جديد : '.$Order->id;
+        $message = notificationMessage('order.created', ['order_id' => $Order->id]);
         if($admin)
         {
             $admin->notify(new GeneralNotification($message, '/dashboard/orders/'.$Order->id ) );

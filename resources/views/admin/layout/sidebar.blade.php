@@ -151,8 +151,11 @@
                             </li>
 
                             <li class="has_sub  {!! (CheckPermission(['notifications_show']))? '' : 'hidden'  !!} ">
-                                <a href="{{ url('dashboard/notifications') }}" class="waves-effect"><i class="zmdi zmdi-view-list"></i> <span>  ارسال تنبيهات  </a>
-
+                                <a href="javascript:void(0);" class="waves-effect"><i class="zmdi zmdi-notifications"></i> <span>  التنبيهات  </span> <span class="menu-arrow"></span></a>
+                                <ul class="list-unstyled">
+                                    <li><a href="{{ url('dashboard/notifications') }}">ارسال تنبيهات</a></li>
+                                    <li><a href="{{ url('dashboard/notification-templates') }}">رسائل النظام و SMS</a></li>
+                                </ul>
                             </li>
 
                             <li class="has_sub  {!! (CheckPermission(['car_show']))? '' : 'hidden'  !!} ">

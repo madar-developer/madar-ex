@@ -851,6 +851,10 @@ function Branchs()
         return $ph;
     }
 
+function notificationMessage(string $key, array $replace = []): string
+{
+    return \App\Support\NotificationMessage::render($key, $replace);
+}
 
 //دالة الإرسال بإستخدام fsockopen
 function sendSMS($numbers, $msg)

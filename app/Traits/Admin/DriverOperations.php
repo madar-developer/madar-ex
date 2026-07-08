@@ -59,7 +59,7 @@ trait DriverOperations
                 $Driver->DriverCity()->create(['city_id' => $key]);
             }
         }
-        $message = 'تم اضافة سائق  : '.$Driver->name;
+        $message = notificationMessage('driver.created', ['driver_name' => $Driver->name]);
         if($admin)
 
         {
@@ -117,7 +117,7 @@ trait DriverOperations
             }
         }
         $admin = Admin::first();
-        $message = 'تم تعديل بيانات السائق  : '.$Driver->name;
+        $message = notificationMessage('driver.updated', ['driver_name' => $Driver->name]);
         if($admin)
         {
             $admin->notify(new GeneralNotification($message, '/dashboard/drivers/'.$Driver->id ) );

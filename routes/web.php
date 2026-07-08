@@ -344,6 +344,8 @@ Route::group(['namespace' =>'Admin'], function() {
         Route::resource('/products', 'ProductController');
         Route::resource('/sliders', 'SliderController');
         Route::resource('/notifications', 'NotificationController')->only(['index', 'store']);
+        Route::get('/notification-templates/sync', 'NotificationTemplateController@sync')->name('notification-templates.sync');
+        Route::resource('/notification-templates', 'NotificationTemplateController')->only(['index', 'edit', 'update']);
 
         Route::group(['prefix' => 'reports'], function() {
             Route::get('/orders', 'ReportController@ordersGet');

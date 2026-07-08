@@ -35,7 +35,7 @@ trait UserOperations
             $user->BusinessAccount()->create($data['business']);
         }
         ///////////////// branch or admin
-        $message = 'تم اضافة مستخدم  : '.$user->name;
+        $message = notificationMessage('user.created', ['user_name' => $user->name]);
         if($admin)
         
         {

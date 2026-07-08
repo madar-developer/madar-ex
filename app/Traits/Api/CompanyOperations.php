@@ -31,7 +31,7 @@ trait CompanyOperations
         $Company = Company::create($data);
 
           ///////////////// branch or admin
-          $message = 'تم اضافة شركه  : '.$Company->name;
+          $message = notificationMessage('company.created', ['company_name' => $Company->name]);
           if($admin)
           {
               $admin->notify(new GeneralNotification($message, '/dashboard/companies/'.$Company->id ) );

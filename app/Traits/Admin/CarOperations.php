@@ -31,7 +31,7 @@ trait CarOperations
         DB::beginTransaction();
         $Car = Car::create($data);
         $admin = Admin::first();
-        $message = 'تم اضافة سيارة  : '.$Car->name;
+        $message = notificationMessage('car.created', ['car_name' => $Car->name]);
         if($admin)
         {
             $admin->notify(new GeneralNotification($message, '/dashboard/cars/'.$Car->id ) );
@@ -71,7 +71,7 @@ trait CarOperations
         if($request->has('kms') && $request->get('kms') != $Car->kms)
         {
             $admin = Admin::first();
-            $message = 'تم تغيير عدد الكيلو مترات للسياره : '.$Car->name;
+            $message = notificationMessage('car.odometer_changed', ['car_name' => $Car->name]);
             if($admin)
             {
                 $admin->notify(new GeneralNotification($message, '/dashboard/cars/'.$Car->id ) );
@@ -79,7 +79,7 @@ trait CarOperations
         }
         $Car->update($data);
         $admin = Admin::first();
-        $message = 'تم تعديل بيانات السيارة  : '.$Car->name;
+        $message = notificationMessage('car.updated', ['car_name' => $Car->name]);
         if($admin)
         {
             $admin->notify(new GeneralNotification($message, '/dashboard/cars/'.$Car->id ) );

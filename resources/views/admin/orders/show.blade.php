@@ -315,7 +315,12 @@
         font-size: 13px;
         color: #444;
     }
-
+    .ot-dot.is-delivered {
+        width: 30px;
+        height: 30px;
+        background: #2ea334;
+        border: 5px solid #92e49c;
+    }
 </style>
 @endsection
 @section('header')

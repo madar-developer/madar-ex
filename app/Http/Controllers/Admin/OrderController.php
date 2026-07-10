@@ -138,6 +138,13 @@ class OrderController extends Controller
             $search['status'] = $status;
             $orders = $orders->where('status'     ,$status);
         }
+        if (Request()->has('repeated') && Request()->get('repeated') != '') {
+            $repeated = Request()->get('repeated');
+            $search['repeated'] = $repeated;
+            if ($repeated == '1') {
+                $orders = $orders->where('refrence_no', 'REGEXP', '-[0-9]+$');
+            }
+        }
         if ($request->has('date_from') && $request->get('date_from') != '') {
             $date_from = $request->get('date_from');
             $search['date_from'] = $date_from;

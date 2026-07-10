@@ -37,6 +37,8 @@ class DriverController extends Controller
     public function index(Request $request)
     {
         $title = 'السائقين ';
+        $weekStart = Carbon::now()->startOfWeek(Carbon::SATURDAY)->startOfDay();
+        $weekEnd = (clone $weekStart)->addDays(6)->endOfDay();
         ////////////////// branch or admin
         if (in_array( auth('admin')->user()->role, ['branch', 'employee']) || (auth('admin')->user()->role == 'employee' && auth()->user()->parent_id != '0' )) {
             //
@@ -47,11 +49,15 @@ class DriverController extends Controller
             }
             $drivers = Driver::whereHas('BranchData', function($q)use($branch_id){
                 $q->where('admin_id', $branch_id);
-            })->latest();
+            });
         } else {
-            $drivers = Driver::latest();
+            $drivers = Driver::query();
 
         }
+        $drivers = $drivers->orderByRaw(
+            'CASE WHEN last_activity BETWEEN ? AND ? THEN 0 ELSE 1 END',
+            [$weekStart, $weekEnd]
+        )->latest();
         $search = array();
         if (Request()->has('created_at') && Request()->get('created_at') != '') {
             $created_at = Request()->get('created_at');
@@ -61,7 +67,24 @@ class DriverController extends Controller
         if (Request()->has('driver') && Request()->get('driver') != '') {
             $driver = Request()->get('driver');
             $search['driver'] = $driver;
-            $drivers = $drivers->where('phone'     , 'LIKE', '%'.$driver.'%')->orWhere('first_name'     , 'LIKE', '%'.$driver.'%')->orWhere('email'     , 'LIKE', '%'.$driver.'%');
+            $drivers = $drivers->where(function ($q) use ($driver) {
+                $q->where('phone', 'LIKE', '%'.$driver.'%')
+                    ->orWhere('first_name', 'LIKE', '%'.$driver.'%')
+                    ->orWhere('email', 'LIKE', '%'.$driver.'%');
+            });
+        }
+        if (Request()->has('active') && Request()->get('active') != '') {
+            $active = Request()->get('active');
+            $search['active'] = $active;
+            if ($active == '1') {
+                $drivers = $drivers->whereBetween('last_activity', [$weekStart, $weekEnd]);
+            } else {
+                $drivers = $drivers->where(function ($q) use ($weekStart, $weekEnd) {
+                    $q->whereNull('last_activity')
+                        ->orWhere('last_activity', '<', $weekStart)
+                        ->orWhere('last_activity', '>', $weekEnd);
+                });
+            }
         }
         if (Request()->has('excel') && Request()->get('excel') != '') {
             $drivers = $drivers->get();

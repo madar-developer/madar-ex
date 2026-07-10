@@ -54,6 +54,16 @@
                                 </div>
                             </div>
 
+                            <div class="col-lg-2">
+                                <div class="form-horizontal">
+                                    <div class="form-group">
+                                        <div class="col-md-12">
+                                            {!! Form::select("active",(['' => 'اختر الحالة','1' => 'نشط هذا الأسبوع', '0' => 'غير نشط']),
+                                            (array_key_exists('active', $search))? $search['active'] : null,['class'=>"form-control select2 "])!!}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
 
                             <div class="col-md-2">
                                 <div class="form-horizontal m-b-15">

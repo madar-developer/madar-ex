@@ -98,7 +98,7 @@
 }
 
 .shipment-progress-step.shipment-progress-step--delivered-final .step-circle{
-    background: #2e7d32;
+    background: #2ea334;
 }
 
 .shipment-status-alert--failed{
@@ -278,6 +278,36 @@
     .order-log-table tr.order-log-row--failed .ot-tl-rail{
         background: #c62828;
     }
+    .shipment-details-toggle{
+        display: block;
+        width: 100%;
+        margin-top: 10px;
+        padding: 12px 16px;
+        border: 1px solid #eee;
+        border-radius: 8px;
+        background: #fafafa;
+        color: #222;
+        font-weight: 700;
+        text-align: right;
+        text-decoration: none !important;
+        cursor: pointer;
+    }
+    .shipment-details-toggle:hover,
+    .shipment-details-toggle:focus{
+        background: #f3f3f3;
+        color: #222;
+        text-decoration: none !important;
+    }
+    .shipment-details-toggle .fa{
+        margin-left: 8px;
+        transition: transform .2s ease;
+    }
+    .shipment-details-toggle[aria-expanded="true"] .fa{
+        transform: rotate(180deg);
+    }
+    .shipment-details-collapse{
+        margin-top: 12px;
+    }
     .order-log-table tr.order-log-row--delivered .ot-tl-rail{
         background: #43a047;
     }
@@ -297,6 +327,9 @@
         text-align: left;
         font-size: 13px;
         color: #444;
+    }
+    .shipment-progress-step.done.shipment-progress-step--delivered-final .step-circle{
+        border: 3px solid #92e49c;
     }
 </style>
 @php
@@ -323,7 +356,7 @@
                     <button type="button" class="close" data-dismiss="modal">×</button>
                 </div>
                 <div class="modal-body">
-                    <h2 class="text-center">حالة الشحنة</h2>
+                    <h2 class="text-center">حالة الشحنة : {{$order->status_txt}}</h2>
                     <div class="flex-bn">
                         <div class="item">
                             <span class="lbl">رقم الطلب : </span>
@@ -376,10 +409,10 @@
                                 <i class="fas fa-shipping-fast"></i>
                             </span>
                         </div>
-                        <div class="step  {{($step >= 4)? (($step == 4)? 'done' : (($step == 5)? 'failed' : '')) : ''}}">
+                        <div class=" 11 step  {{($step >= 4)? (($step == 4)? 'done' : (($step == 5)? 'failed' : '')) : ''}}">
                             <div class="step-text">تم التسليم</div>
                             <span>
-                                <i class="fas fa-people-carry"></i>
+                                <i class="fas fa-people-carry"></i> 1
                             </span>
                         </div>
                     </div>
@@ -530,51 +563,64 @@
                                 @endforeach
                             </div>
 
-                            <div class="table-wr shipment-timeline-table">
-                                <table class="order-log-table table">
-                                    <thead>
-                                        <tr>
-                                            <th class="ot-tl-cell"></th>
-                                            <th>التاريخ</th>
-                                            <th>الحالة</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        @php
-                                        $last_msg = '';
-                                        @endphp
-                                        @forelse($order->OrderLog()->latest()->get()  as $log)
-                                        @php
-                                        if($last_msg == $log->details){
-                                        continue;
-                                        }
-                                        $last_msg = $log->details;
-                                        $logRowFailed = $log->status === 'deliver_failed';
-                                        $logRowDelivered = ! $logRowFailed && $log->status === 'delivered';
-                                        $logRowClass = $logRowFailed ? 'order-log-row--failed' : ($logRowDelivered ? 'order-log-row--delivered' : '');
-                                        @endphp
-                                            <tr class="{{ $logRowClass }}">
-                                                <td class="ot-tl-cell">
-                                                    <span class="ot-tl-rail"></span>
-                                                    <span class="ot-tl-dot"><i class="fa {{ $logRowFailed ? 'fa-times' : 'fa-check' }}"></i></span>
-                                                </td>
-                                                <td>
-                                                    <div>{{ $log->created_at->format('d/m/Y') }}</div>
-                                                    <div style="color:#888;font-size:12px;">{{ $log->created_at->format('H:i') }}</div>
-                                                </td>
-                                                <td>
-                                                    <div>{{ $log->details }}</div>
-                                                    
-                                                </td>
-                                            </tr>
-                                        @empty
-                                            <tr>
-                                                <td colspan="4" class="text-center" style="padding:24px;">لا توجد سجلات.</td>
-                                            </tr>
-                                        @endforelse
-                                    </tbody>
-                                </table>
-                                <!--  -->
+                            <div class="shipment-details-accordion">
+                                <a class="shipment-details-toggle collapsed"
+                                   role="button"
+                                   data-toggle="collapse"
+                                   href="#shipment-details-log"
+                                   aria-expanded="false"
+                                   aria-controls="shipment-details-log">
+                                    <i class="fa fa-chevron-down"></i>
+                                    اظهار تفاصيل الشحنه
+                                </a>
+                                <div id="shipment-details-log" class="collapse shipment-details-collapse">
+                                    <div class="table-wr shipment-timeline-table">
+                                        <table class="order-log-table table">
+                                            <thead>
+                                                <tr>
+                                                    <th class="ot-tl-cell"></th>
+                                                    <th>التاريخ</th>
+                                                    <th>الحالة</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                @php
+                                                $last_msg = '';
+                                                @endphp
+                                                @forelse($order->OrderLog()->latest()->get()  as $log)
+                                                @php
+                                                if($last_msg == $log->details){
+                                                continue;
+                                                }
+                                                $last_msg = $log->details;
+                                                $logRowFailed = $log->status === 'deliver_failed';
+                                                $logRowDelivered = ! $logRowFailed && $log->status === 'delivered';
+                                                $logRowClass = $logRowFailed ? 'order-log-row--failed' : ($logRowDelivered ? 'order-log-row--delivered' : '');
+                                                @endphp
+                                                    <tr class="{{ $logRowClass }}">
+                                                        <td class="ot-tl-cell">
+                                                            <span class="ot-tl-rail"></span>
+                                                            <span class="ot-tl-dot"><i class="fa {{ $logRowFailed ? 'fa-times' : 'fa-check' }}"></i></span>
+                                                        </td>
+                                                        <td>
+                                                            <div>{{ $log->created_at->format('d/m/Y') }}</div>
+                                                            <div style="color:#888;font-size:12px;">{{ $log->created_at->format('H:i') }}</div>
+                                                        </td>
+                                                        <td>
+                                                            <div>{{ $log->details }}</div>
+                                                            
+                                                        </td>
+                                                    </tr>
+                                                @empty
+                                                    <tr>
+                                                        <td colspan="4" class="text-center" style="padding:24px;">لا توجد سجلات.</td>
+                                                    </tr>
+                                                @endforelse
+                                            </tbody>
+                                        </table>
+                                        <!--  -->
+                                    </div>
+                                </div>
                             </div>
                         </div>
 

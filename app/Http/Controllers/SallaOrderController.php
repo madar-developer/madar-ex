@@ -12,6 +12,7 @@ use App\Models\Order;
 use App\Models\City;
 use App\Models\OrderStatus;
 use PDF;
+use App\Models\Company;
 
 class SallaOrderController extends Controller
 {
@@ -151,6 +152,14 @@ class SallaOrderController extends Controller
                 ->whereNotNull('company_id')
                 ->latest('id')
                 ->value('company_id');
+        }
+        // check company active or not
+        if(!$companyId){
+            return response()->json(['message' => 'Company not found'], 404);
+        }
+        $company = Company::find($companyId);
+        if($company->active != '1'){
+            return response()->json(['message' => 'Company not active'], 404);
         }
 
         $order = Order::where('refrence_no', (string) $sallaOrderId)->first();

@@ -163,6 +163,49 @@
     </div>
     @endforeach
 
+    <div class="col-lg-3 col-md-6">
+        <a href="{{ url('/dashboard/orders?status=new&repeated=1') }}">
+            <div class="card-box" style="background-color: #ffe8a1;">
+                <h4 class="header-title m-t-0 m-b-30" style="color: #000;">المكررة جديد</h4>
+                <div class="widget-chart-1">
+                    <div class="widget-chart-box-1">
+                        <i class="fa fa-copy" aria-hidden="true"></i>
+                    </div>
+                    <div class="widget-detail-1">
+                        <h2 class="p-t-10 m-b-0" style="color: #000;">
+                            {{ \App\Models\Order::where('status', 'new')
+                                ->where('is_returned', 0)
+                                ->where('refrence_no', 'REGEXP', '-[0-9]+$')
+                                ->count() }}
+                        </h2>
+                        <p class="text-muted">المكررة جديد</p>
+                    </div>
+                </div>
+            </div>
+        </a>
+    </div>
+
+    <div class="col-lg-3 col-md-6">
+        <a href="{{ route('orders.return-orders', ['status' => 'new']) }}">
+            <div class="card-box" style="background-color: #f5c6cb;">
+                <h4 class="header-title m-t-0 m-b-30" style="color: #000;">الارجاع جديد</h4>
+                <div class="widget-chart-1">
+                    <div class="widget-chart-box-1">
+                        <i class="fa fa-undo" aria-hidden="true"></i>
+                    </div>
+                    <div class="widget-detail-1">
+                        <h2 class="p-t-10 m-b-0" style="color: #000;">
+                            {{ \App\Models\Order::where('status', 'new')
+                                ->where('is_returned', 1)
+                                ->where('refrence_no', 'REGEXP', '-[0-9]+$')
+                                ->count() }}
+                        </h2>
+                        <p class="text-muted">الارجاع جديد</p>
+                    </div>
+                </div>
+            </div>
+        </a>
+    </div>
 
 </div>
 

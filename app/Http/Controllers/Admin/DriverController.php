@@ -246,8 +246,8 @@ class DriverController extends Controller
                                         ->where('status', 'delivered')
                                         ->where('collected', 0)
                                         ->with(['Company','PaymentMethod','City', 'Invoice'])
-                                        ->paginate(40);
-        $driver_finances = $driver->DriverFianance()->with(['Admin','Driver'])->paginate(40);
+                                        ->paginate(100);
+        $driver_finances = $driver->DriverFianance()->with(['Admin','Driver'])->paginate(100);
         $n_orders = $driver->Order()->with(['Company','PaymentMethod','City'])->paginate(100);//return ($n_orders);
         $n0_orders = $driver->Order()->where('status', 'delivered')->where('collected', 0)->with(['Company','PaymentMethod','City'])->paginate(100);
         return view('admin.drivers.show', compact('n_orders','n0_orders', 'orders_not_delivered', 'driver_finances', 'orders_drivers_not_get_paid', 'orders_drivers_get_paid', 'driver', 'title', 'days_chart', 'months_chart', 'orders_not_col', 'orders_col'));

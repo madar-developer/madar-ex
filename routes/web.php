@@ -318,6 +318,8 @@ Route::group(['namespace' =>'Admin'], function() {
         //
         // Route::get('/drivers-collect-orders/{id}', 'DriverController@CollectOrders')->name('drivers.collect-orders');
         Route::post('/drivers-collect-orders/{id}', 'DriverController@CollectOrders')->name('drivers.collect-orders');
+        Route::get('/drivers-cashed-orders-form/{id}', 'DriverController@CashedOrdersForm')->name('drivers.cashed-orders-form');
+        Route::get('/drivers-finances-form/{id}', 'DriverController@DriverFinancesForm')->name('drivers.finances-form');
         Route::post('/drivers-cashed-orders/{id}', 'DriverController@CashedOrders')->name('drivers.cashed-orders');
         Route::resource('/cars', 'CarController');
         Route::resource('/invoices', 'InvoiceController');

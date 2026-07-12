@@ -264,6 +264,28 @@ class DriverController extends Controller
         return view('admin.drivers.show-orders', compact('row', 'orders', 'driver'));
     }
 
+    public function CashedOrdersForm($id)
+    {
+        $driver = Driver::findOrFail($id);
+        $orders = $driver->Order()->whereHas('Invoice', function ($q) {
+                $q->where('driver_paied', '0');
+            })
+            ->where('status', 'delivered')
+            ->where('collected', 0)
+            ->with(['Company', 'PaymentMethod', 'City', 'Invoice'])
+            ->get();
+
+        return view('admin.drivers.cashed-orders-modal', compact('driver', 'orders'));
+    }
+
+    public function DriverFinancesForm($id)
+    {
+        $driver = Driver::findOrFail($id);
+        $driver_finances = $driver->DriverFianance()->with(['Admin', 'Driver'])->latest()->get();
+
+        return view('admin.drivers.driver-finances-modal', compact('driver', 'driver_finances'));
+    }
+
     /**
      * Show the form for editing the specified resource.
      *

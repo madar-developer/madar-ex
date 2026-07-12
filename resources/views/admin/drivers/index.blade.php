@@ -175,6 +175,20 @@
                                                                         class="btn btn-info   waves-effect waves-light m-b-5 btn-xs"> <i
                                                                             class="fa fa-pencil"></i> تعديل </a>
                                                                             <a href="{{route('drivers.destroy',$item)}}" id="delete-btn" type="button" class="btn btn-danger   waves-effect waves-light m-b-5 btn-xs"> <i class="fa fa-times"></i> حذف </a>
+                                                                    <a href="javascript:void(0);" type="button"
+                                                                        class="btn btn-warning waves-effect waves-light m-b-5 btn-xs cashed-orders-btn"
+                                                                        data-route="{{ route('drivers.cashed-orders-form', $item->id) }}"
+                                                                        data-name="{{ $item->first_name }} {{ $item->last_name }}"
+                                                                        title="تصفية الطلبات من السائق">
+                                                                        <i class="fa fa-money"></i> تصفية الطلبات
+                                                                    </a>
+                                                                    <a href="javascript:void(0);" type="button"
+                                                                        class="btn btn-primary waves-effect waves-light m-b-5 btn-xs driver-finances-btn"
+                                                                        data-route="{{ route('drivers.finances-form', $item->id) }}"
+                                                                        data-name="{{ $item->first_name }} {{ $item->last_name }}"
+                                                                        title="تحميل التصفيات">
+                                                                        <i class="fa fa-list"></i> تحميل التصفيات
+                                                                    </a>
                                                                     <a href="{{route('driver.pdf',$item->id)}}" type="button" class="btn btn-success   waves-effect waves-light m-b-5 btn-xs"> <i class="fa fa-pdf"></i> ExportPDF </a>
                                                                     <a href="{{route('driver-finance.pdf',$item->id)}}" type="button" class="btn btn-success   waves-effect waves-light m-b-5 btn-xs"> <i class="fa fa-pdf"></i> تقرير الطلبات التي تم توصيلها </a>
 
@@ -250,34 +264,112 @@
                     </div><!-- /.modal-dialog -->
                 </div>
 
+                <div id="cashed-orders-modal" class="modal fade" tabindex="-1" role="dialog" aria-hidden="true">
+                    <div class="modal-dialog" style="width:90%; max-width:1200px;">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+                                <h4 class="modal-title">تصفية الطلبات من السائق — <span id="cashed-orders-driver-name"></span></h4>
+                            </div>
+                            <div class="modal-body">
+                                <div id="cashed-orders-box" class="text-center">
+                                    <i class="fa fa-spinner fa-spin"></i> جاري التحميل...
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="driver-finances-modal" class="modal fade" tabindex="-1" role="dialog" aria-hidden="true">
+                    <div class="modal-dialog" style="width:90%; max-width:1200px;">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+                                <h4 class="modal-title">تحميل التصفيات — <span id="driver-finances-driver-name"></span></h4>
+                            </div>
+                            <div class="modal-body">
+                                <div id="driver-finances-box" class="text-center">
+                                    <i class="fa fa-spinner fa-spin"></i> جاري التحميل...
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="modal fade" id="finance-orders-modal" tabindex="-1" role="dialog" aria-labelledby="financeOrdersModalLabel">
+                    <div class="modal-dialog modal-lg" role="document" style="width:90%;">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                                <h4 class="modal-title" id="financeOrdersModalLabel">عرض الطلبات</h4>
+                            </div>
+                            <div class="modal-body" id="finance-orders-ajax-content"></div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-default" data-dismiss="modal">اغلاق</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
 
 @endsection
 @section('script')
 
 
         <script type="text/javascript">
-            // $('#datatable-0, #datatable-1, #datatable-2, #datatable-3, #datatable-4').DataTable( {
-            //     "bLengthChange" : false, //thought this line could hide the LengthMenu
-            //     "bInfo":false,
-            // } );
-
-            // $('.buunton-notofication').on('click',function(){
-            //     var type = $(this).data('type');
-            //     var message = $(this).data('message');
-            //     switch(type){
-            //         case 'error' : toastr.error(message);  break;
-            //         case 'success' : toastr.success(message);  break;
-            //         case 'info' : toastr.info(message);  break;
-            //         case 'warning' : toastr.warning(message);  break;
-            //     }
-            //     return false;
-            // });
-            // TableManageButtons.init();
-
             $(document).on('click', '.client-info', function(){
                 $.get( "{{url('/dashboard/user-info')}}" + "/" + $(this).attr('data-id'), function( data ) {
                     $('#client-info-box').html(data);
                 });
+            });
+
+            $(document).on('click', '.cashed-orders-btn', function () {
+                var route = $(this).data('route');
+                var name = $(this).data('name');
+                $('#cashed-orders-driver-name').text(name);
+                $('#cashed-orders-box').html('<div class="text-center"><i class="fa fa-spinner fa-spin"></i> جاري التحميل...</div>');
+                $('#cashed-orders-modal').modal('show');
+                $.get(route)
+                    .done(function (data) {
+                        $('#cashed-orders-box').html(data);
+                    })
+                    .fail(function () {
+                        $('#cashed-orders-box').html('<div class="alert alert-danger">تعذر تحميل الطلبات</div>');
+                    });
+            });
+
+            $(document).on('click', '#checkAllCashed', function () {
+                $('#cashed-orders-box input.cashed-order-id').prop('checked', this.checked);
+            });
+
+            $(document).on('click', '.driver-finances-btn', function () {
+                var route = $(this).data('route');
+                var name = $(this).data('name');
+                $('#driver-finances-driver-name').text(name);
+                $('#driver-finances-box').html('<div class="text-center"><i class="fa fa-spinner fa-spin"></i> جاري التحميل...</div>');
+                $('#driver-finances-modal').modal('show');
+                $.get(route)
+                    .done(function (data) {
+                        $('#driver-finances-box').html(data);
+                        if ($.fn.select2) {
+                            $('#driver-finances-box .select2').select2();
+                        }
+                    })
+                    .fail(function () {
+                        $('#driver-finances-box').html('<div class="alert alert-danger">تعذر تحميل التصفيات</div>');
+                    });
+            });
+
+            $(document).on('click', '.transfer-info', function () {
+                var url = $(this).attr('data-url');
+                $('#finance-orders-ajax-content').html('<div class="text-center"><i class="fa fa-spinner fa-spin"></i> جاري التحميل...</div>');
+                $.get(url)
+                    .done(function (res) {
+                        $('#finance-orders-ajax-content').html(res);
+                    })
+                    .fail(function () {
+                        $('#finance-orders-ajax-content').html('<div class="alert alert-danger">تعذر تحميل الطلبات</div>');
+                    });
             });
         </script>
 @endsection

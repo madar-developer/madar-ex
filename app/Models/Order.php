@@ -203,4 +203,23 @@ class Order extends Model
         return $price;
     }
 
+    public function getPhoneAttribute($phone)
+    {
+        if ($phone === null || $phone === '') {
+            return $phone;
+        }
+
+        $phone = preg_replace('/\D/', '', $phone);
+
+        if (substr($phone, 0, 5) === '00966') {
+            return '0' . substr($phone, 5);
+        }
+
+        if (substr($phone, 0, 3) === '966') {
+            return '0' . substr($phone, 3);
+        }
+
+        return $phone;
+    }
+
 }

@@ -97,7 +97,7 @@
                                     </div>
                                     <div class="form-group margin-top-15">
                                         <label class="control-label col-md-3">
-                                           Webhook Notify URL (Get method)
+                                           Webhook Notify URL (POST method)
                                         </label>
                                         <div class="col-md-7">
                                             <input type="text" name="notify_url" value="{{$admin->notify_url}}" class="form-control" placeholder="http://">

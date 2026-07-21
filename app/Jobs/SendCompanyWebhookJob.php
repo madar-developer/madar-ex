@@ -56,7 +56,7 @@ class SendCompanyWebhookJob implements ShouldQueue
     public function handle()
     {
         try {
-            $query = http_build_query([
+            $payload = http_build_query([
                 'refrence_no' => $this->refrence_no,
                 'status'      => $this->status,
             ]);
@@ -64,7 +64,10 @@ class SendCompanyWebhookJob implements ShouldQueue
             $ch = curl_init();
 
             curl_setopt_array($ch, [
-                CURLOPT_URL            => rtrim($this->webhook_url, '?') . '?' . $query,
+                CURLOPT_URL            => rtrim($this->webhook_url, '?'),
+                CURLOPT_POST           => true,
+                CURLOPT_POSTFIELDS     => $payload,
+                CURLOPT_HTTPHEADER     => ['Content-Type: application/x-www-form-urlencoded'],
                 CURLOPT_RETURNTRANSFER => true,
                 CURLOPT_TIMEOUT        => 30,
                 CURLOPT_CONNECTTIMEOUT => 10,

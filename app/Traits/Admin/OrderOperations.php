@@ -15,7 +15,7 @@ use App\Models\OrderStatus;
 use App\Models\SallaToken;
 use App\Models\Term;
 use App\Notifications\AdminNotification;
-use App\Jobs\SendOrderWebhookJob;
+use App\Jobs\SendCompanyWebhookJob;
 use App\Services\SaudiAddressService;
 use App\Services\Salla\SallaOrderService;
 use Illuminate\Support\Facades\Log;
@@ -259,16 +259,11 @@ trait OrderOperations
             $company = $Order->Company()->first();
             if($company && $company->notify_url)
             {
-                // $ch = curl_init();
-                // curl_setopt($ch, CURLOPT_URL, $Order->Company()->first()->notify_url."refrence_no=$Order->serial&status=$request->get('status')");
-                // curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
-                // $output = curl_exec($ch);
-                // curl_close($ch);
-                $url = $company->notify_url . "refrence_no=$Order->serial&status=".$request->get('status');
-                SendOrderWebhookJob::dispatch($url);
-
-
-
+                SendCompanyWebhookJob::dispatch(
+                    $company->notify_url,
+                    $Order->refrence_no,
+                    $request->get('status')
+                );
             }
             // webhook end
             $status_data = OrderStatus::where('key', $request->get('status'))->first();

@@ -21,7 +21,7 @@ class Order extends Model
 
     public static function getLevels($status)
     {
-        $levels = [];
+        $levels = [];<
         switch ($status) {
             case 'new':
                 $levels = ['init', 'not_received'];
@@ -221,6 +221,4 @@ class Order extends Model
 
         return $phone;
     }
-
-
 }

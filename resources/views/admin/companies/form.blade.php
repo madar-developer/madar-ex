@@ -47,6 +47,17 @@
                                 {!! Form::number("c_o_d_cost",null,['class'=>"form-control  "])!!}
                             </div>
                         </div>
+                        <div class="form-group">
+                            <label class="">Webhook — notify_url <small class="text-muted">(للمطورين)</small></label>
+                            <div class="">
+                                {!! Form::text("notify_url", null, ['class' => 'form-control', 'placeholder' => 'https://example.com/webhook']) !!}
+                                <p class="help-block text-muted m-b-0">
+                                    يُستدعى عند تغيير حالة الطلب (POST) مع المعاملات:
+                                    <code>refrence_no</code> (رقم مرجع الطلب) و
+                                    <code>status</code> (الحالة الجديدة).
+                                </p>
+                            </div>
+                        </div>
                         {{-- <div class="form-group">
                             <label class=""> تأكيد كلمه المرور <span></span></label>
                             <div class="">

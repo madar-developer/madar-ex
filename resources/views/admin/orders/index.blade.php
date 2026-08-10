@@ -427,11 +427,18 @@
                             <label>تعديل المحدد</label>
                             {!! Form::select("status",OrderStatus(),null,['class'=>"form-control select2",
                             "autocomplete"=> 'off'])!!}
-                            <div class="text-center">
+                            <div class="text-center" style="margin-top:10px;">
                                 <button class="btn btn-primary waves-effect waves-light btn-submit" type="submit"
                                     id="merge_button"> تعديل </button>
+                                <button class="btn btn-danger waves-effect waves-light" type="button"
+                                    id="export-selected-pdf">
+                                    <i class="fa fa-file-pdf-o"></i>  تصدير نموذج للفواتير PDF
+                                </button>
                             </div>
                             {!!Form::close() !!}
+                            <form id="export-pdf-form" action="{{ route('orders.export-pdf') }}" method="POST" target="_blank" style="display:none;">
+                                @csrf
+                            </form>
                         </div>
                     </div>
                 </div>
@@ -706,6 +713,25 @@
 
     $("#checkAll").click(function () {
         $('input:checkbox').not(this).prop('checked', this.checked);
+    });
+
+    $("#export-selected-pdf").click(function () {
+        var arr = [];
+        $(".ids:checkbox:checked").not('#checkAll').each(function () {
+            if ($(this).val()) {
+                arr.push($(this).val());
+            }
+        });
+        if (!arr.length) {
+            alert('يرجى تحديد طلب واحد على الأقل للتصدير');
+            return;
+        }
+        var form = $('#export-pdf-form');
+        form.find('input[name="ids[]"]').remove();
+        $.each(arr, function (i, id) {
+            form.append('<input type="hidden" name="ids[]" value="' + id + '" />');
+        });
+        form.trigger('submit');
     });
     $(document).on('click', '.search-bbt', function () {
         console.log("::::::::::::::::::::::::");

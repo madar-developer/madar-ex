@@ -180,6 +180,14 @@
                                     <li class=" {!! (CheckPermission(['car_add']))? '' : 'hidden'  !!}"><a href="{{ url('/dashboard/worktimes/create') }}">  اضافة </a></li>
                                 </ul>
                             </li>
+                            <li class="has_sub  {!! (CheckPermission(['driver_show']))? '' : 'hidden'  !!} ">
+                                <a href="javascript:void(0);" class="waves-effect"><i class="zmdi zmdi-view-list"></i> <span> الحضور والانصراف </span> <span class="menu-arrow"></span></a>
+                                <ul class="list-unstyled">
+                                    <li><a href="{{ url('/dashboard/attendance-geofences') }}"> دوائر الحضور </a></li>
+                                    <li class=" {!! (CheckPermission(['driver_add']))? '' : 'hidden'  !!}"><a href="{{ url('/dashboard/attendance-geofences/create') }}"> إضافة دائرة </a></li>
+                                    <li><a href="{{ url('/dashboard/attendance-records') }}"> سجل الحضور </a></li>
+                                </ul>
+                            </li>
                             {{-- <li class="has_sub  {!! (CheckPermission(['orders-company_show']))? '' : 'hidden'  !!} ">
                                 <a href="javascript:void(0);" class="waves-effect"><i class="zmdi zmdi-view-list"></i> <span> الاحصائيات  </span> <span class="menu-arrow"></span></a>
                                 <ul class="list-unstyled">

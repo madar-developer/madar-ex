@@ -137,4 +137,94 @@ ini_set('memory_limit', '512M');
             $pdf = PDF::loadView('admin.reports.pdf.invoice', compact('invoice', 'title'));
             return $pdf->download('invoice-'.$invoice->id.'.pdf');
     }
+
+    public function exportSelectedOrdersPdf(Request $request)
+    {
+        $ids = array_filter((array) $request->input('ids', []));
+        if (empty($ids)) {
+            return redirect()->back()->with('error', 'يرجى تحديد طلب واحد على الأقل للتصدير');
+        }
+
+        $orders = Order::whereIn('id', $ids)
+            ->with([
+                'Company',
+                'PaymentMethod',
+                'OrderLog' => function ($q) {
+                    $q->where('status', 'deliver_failed')->latest();
+                },
+                'OrderLog.ReasonD',
+            ])
+            ->orderBy('company_id')
+            ->orderBy('id')
+            ->get();
+
+        if ($orders->isEmpty()) {
+            return redirect()->back()->with('error', 'لم يتم العثور على الطلبات المحددة');
+        }
+
+        $groups = $orders->groupBy('company_id')->map(function ($companyOrders) {
+            $first = $companyOrders->first();
+            $companyName = $first->Company->name ?? '';
+
+            return [
+                'company_name' => $companyName,
+                'date' => Carbon::now()->format('j F Y'),
+                'orders' => $companyOrders->values()->map(function ($order, $index) {
+                    $paymentLabel = ((int) $order->payment_method_id === 1)
+                        ? 'الدفع عند الاستلام'
+                        : 'مدفوع';
+
+                    $failedLog = $order->OrderLog->first();
+                    $reasonText = '';
+                    if ($failedLog && $failedLog->ReasonD && $failedLog->ReasonD->description) {
+                        $reasonText = 'تعذر التسليم , ' . $failedLog->ReasonD->description;
+                    } elseif ($order->status === 'deliver_failed') {
+                        $reasonText = 'تعذر التسليم';
+                    } elseif ($order->status === 'returned') {
+                        $reasonText = 'تم ارجاع الطلب للتاجر';
+                    } else {
+                        $reasonText = $order->status_txt ?: '-';
+                    }
+
+                    return [
+                        'index' => $index + 1,
+                        'customer' => $order->recipent_name ?: '-',
+                        'order_no' => $order->serial ?: ($order->refrence_no ?: $order->id),
+                        'date' => $order->created_at ? $order->created_at->format('Y-m-d') : '',
+                        'payment' => $paymentLabel,
+                        'reason' => $reasonText,
+                        'notes' => !empty($order->notes) ? $order->notes : '-',
+                    ];
+                }),
+            ];
+        })->values();
+
+        $title = 'الطلبات المرتجعه';
+        $letterhead = public_path('adminto/assets/images/official-letterhead.jpg');
+
+        ini_set('pcre.backtrack_limit', '5000000');
+        ini_set('memory_limit', '512M');
+
+        $pdf = PDF::loadView('admin.reports.pdf.returned-orders', compact('groups', 'title'), [], [
+            'format' => 'A4',
+            'orientation' => 'P',
+            'margin_left' => 12,
+            'margin_right' => 12,
+            'margin_top' => 42,
+            'margin_bottom' => 42,
+            'margin_header' => 0,
+            'margin_footer' => 0,
+            'instanceConfigurator' => function ($mpdf) use ($letterhead) {
+                if (is_file($letterhead)) {
+                    $mpdf->SetWatermarkImage($letterhead, 1, 'P', 'P');
+                    $mpdf->showWatermarkImage = true;
+                    $mpdf->watermarkImgBehind = true;
+                }
+                $mpdf->autoScriptToLang = true;
+                $mpdf->autoLangToFont = true;
+            },
+        ]);
+
+        return $pdf->download('returned-orders-' . Carbon::now()->toDateString() . '.pdf');
+    }
 }

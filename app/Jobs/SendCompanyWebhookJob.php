@@ -11,6 +11,18 @@ use Illuminate\Queue\SerializesModels;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\DB;
 
+/**
+ * Sends an order status webhook to a company's notify_url.
+ *
+ * POST application/x-www-form-urlencoded body:
+ *   - refrence_no: merchant order reference (orders.refrence_no)
+ *   - status:      new order status key
+ *
+ * Dispatched when order status changes (admin panel or driver API).
+ * Retries up to 3 times with 10s backoff. Logs success/failure.
+ *
+ * @see docs/company-order-webhook.md
+ */
 class SendCompanyWebhookJob implements ShouldQueue
 {
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;

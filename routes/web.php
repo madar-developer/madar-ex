@@ -294,6 +294,7 @@ Route::group(['namespace' =>'Admin'], function() {
         Route::get('/orders-invoice/{id}', 'OrderController@invoice')->name('orders-invoice');
         Route::post('/orders-invoice/{id}', 'OrderController@invoicePost');
         Route::post('/orders-ajax', 'OrderController@UAll')->name('orders-ajax');
+        Route::post('/orders-export-pdf', 'PdfController@exportSelectedOrdersPdf')->name('orders.export-pdf');
         Route::get('/orders-import', 'ExportExcelController@ordersImportPage')->name('orders.import-page');
         Route::get('/orders-import-template', 'ExportExcelController@downloadOrdersTemplate')->name('orders.import-template');
         Route::get('/orders-import-cities-reference', 'ExportExcelController@downloadCitiesReference')->name('orders.import-cities-reference');
@@ -302,6 +303,8 @@ Route::group(['namespace' =>'Admin'], function() {
         Route::resource('/sliders', 'SliderController');
         Route::resource('/partners', 'PartnerController');
         Route::resource('/worktimes', 'WorkTimeController');
+        Route::resource('/attendance-geofences', 'AttendanceGeofenceController');
+        Route::get('/attendance-records', 'AttendanceRecordController@index')->name('attendance-records.index');
         Route::resource('/circulars', 'CircularController');
         Route::resource('/drivers', 'DriverController');
         Route::get('/drivers-charts', 'DriverController@charts')->name('drivers-charts');

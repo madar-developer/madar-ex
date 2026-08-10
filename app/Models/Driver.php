@@ -128,4 +128,9 @@ class Driver extends Authenticatable implements JWTSubject
     {
         return $this->Hasmany(DriverCityPrice::class, 'driver_id');
     }
+
+    public function attendanceRecords()
+    {
+        return $this->hasMany(AttendanceRecord::class);
+    }
 }

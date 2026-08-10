@@ -56,6 +56,12 @@ Route::group(['prefix' => '/v1', 'namespace' => 'Api'], function() {
             Route::post('orders/change-status', 'OrderController@changestatus');
             Route::post('orders/change-orders-status', 'OrderController@changestatusArr');
             Route::post('orders/reschedule', 'OrderController@reschedule');
+            // attendance (geofence check-in/out)
+            Route::get('attendance/geofences', 'AttendanceController@geofences');
+            Route::get('attendance/today', 'AttendanceController@today');
+            Route::get('attendance/history', 'AttendanceController@history');
+            Route::post('attendance/check-in', 'AttendanceController@checkIn');
+            Route::post('attendance/check-out', 'AttendanceController@checkOut');
         });
     });
     Route::group(['prefix' => '/driver','middleware' => 'auth:api-driver'], function() {

@@ -189,11 +189,12 @@ ini_set('memory_limit', '512M');
                     return [
                         'index' => $index + 1,
                         'customer' => $order->recipent_name ?: '-',
-                        'order_no' => $order->serial ?: ($order->refrence_no ?: $order->id),
-                        'date' => $order->created_at ? $order->created_at->format('Y-m-d') : '',
+                        'order_no' => $order->refrence_no ,
+                        'serial' => $order->serial ,
                         'payment' => $paymentLabel,
                         'reason' => $reasonText,
-                        'notes' => !empty($order->notes) ? $order->notes : '-',
+                        // 'notes' => !empty($order->notes) ? $order->notes : '-',
+                        'date' => $order->created_at ? $order->created_at->format('Y-m-d') : '',
                     ];
                 }),
             ];

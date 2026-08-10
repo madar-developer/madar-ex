@@ -103,10 +103,11 @@
                     <th class="col-num">م</th>
                     <th class="col-customer">اسم العميل</th>
                     <th class="col-order">رقم الطلب</th>
-                    <th class="col-date">التاريخ</th>
+                    <th class="col-order">رقم البوليصة</th>
                     <th class="col-payment">حالة الدفع</th>
                     <th class="col-reason">سبب الارجاع</th>
-                    <th class="col-notes">الملاحظات</th>
+                    <!-- <th class="col-notes">الملاحظات</th> -->
+                    <th class="col-date">التاريخ</th>
                 </tr>
             </thead>
             <tbody>
@@ -115,10 +116,11 @@
                     <td class="col-num">{{ $row['index'] }}</td>
                     <td class="col-customer">{{ $row['customer'] }}</td>
                     <td class="col-order">{{ $row['order_no'] }}</td>
-                    <td class="col-date">{{ $row['date'] }}</td>
+                    <td class="col-serial">{{ $row['serial'] }}</td>
                     <td class="col-payment">{{ $row['payment'] }}</td>
                     <td class="col-reason">{{ $row['reason'] }}</td>
-                    <td class="col-notes">{{ $row['notes'] }}</td>
+                    <!-- <td class="col-notes">{{ $row['notes'] }}</td> -->
+                    <td class="col-date">{{ $row['date'] }}</td>
                 </tr>
                 @endforeach
             </tbody>

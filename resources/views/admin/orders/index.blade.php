@@ -432,7 +432,7 @@
                                     id="merge_button"> تعديل </button>
                                 <button class="btn btn-danger waves-effect waves-light" type="button"
                                     id="export-selected-pdf">
-                                    <i class="fa fa-file-pdf-o"></i>  تصدير نموذج للفواتير PDF
+                                    <i class="fa fa-file-pdf-o"></i>  تصدير نموذج الرجيع PDF
                                 </button>
                             </div>
                             {!!Form::close() !!}

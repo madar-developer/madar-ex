@@ -119,7 +119,7 @@
                     <td class="col-serial">{{ $row['serial'] }}</td>
                     <td class="col-payment">{{ $row['payment'] }}</td>
                     <td class="col-reason">{{ $row['reason'] }}</td>
-                    <!-- <td class="col-notes">{{ $row['notes'] }}</td> -->
+                    <!-- <td class="col-notes">{{ @$row['notes'] }}</td> -->
                     <td class="col-date">{{ $row['date'] }}</td>
                 </tr>
                 @endforeach

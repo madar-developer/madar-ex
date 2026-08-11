@@ -226,6 +226,10 @@ ini_set('memory_limit', '512M');
             },
         ]);
 
+        Order::whereIn('id', $orders->pluck('id'))->update([
+            'returned_pdf_exported_at' => Carbon::now(),
+        ]);
+
         return $pdf->download('returned-orders-' . Carbon::now()->toDateString() . '.pdf');
     }
 }

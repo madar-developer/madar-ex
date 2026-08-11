@@ -221,8 +221,22 @@
                                 <div class="form-horizontal">
                                     <div class="form-group">
                                         <div class="col-md-12">
-                                            {!! Form::select("payment_method_id",PaymentMethod(),(array_key_exists('deliver_failed', $search))? $search['deliver_failed'] :
+                                            {!! Form::select("payment_method_id",PaymentMethod(),(array_key_exists('payment_method_id', $search))? $search['payment_method_id'] :
                                             null,['class'=>"form-control "])!!}
+                                        </div>
+                                    </div>
+
+                                </div>
+                            </div>
+                            <div class="col-md-2">
+                                <div class="form-horizontal">
+                                    <div class="form-group">
+                                        <div class="col-md-12">
+                                            {!! Form::select("returned_pdf_exported", [
+                                                '' => 'تصدير PDF المرتجعات',
+                                                '1' => 'تم التصدير',
+                                                '0' => 'لم يتم التصدير',
+                                            ], (array_key_exists('returned_pdf_exported', $search)) ? $search['returned_pdf_exported'] : null, ['class' => 'form-control']) !!}
                                         </div>
                                     </div>
 
@@ -316,6 +330,11 @@
                                         <td>{{$item->Company->name ?? ''}} 
                                             @if($item->order_source == 'salla')
                                             <span class="badge badge-primary">سلة</span>
+                                            @endif
+                                            @if($item->returned_pdf_exported_at)
+                                            <span class="badge badge-danger" title="تم تصدير PDF المرتجعات: {{ $item->returned_pdf_exported_at }}">
+                                                <i class="fa fa-file-pdf-o"></i> PDF
+                                            </span>
                                             @endif
                                         </td>
                                         <td>{{$item->Company->phone ?? ''}} </td>

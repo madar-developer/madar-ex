@@ -10,6 +10,11 @@
         @if($item->order_source == 'salla')
         <span class="badge badge-primary">سلة</span>
         @endif
+        @if($item->returned_pdf_exported_at)
+        <span class="badge badge-danger" title="تم تصدير PDF المرتجعات: {{ $item->returned_pdf_exported_at }}">
+            <i class="fa fa-file-pdf-o"></i> PDF
+        </span>
+        @endif
     </td>
     <td>{{$item->Company->phone ?? ''}} </td>
     <td>{{$item->recipent_name}} </td>

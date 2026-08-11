@@ -160,6 +160,15 @@ class OrderController extends Controller
             $date_to = Carbon::parse($request->get('date_to'));
             $orders = $orders->whereDate('created_at', '<=', $date_to);
         }
+        if (Request()->has('returned_pdf_exported') && Request()->get('returned_pdf_exported') != '') {
+            $returned_pdf_exported = Request()->get('returned_pdf_exported');
+            $search['returned_pdf_exported'] = $returned_pdf_exported;
+            if ($returned_pdf_exported === '1') {
+                $orders = $orders->whereNotNull('returned_pdf_exported_at');
+            } elseif ($returned_pdf_exported === '0') {
+                $orders = $orders->whereNull('returned_pdf_exported_at');
+            }
+        }
         if (Request()->has('excel') && Request()->get('excel') != '') {
             $orders = $orders->get();
             return Excel::download(new GeneralExport('admin.reports.orders-excel', $orders), 'orders-'.Carbon::now()->toDateString().'.xlsx');
@@ -554,6 +563,14 @@ class OrderController extends Controller
             $search['date_to'] = $date_to;
             $date_to = Carbon::parse($request->get('date_to'));
             $orders = $orders->whereDate('created_at', '<=', $date_to);
+        }
+        if (Request()->has('returned_pdf_exported') && Request()->get('returned_pdf_exported') != '') {
+            $returned_pdf_exported = Request()->get('returned_pdf_exported');
+            if ($returned_pdf_exported === '1') {
+                $orders = $orders->whereNotNull('returned_pdf_exported_at');
+            } elseif ($returned_pdf_exported === '0') {
+                $orders = $orders->whereNull('returned_pdf_exported_at');
+            }
         }
         return $orders;
     }

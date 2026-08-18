@@ -115,7 +115,7 @@ Route::group(['prefix' => '/v1', 'namespace' => 'Api'], function() {
 });
 
 
-Route::group(['prefix' => '/v2', 'namespace' => 'Api/V2'], function() {
+Route::group(['prefix' => '/v2', 'namespace' => 'Api\V2'], function() {
     Route::post('get-order-history', 'ServiceController@getHistory');
     Route::group(['prefix' => '/driver', 'namespace' => 'Driver'], function() {
         Route::post('/signin', 'AuthController@login');

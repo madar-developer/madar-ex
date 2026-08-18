@@ -114,4 +114,47 @@ Route::group(['prefix' => '/v1', 'namespace' => 'Api'], function() {
     Route::get('/deliver-failed-option', 'AppInfoController@FailDeliverOption');
 });
 
+
+Route::group(['prefix' => '/v2', 'namespace' => 'Api/V2'], function() {
+    Route::post('get-order-history', 'ServiceController@getHistory');
+    Route::group(['prefix' => '/driver', 'namespace' => 'Driver'], function() {
+        Route::post('/signin', 'AuthController@login');
+        Route::post('/refresh', 'AuthController@refresh');
+        Route::post('forget-password', 'ProfileController@ForgetPassword');
+        Route::group(['middleware' => 'auth:api-driver'], function() {
+            Route::post('logout', 'AuthController@logout');
+            Route::get('delete-account', 'ProfileController@delete_account');
+            Route::post('delete-account', 'ProfileController@delete_account');
+            Route::get('profile', 'ProfileController@profile');
+            Route::get('statistics', 'ProfileController@statistics');
+            Route::get('finance', 'ProfileController@finance');
+            Route::get('notifications', 'ProfileController@notifications');
+            Route::post('delete-notification', 'ProfileController@markNotificationReaded');
+            Route::post('profile-update', 'ProfileController@update');
+            Route::get('orders', 'OrderController@index');
+            Route::post('orders-search', 'OrderController@searchOrders');
+            Route::get('finance-not-collected', 'OrderController@NotCollectedStatistics');
+            Route::get('sidemenu-counts', 'OrderController@MenuCounts');
+            Route::get('invoices', 'OrderController@InvoicesStatistics');
+            Route::get('invoice-show/{id}', 'OrderController@InvoiceShow');
+            Route::get('orders/show/{id}', 'OrderController@show');
+            Route::post('orders/accept', 'OrderController@accept');
+            Route::post('orders/refuse', 'OrderController@refuse');
+            Route::post('orders/change-cash-type', 'OrderController@changeCashType');
+            Route::post('orders/change-status', 'OrderController@changestatus');
+            Route::post('orders/change-orders-status', 'OrderController@changestatusArr');
+            Route::post('orders/reschedule', 'OrderController@reschedule');
+            // attendance (geofence check-in/out)
+            Route::get('attendance/geofences', 'AttendanceController@geofences');
+            Route::get('attendance/today', 'AttendanceController@today');
+            Route::get('attendance/history', 'AttendanceController@history');
+            Route::post('attendance/check-in', 'AttendanceController@checkIn');
+            Route::post('attendance/check-out', 'AttendanceController@checkOut');
+        });
+    });
+    Route::group(['prefix' => '/driver','middleware' => 'auth:api-driver'], function() {
+        Route::post('/upload-file', 'AppInfoController@UploadFile');
+    });
+
+});
 });

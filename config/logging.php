@@ -39,6 +39,12 @@ return [
             'channels' => ['daily'],
             'ignore_exceptions' => false,
         ],
+        
+        'apilog' => [
+            'driver' => 'daily',
+            'path' => storage_path('logs/api.log'),
+            'level' => 'info',
+        ],
 
         'single' => [
             'driver' => 'single',

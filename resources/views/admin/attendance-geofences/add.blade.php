@@ -12,7 +12,7 @@
 </div>
 @endsection
 @section('script')
-<script type="text/javascript" src="https://maps.google.com/maps/api/js?sensor=false&libraries=places&key=AIzaSyASV6ryM8d7tfsgxEULmT9j3GIqEM0O7rY&language=ar"></script>
+<script type="text/javascript" src="https://maps.google.com/maps/api/js?sensor=false&libraries=places&key={{ getMapsKey() }}&language=ar"></script>
 <script type="text/javascript">
     var map, marker, circle, autocomplete;
     var defaultLat = 24.7255553;

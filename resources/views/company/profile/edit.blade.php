@@ -18,8 +18,8 @@
 <!-- end row -->
 @endsection
 @section('script')
-{{-- <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAdF7p8rFeZiKlle55Wou-a0LYxMv6A52k" async defer></script> --}}
-<script type="text/javascript" src="https://maps.google.com/maps/api/js?sensor=false&libraries=places&key=AIzaSyASV6ryM8d7tfsgxEULmT9j3GIqEM0O7rY&language=ar"></script>
+{{-- <script src="https://maps.googleapis.com/maps/api/js?key={{ getMapsKey() }}" async defer></script> --}}
+<script type="text/javascript" src="https://maps.google.com/maps/api/js?sensor=false&libraries=places&key={{ getMapsKey() }}&language=ar"></script>
     <script type="text/javascript">
         var map;
         var marker;

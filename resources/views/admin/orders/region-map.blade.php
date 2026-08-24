@@ -373,6 +373,6 @@
     }
 </script>
 <script async defer
-    src="https://maps.googleapis.com/maps/api/js?key=AIzaSyASV6ryM8d7tfsgxEULmT9j3GIqEM0O7rY&language=ar&callback=initOrdersRegionMap">
+    src="https://maps.googleapis.com/maps/api/js?key={{ getMapsKey() }}&language=ar&callback=initOrdersRegionMap">
 </script>
 @endsection

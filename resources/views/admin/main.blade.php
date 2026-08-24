@@ -500,7 +500,7 @@
 </script>
 @if(0)
 <script type="text/javascript"
-    src="https://maps.google.com/maps/api/js?sensor=false&libraries=places&key=AIzaSyD0ktAbGbeMYYbK0jyaRwUm0ZBdlalobS0&language=ar"> 
+    src="https://maps.google.com/maps/api/js?sensor=false&libraries=places&key={{ getMapsKey() }}&language=ar"> 
 </script>
 <script type="text/javascript">
     var locations = JSON.parse('{!! $o_list !!}');

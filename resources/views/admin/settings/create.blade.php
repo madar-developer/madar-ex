@@ -60,6 +60,14 @@
                                                 {!! Form::url("setting[instagram]",(isset($setting['instagram']))? $setting['instagram'] : null,['class'=>'form-control'])!!}
                                             </div>          
                                         </div>
+                                        <div class="form-group margin-top-15">
+                                            <label class="control-label col-md-3">
+                                                مفتاح Google Maps
+                                            </label>
+                                            <div class="col-md-7">
+                                                {!! Form::text("setting[maps_key]",(isset($setting['maps_key']))? $setting['maps_key'] : null,['class'=>'form-control', 'placeholder' => 'AIza...'])!!}
+                                            </div>
+                                        </div>
 
 
                                         <div class="form-group margin-top-15">

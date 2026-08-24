@@ -517,7 +517,7 @@
     </script>
 
 
-<script type="text/javascript" src="https://maps.google.com/maps/api/js?sensor=false&libraries=places&key=AIzaSyCob-v1r_8bpOUPIm4TiaxrD3roc_XLFFo&language=ar"></script>
+<script type="text/javascript" src="https://maps.google.com/maps/api/js?sensor=false&libraries=places&key={{ getMapsKey() }}&language=ar"></script>
     <script type="text/javascript">
         var map;
         var marker;

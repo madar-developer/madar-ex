@@ -8,6 +8,16 @@ function getSettingValue($key)
     }
     return '';
 }
+
+function getMapsKey()
+{
+    $key = getSettingValue('maps_key');
+    if ($key) {
+        return $key;
+    }
+    return 'AIzaSyASV6ryM8d7tfsgxEULmT9j3GIqEM0O7rY';
+}
+
 function sendMadarxWebhook($order_id, $status, $tracking_number, $delivery_date, $notes = ''  )
 {
     $webhookUrl = 'https://adelfes.com/index.php?route=webhook/madarx';

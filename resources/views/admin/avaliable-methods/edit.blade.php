@@ -12,7 +12,7 @@
 <!-- end row -->
 @endsection
 @section('script')
-<script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAdF7p8rFeZiKlle55Wou-a0LYxMv6A52k" async defer></script>
+<script src="https://maps.googleapis.com/maps/api/js?key={{ getMapsKey() }}" async defer></script>
 <script type="text/javascript">
 
 

@@ -53,6 +53,74 @@ class OrderResource extends JsonResource
             'available_statuses' => $this->available_statuses,
             'company' => new CompanyResource($this->Company()->first()),
             'payment_method' => $p_m,
+            'steps' => $this->buildOrderSteps(),
+        ];
+    }
+
+    protected function buildOrderSteps()
+    {
+        $progressSteps = [
+            1 => 'تم الاستلام',
+            2 => 'تم استلام الطلب من المتجر ',
+            5 => 'الشحنه فى مستودع مدار ',
+            6 => 'جاري التوصيل ',
+            7 => 'تم التسليم',
+        ];
+
+        $statusMap = [
+            'init' => 1,
+            'at_madar' => 5,
+            'at_office' => 6,
+            'delivered' => 7,
+            'deliver_failed' => 6,
+        ];
+
+        $orderStatusIsFailed = $this->status === 'deliver_failed';
+        $currentProgress = $statusMap[$this->status] ?? 1;
+
+        $logs = $this->OrderLog()->latest()->get();
+        $latestShownLog = null;
+        $lastDetails = '';
+        foreach ($logs as $log) {
+            if ($lastDetails === $log->details) {
+                continue;
+            }
+            $latestShownLog = $log;
+            break;
+        }
+
+        $lastStatusIsDelivered = ($this->status === 'delivered')
+            || ($latestShownLog && $latestShownLog->status === 'delivered');
+
+        $items = [];
+        $totalSteps = count($progressSteps);
+        $stepNumber = 0;
+
+        foreach ($progressSteps as $index => $label) {
+            $stepNumber++;
+            $isLast = $stepNumber === $totalSteps;
+
+            if ($orderStatusIsFailed && $isLast) {
+                $done = false;
+                $failed = true;
+            } else {
+                $done = $index <= $currentProgress;
+                $failed = false;
+            }
+
+            $items[] = [
+                'index' => $index,
+                'label' => $label,
+                'done' => $done,
+                'failed' => $failed,
+                'delivered_final' => ! $orderStatusIsFailed && $isLast && $lastStatusIsDelivered && $index <= $currentProgress,
+            ];
+        }
+
+        return [
+            'current_progress' => $currentProgress,
+            'is_failed' => $orderStatusIsFailed,
+            'items' => $items,
         ];
     }
 }

@@ -80,6 +80,9 @@ class OrderController extends Controller
         if (Request()->has('status') && Request()->get('status') != '') {
             $orders = $orders->where('status', Request()->get('status') );
         }
+        if (Request()->has('keywords') && Request()->get('keywords') != '') {
+            $orders = $orders->where('refrence_no', 'like', '%' . Request()->get('keywords') . '%');
+        }
         if (Request()->has('date') && Request()->get('date') != '') {
             $orders = $orders->whereDate('created_at', Carbon::parse(Request()->get('date')) );
         }

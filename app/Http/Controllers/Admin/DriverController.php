@@ -230,26 +230,26 @@ class DriverController extends Controller
         // }
         // $orders_not_col = $driver->Order()->where('status', 'delivered')->where('collected', 0)->paginate(40);
         // $orders_col = $driver->Order()->where('status', 'delivered')->where('collected', 1)->paginate(40);
-        $orders_not_col = $driver->Order()->whereNotIn('status', ['deliver_failed', 'reschedule'])/*->where('status', 'delivered')*/->where('collected','<>', 1)->with(['Company','PaymentMethod','City'])->paginate(20);
-        $orders_col = $driver->Order()->where('status', 'delivered')->where('collected', 1)->with(['Company','PaymentMethod','City'])->paginate(20);
-        $orders_not_delivered = $driver->Order()->whereNotIn('status', ['delivered', 'at_madar', 'returned'])->where('collected', 1)->with(['Company','PaymentMethod','City'])->paginate(20);
+        $orders_not_col = $driver->Order()->whereNotIn('status', ['deliver_failed', 'reschedule'])/*->where('status', 'delivered')*/->where('collected','<>', 1)->with(['Company','PaymentMethod','City'])->orderBy('id', 'desc')->paginate(20);
+        $orders_col = $driver->Order()->where('status', 'delivered')->where('collected', 1)->with(['Company','PaymentMethod','City'])->orderBy('id', 'desc')->paginate(20);
+        $orders_not_delivered = $driver->Order()->whereNotIn('status', ['delivered', 'at_madar', 'returned'])->where('collected', 1)->with(['Company','PaymentMethod','City'])->orderBy('id', 'desc')->paginate(20);
         $orders_drivers_not_get_paid = $driver->Order()->whereHas('Invoice', function($q){
                                             $q->where('driver_paied', '0');
                                         })
                                         ->where('status', 'delivered')
                                         ->where('collected', 0)
                                         ->with(['Company','PaymentMethod','City', 'Invoice'])
-                                        ->paginate(200);
+                                        ->orderBy('id', 'desc')->paginate(200);
         $orders_drivers_get_paid = $driver->Order()->whereHas('Invoice', function($q){
                                             $q->where('driver_paied', '1');
                                         })
                                         ->where('status', 'delivered')
                                         ->where('collected', 0)
                                         ->with(['Company','PaymentMethod','City', 'Invoice'])
-                                        ->paginate(100);
-        $driver_finances = $driver->DriverFianance()->with(['Admin','Driver'])->paginate(100);
-        $n_orders = $driver->Order()->with(['Company','PaymentMethod','City'])->paginate(100);//return ($n_orders);
-        $n0_orders = $driver->Order()->where('status', 'delivered')->where('collected', 0)->with(['Company','PaymentMethod','City'])->paginate(100);
+                                        ->orderBy('id', 'desc')->paginate(100);
+        $driver_finances = $driver->DriverFianance()->with(['Admin','Driver'])->orderBy('id', 'desc')->paginate(100);
+        $n_orders = $driver->Order()->with(['Company','PaymentMethod','City'])->orderBy('id', 'desc')->paginate(100);//return ($n_orders);
+        $n0_orders = $driver->Order()->where('status', 'delivered')->where('collected', 0)->with(['Company','PaymentMethod','City'])->orderBy('id', 'desc')->paginate(100);
         return view('admin.drivers.show', compact('n_orders','n0_orders', 'orders_not_delivered', 'driver_finances', 'orders_drivers_not_get_paid', 'orders_drivers_get_paid', 'driver', 'title', 'days_chart', 'months_chart', 'orders_not_col', 'orders_col'));
     }
 

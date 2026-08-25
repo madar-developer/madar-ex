@@ -354,8 +354,18 @@ class DriverController extends Controller
     public function CollectOrders($id)
     {
         $driver = Driver::find($id);
-        if ($driver->Order()->where('status', 'delivered')->where('collected', 0)->count() > 0) {
-            $ids = Request()->get('ids'); //$driver->Order()->where('status', 'delivered')->where('collected', 0)->pluck('id')->toArray();
+        $query = $driver->Order()->where('status', 'delivered')->where('collected', 0);
+
+        if (!Request()->boolean('collect_all')) {
+            $ids = Request()->get('ids');
+            if (empty($ids)) {
+                return redirect()->back()->with('success', '  successfully');
+            }
+            $query->whereIn('id', $ids);
+        }
+
+        $ids = $query->pluck('id')->toArray();
+        if (!empty($ids)) {
             $total_amount = $driver->Invoice()->whereHas('Order', function($q)use($ids){
                 $q->whereIn('id', $ids);
             })->where('orders.status', 'delivered')->where('orders.collected', 0)->sum('total_price');
@@ -379,18 +389,26 @@ class DriverController extends Controller
     public function CashedOrders($id)
     {
         $driver = Driver::find($id);
-        $ids = Request()->get('ids', []);
-
-        if (!$driver || empty($ids)) {
+        if (!$driver) {
             return redirect()->back()->with('success', '  successfully');
         }
 
-        $orders = Order::whereIn('id', $ids)
-            ->where('driver_id', $driver->id)
+        $query = Order::where('driver_id', $driver->id)
             ->where('status', 'delivered')
             ->where('collected', 0)
-            ->with('Company')
-            ->get();
+            ->whereHas('Invoice', function ($q) {
+                $q->where('driver_paied', '0');
+            });
+
+        if (!Request()->boolean('collect_all')) {
+            $ids = Request()->get('ids', []);
+            if (empty($ids)) {
+                return redirect()->back()->with('success', '  successfully');
+            }
+            $query->whereIn('id', $ids);
+        }
+
+        $orders = $query->with('Company')->get();
 
         if ($orders->isEmpty()) {
             return redirect()->back()->with('success', '  successfully');

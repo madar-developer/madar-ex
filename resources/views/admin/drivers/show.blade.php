@@ -307,7 +307,11 @@
                                     </table>
                                     {!! $n0_orders->links() !!}
                                     @if ($driver->Order()->where('status', 'delivered')->where('collected', 0)->count() > 0)
-                                        <a href="{{ route('drivers.collect-orders', $driver->id) }}" class="btn btn-success">تحصيل من السائق</a>
+                                        {!! Form::open(['url' => route('drivers.collect-orders', $driver->id), 'method'=>'post', 'style' => 'display:inline;']) !!}
+                                        @csrf
+                                        <input type="hidden" name="collect_all" value="1">
+                                        <button type="submit" class="btn btn-success" onclick="return confirm('هل تريد تحصيل جميع الطلبات غير المحصّلة من السائق؟')">تحصيل جميع الطلبات</button>
+                                        {!! Form::close() !!}
                                     @endif
                                 </div>
                             </div>
@@ -521,7 +525,7 @@
                                             </table>
                                             {!! $orders_not_col->links() !!}
                                             @if ($driver->Order()->where('status', 'delivered')->where('collected', 0)->count() > 0)
-                                                {{-- <button type="submit" href="{{ route('drivers.collect-orders', $driver->id) }}" class="btn btn-success">تسويةالطلبات من السائق</button> --}}
+                                                <button type="submit" name="collect_all" value="1" class="btn btn-warning" onclick="return confirm('هل تريد تسوية جميع الطلبات غير المحصّلة من السائق؟')">تسوية جميع الطلبات</button>
                                             @endif
                                             {!! Form::close() !!}
                                         </div>
@@ -999,7 +1003,8 @@
                                             </table>
                                             {!! $orders_drivers_not_get_paid->links() !!}
                                             @if ($driver->Order()->where('status', 'delivered')->where('collected', 0)->count() > 0)
-                                                <button type="submit" href="{{ route('drivers.collect-orders', $driver->id) }}" class="btn btn-success">تصفية الطلبات من السائق</button>
+                                                <button type="submit" class="btn btn-success" onclick="return confirm('هل تريد تصفية الطلبات المحددة من السائق؟')">تصفية الطلبات المحددة</button>
+                                                <button type="submit" name="collect_all" value="1" class="btn btn-warning" onclick="return confirm('هل تريد تصفية جميع الطلبات غير المصفّاة من السائق؟')">تصفية جميع الطلبات</button>
                                             @endif
                                             {!! Form::close() !!}
                                         </div>

@@ -59,7 +59,10 @@
 @if ($orders->count() > 0)
     <div class="m-t-15 text-left">
         <button type="submit" class="btn btn-success" onclick="return confirm('هل تريد تصفية الطلبات المحددة من السائق؟')">
-            تصفية الطلبات من السائق
+            تصفية الطلبات المحددة
+        </button>
+        <button type="submit" name="collect_all" value="1" class="btn btn-warning" onclick="return confirm('هل تريد تصفية جميع الطلبات غير المصفّاة من السائق؟ ({{ $orders->count() }} طلب)')">
+            تصفية جميع الطلبات
         </button>
     </div>
 @endif

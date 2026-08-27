@@ -933,7 +933,7 @@
 
                                                         <th>
                                                             #
-                                                            <input type="checkbox" class="ids" id="checkAll">
+                                                            <!-- <input type="checkbox" class="ids" id="checkAll"> -->
                                                         </th>
                                                          {{-- <th>IDs </th>  --}}
                                                         <th>المستحق للسائق</th>
@@ -964,7 +964,7 @@
                                                     <tr>
                                                         <td>
                                                             {{$i++}}
-                                                            <input type="checkbox" name="ids[]" value="{{$item->id}}" class="ids"/>
+                                                            <!-- <input type="checkbox" name="ids[]" value="{{$item->id}}" class="ids"/> -->
                                                         </td>
                                                         <td>{{ \App\Support\DriverFinance::driverCommission($item, $driver) }} </td>
                                                         <td>{{@$item['company']['name']}} </td>
@@ -1003,7 +1003,7 @@
                                             </table>
                                             {!! $orders_drivers_not_get_paid->links() !!}
                                             @if ($driver->Order()->where('status', 'delivered')->where('collected', 0)->count() > 0)
-                                                <button type="submit" class="btn btn-success" onclick="return confirm('هل تريد تصفية الطلبات المحددة من السائق؟')">تصفية الطلبات المحددة</button>
+                                                <!-- <button type="submit" class="btn btn-success" onclick="return confirm('هل تريد تصفية الطلبات المحددة من السائق؟')">تصفية الطلبات المحددة</button> -->
                                                 <button type="submit" name="collect_all" value="1" class="btn btn-warning" onclick="return confirm('هل تريد تصفية جميع الطلبات غير المصفّاة من السائق؟')">تصفية جميع الطلبات</button>
                                             @endif
                                             {!! Form::close() !!}

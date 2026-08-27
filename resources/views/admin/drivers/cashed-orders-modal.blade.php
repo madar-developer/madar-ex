@@ -6,7 +6,7 @@
             <tr>
                 <th>
                     #
-                    <input type="checkbox" class="ids" id="checkAllCashed" checked>
+                    <!-- <input type="checkbox" class="ids" id="checkAllCashed" checked> -->
                 </th>
                 <th>المستحق للسائق</th>
                 <th>اسم المتجر</th>
@@ -30,7 +30,7 @@
                 <tr>
                     <td>
                         {{ $loop->iteration }}
-                        <input type="checkbox" name="ids[]" value="{{ $item->id }}" class="ids cashed-order-id" checked>
+                        <!-- <input type="checkbox" name="ids[]" value="{{ $item->id }}" class="ids cashed-order-id" checked> -->
                     </td>
                     <td>{{ \App\Support\DriverFinance::driverCommission($item, $driver) }}</td>
                     <td>{{ @$item['company']['name'] }}</td>
@@ -58,9 +58,9 @@
 </div>
 @if ($orders->count() > 0)
     <div class="m-t-15 text-left">
-        <button type="submit" class="btn btn-success" onclick="return confirm('هل تريد تصفية الطلبات المحددة من السائق؟')">
+        <!-- <button type="submit" class="btn btn-success" onclick="return confirm('هل تريد تصفية الطلبات المحددة من السائق؟')">
             تصفية الطلبات المحددة
-        </button>
+        </button> -->
         <button type="submit" name="collect_all" value="1" class="btn btn-warning" onclick="return confirm('هل تريد تصفية جميع الطلبات غير المصفّاة من السائق؟ ({{ $orders->count() }} طلب)')">
             تصفية جميع الطلبات
         </button>

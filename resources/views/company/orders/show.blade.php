@@ -176,6 +176,20 @@
                 </tbody>
             </table>
         </div>
+        @if($order->Files->isNotEmpty())
+        <div class="col-md-12" style="margin: 20px 0;">
+            <h3 style="text-align:center;">صور الطلب</h3>
+            <div class="row">
+                @foreach($order->Files as $file)
+                <div class="col-md-3 col-sm-4" style="margin-bottom:15px;">
+                    <a href="{{ getImage($file->name) }}" target="_blank">
+                        <img src="{{ getImage($file->name) }}" alt="" style="width:100%;height:180px;object-fit:cover;border:1px solid #ddd;border-radius:6px;">
+                    </a>
+                </div>
+                @endforeach
+            </div>
+        </div>
+        @endif
         <div class="col-md-12 qrcode" >
 
             @php

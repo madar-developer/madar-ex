@@ -73,10 +73,39 @@ class OrderController extends Controller
         ]);
     }
 
+    protected function orderImagePayload($file): array
+    {
+        return [
+            'id' => $file->id,
+            'image' => getImage($file->name),
+        ];
+    }
+
+    protected function storeOrderImage(Order $order, $source)
+    {
+        $originalName = null;
+        if (is_object($source) && method_exists($source, 'getClientOriginalName')) {
+            $name = uploadImage($source);
+            $originalName = $source->getClientOriginalName();
+        } elseif (is_string($source) && (strpos($source, 'data:image') === 0 || strlen($source) > 200)) {
+            $name = uploadImageBase64($source);
+        } elseif (is_string($source) && $source !== '') {
+            $name = $source;
+        } else {
+            return null;
+        }
+
+        return $order->Files()->create([
+            'name' => $name,
+            'original_name' => $originalName,
+            'type' => 'image',
+        ]);
+    }
+
     public function index()
     {
         $driver = Auth::guard('api-driver')->user();
-        $orders = $driver->Order()->where('status', '<>', 'returned')->where('collected','<>', 1)->latest();
+        $orders = $driver->Order()->with('Files')->where('status', '<>', 'returned')->where('collected','<>', 1)->latest();
         if (Request()->has('status') && Request()->get('status') != '') {
             $orders = $orders->where('status', Request()->get('status') );
         }
@@ -116,7 +145,7 @@ class OrderController extends Controller
     public function searchOrders(Request $request)
     {
         $driver = Auth::guard('api-driver')->user();
-        $orders = $driver->Order()->where('status', '<>', 'returned')->where('collected','<>', 1)->where('refrence_no', $request->get('refrence_no'));
+        $orders = $driver->Order()->with('Files')->where('status', '<>', 'returned')->where('collected','<>', 1)->where('refrence_no', $request->get('refrence_no'));
         if (Request()->has('status') && Request()->get('status') != '') {
             $orders = $orders->where('status', Request()->get('status') );
         }
@@ -139,7 +168,7 @@ class OrderController extends Controller
     public function show($id)
     {
         $driver = Auth::guard('api-driver')->user();
-        $order = Order::where('id', $id)->orWhere('serial', $id)->first();
+        $order = Order::with('Files')->where('id', $id)->orWhere('serial', $id)->first();
         if (!$order) {
             return Response()->json([
                 'data' => [
@@ -216,6 +245,70 @@ class OrderController extends Controller
             'code'          => getMsgCode('success'),
         ]);
     }
+
+    public function uploadImages(Request $request)
+    {
+        $driver = auth('api-driver')->user();
+        $order = Order::where('id', $request->order_id)->orWhere('serial', $request->order_id)->first();
+        if (!$order) {
+            return Response()->json([
+                'data' => [
+                ],
+                'message' => trans('words.no result'),
+                'code' => getMsgCode('notFound')
+            ]);
+        }
+
+        $stored = [];
+        $files = [];
+        if ($request->hasFile('images')) {
+            $uploaded = $request->file('images');
+            $files = is_array($uploaded) ? $uploaded : [$uploaded];
+        }
+        if ($request->hasFile('image')) {
+            $files[] = $request->file('image');
+        }
+        foreach ($files as $file) {
+            if ($file && ($row = $this->storeOrderImage($order, $file))) {
+                $stored[] = $this->orderImagePayload($row);
+            }
+        }
+
+        $stringImages = [];
+        if (!$request->hasFile('images') && $request->has('images') && is_array($request->get('images'))) {
+            $stringImages = $request->get('images');
+        }
+        if (!$request->hasFile('image') && $request->filled('image') && is_string($request->get('image'))) {
+            $stringImages[] = $request->get('image');
+        }
+        foreach ($stringImages as $image) {
+            if ($image && ($row = $this->storeOrderImage($order, $image))) {
+                $stored[] = $this->orderImagePayload($row);
+            }
+        }
+
+        if (empty($stored)) {
+            return Response()->json([
+                'data' => [
+                ],
+                'message' => trans('validation.required', ['attribute' => 'images']),
+                'code' => getMsgCode('validationErrors')
+            ]);
+        }
+
+        $this->updateDriverLastActivity($driver);
+        $order->load('Files');
+
+        return Response()->json([
+            'data' => [
+                'images' => $stored,
+                'order' => new OrderResource($order),
+            ],
+            'message' => 'success',
+            'code' => getMsgCode('success'),
+        ]);
+    }
+
     public function changestatus(Request $request)
     {
         $driver = auth('api-driver')->user();

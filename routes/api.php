@@ -140,6 +140,7 @@ Route::group(['prefix' => '/v2', 'namespace' => 'Api\V2'], function() {
             Route::get('orders/show/{id}', 'OrderController@show');
             Route::post('orders/accept', 'OrderController@accept');
             Route::post('orders/refuse', 'OrderController@refuse');
+            Route::post('orders/upload-images', 'OrderController@uploadImages');
             Route::post('orders/change-cash-type', 'OrderController@changeCashType');
             Route::post('orders/change-status', 'OrderController@changestatus');
             Route::post('orders/change-orders-status', 'OrderController@changestatusArr');

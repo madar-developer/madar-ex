@@ -88,7 +88,7 @@ function uploadFile($request)
 function uploadImage($file)
 {
     // if( strtolower($file->getClientOriginalExtension()) == 'php' || $file->getClientOriginalExtension() == 'html' || $file->getClientOriginalExtension() == 'sql' )
-    if( !in_array( strtolower($file->getClientOriginalExtension()), ['png', 'jpeg', 'docx', 'pdf', 'xlsx', 'ppx'] ) )
+    if( !in_array( strtolower($file->getClientOriginalExtension()), ['png', 'jpg', 'jpeg', 'docx', 'pdf', 'xlsx', 'ppx'] ) )
     {
         $ext = 'ppp';
         return 'is_'.auth()->id().'_cdn';

@@ -54,6 +54,12 @@ class OrderResource extends JsonResource
             'company' => new CompanyResource($this->Company()->first()),
             'payment_method' => $p_m,
             'steps' => $this->buildOrderSteps(),
+            'images' => $this->Files->map(function ($file) {
+                return [
+                    'id' => $file->id,
+                    'image' => getImage($file->name),
+                ];
+            })->values(),
         ];
     }
 

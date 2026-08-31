@@ -136,6 +136,11 @@ class Order extends Model
         return $this->Hasmany(OrderLog::class, 'order_id');
     }
 
+    public function Files()
+    {
+        return $this->morphMany(Files::class, 'taggable');
+    }
+
     public function Transfer()
     {
         return $this->Hasmany(Transfer::class, 'order_id');

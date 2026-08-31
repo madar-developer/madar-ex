@@ -215,7 +215,7 @@ class OrderController extends Controller
     public function show(Order $order)
     {
         $title = 'عرض طلب';
-        $order->load(['Company.City', 'City', 'Driver']);
+        $order->load(['Company.City', 'City', 'Driver', 'Files']);
         $orderLogs = $order->OrderLog()->orderBy('id', 'asc')->get();
         $lastLog = $order->OrderLog()->orderByDesc('id')->first();
         $statusNameMap = OrderStatus::whereIn('key', ['new', 'not_received', 'init', 'at_madar', 'at_office', 'delivered', 'returned'])

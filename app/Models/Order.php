@@ -231,7 +231,7 @@ class Order extends Model
     { 
         if (Auth::guard('api-driver')->user()) {
             $levels = Order::getLevels($this->status);
-            $statuses = OrderStatus::whereIn('key', $levels)->select('id', 'key', 'name')->get();
+            $statuses = OrderStatus::whereIn('key', $levels)->select('id', 'key', 'name', 'image')->get();
             $statuses = StatusResource::collection($statuses);
             return $statuses;
         } else {

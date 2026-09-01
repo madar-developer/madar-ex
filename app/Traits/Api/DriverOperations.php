@@ -98,6 +98,9 @@ trait DriverOperations
         if ($request->hasFile('form_image')) {
             $data['form_image'] = uploadImage($request->file('form_image'));
         }
+        if ($request->hasFile('image')) {
+            $data['image'] = uploadImage($request->file('image'));
+        }
         // return dd($data);
         // foreach ($data as $key => $value) {
         //     $Driver->$key = $value;

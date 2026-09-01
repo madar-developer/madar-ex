@@ -21,7 +21,7 @@ class Driver extends Authenticatable implements JWTSubject
         'first_name', 'last_name' , 'email' , 'phone' , 'identical_number' , 'password' , 'nationality' , 'license_number',
         'license_date_expiration' , 'car_id' , 'remember_token', 'identity_expiration_date', 'car_receive_date', 'type', 'commission',
         'identity_image' , 'license_image' , 'form_image' , 'car_receive_date_hijri' , 'identity_expiration_date_hijri',
-        'license_expiration_date_hijri' , 'fixed_salary' , 'commission'
+        'license_expiration_date_hijri' , 'fixed_salary' , 'commission', 'image'
     ];
     protected $appends = [
         'cities', 'order_count', 'order_failed_count', 'order_delivered_count', 'delivering_orders_count', 'received_count'

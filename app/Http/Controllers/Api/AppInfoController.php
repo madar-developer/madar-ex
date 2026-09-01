@@ -73,7 +73,11 @@ class AppInfoController extends Controller
     }
     public function getStatuses()
     {
-
+        if (request()->has('screen') && request()->get('screen') == 'scan') {
+            $statuses = OrderStatus::whereIn('id', [11,13])->orderBy('sort', 'asc')->get();
+        } else {
+            $statuses = OrderStatus::orderBy('sort', 'asc')->get();
+        }
         $statuses = OrderStatus::orderBy('sort', 'asc')->get();
         $statuses = StatusResource::collection($statuses);
         return Response()->json([

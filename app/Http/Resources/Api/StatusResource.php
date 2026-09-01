@@ -19,7 +19,7 @@ class StatusResource extends JsonResource
             'name' => $this->name,
             'details' => $this->details,
             'key' => $this->key,
-            'image' => $this->image,
+            'image' => getImage($this->image),
             'color' => $this->color,
         ];
     }

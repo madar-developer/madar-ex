@@ -14,8 +14,4 @@ class OrderStatus extends Model
         'key', 'name' , 'image' , 'details' , 'sort' , 'driver_active' , 'final_step' , 'color'
     ];
 
-    public function getImageAttribute($img)
-    {
-        return getImage($img);
-    }
 }

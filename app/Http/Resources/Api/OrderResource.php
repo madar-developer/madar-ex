@@ -90,9 +90,11 @@ class OrderResource extends JsonResource
             'at_office' => 6,
             'delivered' => 7,
             'deliver_failed' => 6,
+            'returned' => 7,
         ];
 
         $orderStatusIsFailed = $this->status === 'deliver_failed';
+        $orderStatusIsReturned = $this->status === 'returned';
         $currentProgress = $statusMap[$this->status] ?? 1;
 
         $logs = $this->OrderLog()->latest()->get();
@@ -118,7 +120,11 @@ class OrderResource extends JsonResource
             $isLast = $stepNumber === $totalSteps;
 
             if ($orderStatusIsFailed && $isLast) {
-                $label = 'تعذر التسليم';
+                $label = $this->status_txt ?: 'تعذر التسليم';
+                $done = true;
+                $failed = false;
+            } elseif ($orderStatusIsReturned && $isLast) {
+                $label = $this->status_txt ?: 'تم ارجاع الطلب للتاجر';
                 $done = true;
                 $failed = false;
             } else {
@@ -131,7 +137,7 @@ class OrderResource extends JsonResource
                 'label' => $label,
                 'done' => $done,
                 'failed' => $failed,
-                'delivered_final' => ! $orderStatusIsFailed && $isLast && $lastStatusIsDelivered && $index <= $currentProgress,
+                'delivered_final' => ! $orderStatusIsFailed && ! $orderStatusIsReturned && $isLast && $lastStatusIsDelivered && $index <= $currentProgress,
             ];
         }
 

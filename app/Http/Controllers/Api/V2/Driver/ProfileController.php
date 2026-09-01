@@ -112,6 +112,7 @@ class ProfileController extends Controller
         // $company_money = $driver->Invoice()->where('orders.status', 'delivered')->where('orders.collected', 0)->sum('total_price') - $driver->Invoice()->where('orders.status', 'delivered')->where('orders.collected', 0)->sum('invoices.driver_cost');
         return Response()->json([
                 'data' => [
+                    'order_total' => $driver->order_count,
                     'order_failed_count' => $driver->order_failed_count,
                     'order_delivered_count' => $driver->order_delivered_count,
                     'delivering_orders_count' => $driver->delivering_orders_count,

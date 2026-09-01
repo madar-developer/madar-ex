@@ -321,6 +321,63 @@
         background: #2ea334;
         border: 5px solid #92e49c;
     }
+    .order-image-groups {
+        direction: rtl;
+        text-align: right;
+        margin: 20px 0 28px;
+    }
+    .order-image-groups h3 {
+        text-align: center;
+        margin-bottom: 18px;
+    }
+    .order-image-group {
+        background: #f5f5f7;
+        border: 1px solid #e0e0e0;
+        border-radius: 8px;
+        padding: 16px 18px 12px;
+        margin-bottom: 16px;
+    }
+    .order-image-group-head {
+        margin-bottom: 12px;
+        padding-bottom: 10px;
+        border-bottom: 1px solid #e0e0e0;
+    }
+    .order-image-group-badge {
+        display: inline-block;
+        color: #fff;
+        font-size: 12px;
+        padding: 4px 12px;
+        border-radius: 4px;
+        background: #b71c1c;
+        margin-left: 8px;
+    }
+    .order-image-group-unlinked {
+        background: #757575;
+    }
+    .order-image-group-meta {
+        color: #888;
+        font-size: 12px;
+        margin-top: 6px;
+    }
+    .order-image-group-details {
+        color: #444;
+        font-size: 13px;
+        margin-top: 6px;
+        line-height: 1.5;
+    }
+    .order-image-group-thumbs {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+    }
+    .order-image-group-thumbs a img {
+        width: 140px;
+        height: 140px;
+        object-fit: cover;
+        border: 1px solid #ddd;
+        border-radius: 6px;
+        background: #fff;
+    }
 </style>
 @endsection
 @section('header')
@@ -448,18 +505,36 @@
                 </tbody>
             </table>
         </div>
-        @if($order->Files->isNotEmpty())
-        <div class="col-md-12" style="margin: 20px 0;">
-            <h3 style="text-align:center;">صور الطلب</h3>
-            <div class="row">
-                @foreach($order->Files as $file)
-                <div class="col-md-3 col-sm-4" style="margin-bottom:15px;">
-                    <a href="{{ getImage($file->name) }}" target="_blank">
-                        <img src="{{ getImage($file->name) }}" alt="" style="width:100%;height:180px;object-fit:cover;border:1px solid #ddd;border-radius:6px;">
-                    </a>
+        @php $imageGroups = $order->imageGroups(); @endphp
+        @if($imageGroups->isNotEmpty())
+        <div class="col-md-12 order-image-groups">
+            <h3>صور الطلب</h3>
+            @foreach($imageGroups as $group)
+            <div class="order-image-group">
+                <div class="order-image-group-head">
+                    @if($group['status'])
+                        <span class="order-image-group-badge" @if($group['status_color']) style="background: {{ $group['status_color'] }};" @endif>
+                            مرتبطة بالحالة: {{ $group['status_txt'] ?: $group['status'] }}
+                        </span>
+                    @else
+                        <span class="order-image-group-badge order-image-group-unlinked">صور غير مرتبطة بحالة</span>
+                    @endif
+                    @if($group['created_at'])
+                        <div class="order-image-group-meta">تاريخ الرفع: {{ $group['created_at']->format('d/m/Y H:i') }}</div>
+                    @endif
+                    @if($group['status'] && $group['status_details'])
+                        <div class="order-image-group-details">{{ $group['status_details'] }}</div>
+                    @endif
                 </div>
-                @endforeach
+                <div class="order-image-group-thumbs">
+                    @foreach($group['files'] as $file)
+                    <a href="{{ getImage($file->name) }}" target="_blank">
+                        <img src="{{ getImage($file->name) }}" alt="">
+                    </a>
+                    @endforeach
+                </div>
             </div>
+            @endforeach
         </div>
         @endif
         <div class="col-md-12 qrcode" >

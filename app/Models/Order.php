@@ -141,6 +141,45 @@ class Order extends Model
         return $this->morphMany(Files::class, 'taggable');
     }
 
+    public function imageGroups()
+    {
+        $files = $this->relationLoaded('Files') ? $this->Files : $this->Files()->oldest()->get();
+        $statusKeys = $files->pluck('status')->filter()->unique()->values();
+        $statuses = $statusKeys->isEmpty()
+            ? collect()
+            : OrderStatus::whereIn('key', $statusKeys)->get()->keyBy('key');
+
+        return $files
+            ->groupBy(function ($file) {
+                return $file->group_id ?: 'single-'.$file->id;
+            })
+            ->map(function ($groupFiles, $groupId) use ($statuses) {
+                $statusKey = $groupFiles->pluck('status')->filter()->first();
+                $status = $statusKey ? $statuses->get($statusKey) : null;
+                $createdAt = optional($groupFiles->sortBy('id')->first())->created_at;
+
+                return [
+                    'group_id' => is_string($groupId) && strpos($groupId, 'single-') === 0 ? null : $groupId,
+                    'status' => $statusKey,
+                    'status_txt' => $status ? $status->name : null,
+                    'status_details' => $status ? $status->details : null,
+                    'status_color' => $status ? $status->color : null,
+                    'created_at' => $createdAt,
+                    'files' => $groupFiles->values(),
+                    'images' => $groupFiles->map(function ($file) {
+                        return [
+                            'id' => $file->id,
+                            'url' => getImage($file->name),
+                        ];
+                    })->values(),
+                ];
+            })
+            ->sortByDesc(function ($group) {
+                return optional($group['created_at'])->timestamp ?? 0;
+            })
+            ->values();
+    }
+
     public function Transfer()
     {
         return $this->Hasmany(Transfer::class, 'order_id');

@@ -57,7 +57,18 @@ class OrderResource extends JsonResource
             'images' => $this->Files->map(function ($file) {
                 return [
                     'id' => $file->id,
-                    'image' => getImage($file->name),
+                    'url' => getImage($file->name),
+                ];
+            })->values(),
+            'image_groups' => $this->imageGroups()->map(function ($group) {
+                return [
+                    'group_id' => $group['group_id'],
+                    'status' => $group['status'],
+                    'status_txt' => $group['status_txt'],
+                    'status_details' => $group['status_details'],
+                    'status_color' => $group['status_color'],
+                    'created_at' => optional($group['created_at'])->format('Y-m-d H:i:s'),
+                    'images' => $group['images'],
                 ];
             })->values(),
         ];

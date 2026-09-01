@@ -77,11 +77,11 @@ class OrderController extends Controller
     {
         return [
             'id' => $file->id,
-            'image' => getImage($file->name),
+            'url' => getImage($file->name),
         ];
     }
 
-    protected function storeOrderImage(Order $order, $source)
+    protected function storeOrderImage(Order $order, $source, ?string $groupId = null)
     {
         $originalName = null;
         if (is_object($source) && method_exists($source, 'getClientOriginalName')) {
@@ -99,7 +99,44 @@ class OrderController extends Controller
             'name' => $name,
             'original_name' => $originalName,
             'type' => 'image',
+            'group_id' => $groupId,
         ]);
+    }
+
+    protected function requestImageIds(Request $request): array
+    {
+        $ids = $request->input('images_ids', []);
+        if (is_string($ids)) {
+            $decoded = json_decode($ids, true);
+            $ids = is_array($decoded) ? $decoded : preg_split('/\s*,\s*/', $ids);
+        }
+        if (! is_array($ids)) {
+            $ids = [$ids];
+        }
+
+        return array_values(array_filter(array_map('intval', $ids)));
+    }
+
+    protected function linkOrderImagesToStatus(Order $order, Request $request, ?string $status): void
+    {
+        $ids = $this->requestImageIds($request);
+        if (empty($ids) || ! $status) {
+            return;
+        }
+
+        $files = $order->Files()->whereIn('id', $ids)->get();
+        if ($files->isEmpty()) {
+            return;
+        }
+
+        $groupIds = $files->pluck('group_id')->filter()->unique()->values();
+        $query = $order->Files()->where(function ($q) use ($ids, $groupIds) {
+            $q->whereIn('id', $ids);
+            if ($groupIds->isNotEmpty()) {
+                $q->orWhereIn('group_id', $groupIds);
+            }
+        });
+        $query->update(['status' => $status]);
     }
 
     public function index()
@@ -261,6 +298,7 @@ class OrderController extends Controller
 
         $stored = [];
         $files = [];
+        $groupId = (string) \Illuminate\Support\Str::uuid();
         if ($request->hasFile('images')) {
             $uploaded = $request->file('images');
             $files = is_array($uploaded) ? $uploaded : [$uploaded];
@@ -269,7 +307,7 @@ class OrderController extends Controller
             $files[] = $request->file('image');
         }
         foreach ($files as $file) {
-            if ($file && ($row = $this->storeOrderImage($order, $file))) {
+            if ($file && ($row = $this->storeOrderImage($order, $file, $groupId))) {
                 $stored[] = $this->orderImagePayload($row);
             }
         }
@@ -282,7 +320,7 @@ class OrderController extends Controller
             $stringImages[] = $request->get('image');
         }
         foreach ($stringImages as $image) {
-            if ($image && ($row = $this->storeOrderImage($order, $image))) {
+            if ($image && ($row = $this->storeOrderImage($order, $image, $groupId))) {
                 $stored[] = $this->orderImagePayload($row);
             }
         }
@@ -439,8 +477,10 @@ class OrderController extends Controller
         }
         // ******************************************************
         $order->update($data);
+        $this->linkOrderImagesToStatus($Order, $request, $status);
         $this->updateDriverLastActivity($driver);
 
+        $order->unsetRelation('Files');
         $order = new OrderResource($order);
         return Response()->json([
             'data'          => [

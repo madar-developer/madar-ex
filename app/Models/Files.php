@@ -14,7 +14,7 @@ class Files extends Model
      * @var array
      */
     protected $fillable = [
-        'taggable_id', 'taggable_type', 'name', 'type', 'original_name',
+        'taggable_id', 'taggable_type', 'name', 'type', 'original_name', 'group_id', 'status',
     ];
 
     public function taggable()

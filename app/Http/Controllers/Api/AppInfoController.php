@@ -78,7 +78,7 @@ class AppInfoController extends Controller
         } else {
             $statuses = OrderStatus::orderBy('sort', 'asc')->get();
         }
-        $statuses = OrderStatus::orderBy('sort', 'asc')->get();
+        // $statuses = OrderStatus::orderBy('sort', 'asc')->get();
         $statuses = StatusResource::collection($statuses);
         return Response()->json([
                 'data' => [

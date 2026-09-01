@@ -134,9 +134,9 @@ class Driver extends Authenticatable implements JWTSubject
         return $this->hasMany(AttendanceRecord::class);
     }
 
-    public function getImageAttribute()
+    public function getImageAttribute($img)
     {
-        return url('cdn/'.$this->image);
+        return url('cdn/'.$img);
     }
     
 }

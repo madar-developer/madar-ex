@@ -118,8 +118,9 @@ class OrderResource extends JsonResource
             $isLast = $stepNumber === $totalSteps;
 
             if ($orderStatusIsFailed && $isLast) {
-                $done = false;
-                $failed = true;
+                $label = 'تعذر التسليم';
+                $done = true;
+                $failed = false;
             } else {
                 $done = $index <= $currentProgress;
                 $failed = false;

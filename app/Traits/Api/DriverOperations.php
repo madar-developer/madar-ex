@@ -111,6 +111,33 @@ trait DriverOperations
         return $Driver;
     }
 
+    public function deleteImage(Request $request)
+    {
+        $driver = auth('api-driver')->user();
+        $filename = $driver->getRawOriginal('image');
+        if ($filename) {
+            if (strpos($filename, 'http') === 0 || strpos($filename, '/') !== false) {
+                $path = parse_url($filename, PHP_URL_PATH) ?: $filename;
+                $filename = basename($path);
+            }
+            $filePath = public_path('/cdn/'.$filename);
+            if ($filename && is_file($filePath)) {
+                @unlink($filePath);
+            }
+        }
+
+        Driver::where('id', $driver->id)->update(['image' => null]);
+        $driver = Driver::find($driver->id);
+
+        return Response()->json([
+            'data' => [
+                'driver' => $driver,
+            ],
+            'message' => 'success',
+            'code' => getMsgCode('success'),
+        ]);
+    }
+
     /**
      * Update Record
      * @param $truck

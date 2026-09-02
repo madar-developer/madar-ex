@@ -43,6 +43,8 @@ Route::group(['prefix' => '/v1', 'namespace' => 'Api'], function() {
             Route::get('notifications', 'ProfileController@notifications');
             Route::post('delete-notification', 'ProfileController@markNotificationReaded');
             Route::post('profile-update', 'ProfileController@update');
+            Route::post('delete-image', 'ProfileController@deleteImage');
+            Route::delete('delete-image', 'ProfileController@deleteImage');
             Route::get('orders', 'OrderController@index');
             Route::post('orders-search', 'OrderController@searchOrders');
             Route::get('finance-not-collected', 'OrderController@NotCollectedStatistics');
@@ -134,6 +136,8 @@ Route::group(['prefix' => '/v2', 'namespace' => 'Api\V2'], function() {
             Route::get('notifications', 'ProfileController@notifications');
             Route::post('delete-notification', 'ProfileController@markNotificationReaded');
             Route::post('profile-update', 'ProfileController@update');
+            Route::post('delete-image', 'ProfileController@deleteImage');
+            Route::delete('delete-image', 'ProfileController@deleteImage');
             Route::get('orders', 'OrderController@index');
             Route::post('orders-search', 'OrderController@searchOrders');
             Route::get('finance-not-collected', 'OrderController@NotCollectedStatistics');

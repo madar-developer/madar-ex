@@ -59,13 +59,7 @@ class AppInfoController extends Controller
 
         return Response()->json([
             'data' => [
-                'contact' => [
-                    'email' => $info['email'] ?? '',
-                    'phone' => $info['phone'] ?? '',
-                    'facebook' => $info['facebook'] ?? '',
-                    'twitter' => $info['twitter'] ?? '',
-                    'instagram' => $info['instagram'] ?? '',
-                ],
+                'contact_info' => $this->localizedSetting('contact_info'),
             ],
             'message' => 'success',
             'code' => getMsgCode('success'),

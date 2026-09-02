@@ -1,5 +1,9 @@
 @extends('admin.layout.app')
 @section('style')
+<link href="{{ asset('/adminto/assets/plugins/summernote/dist/summernote.css') }}" rel="stylesheet">
+<style>
+    .note-editor.note-frame { border: 1px solid #E3E3E3; border-radius: 4px; }
+</style>
 @endsection
 @section('content')
  
@@ -59,6 +63,22 @@
                                             <div class="col-md-7">
                                                 {!! Form::url("setting[instagram]",(isset($setting['instagram']))? $setting['instagram'] : null,['class'=>'form-control'])!!}
                                             </div>          
+                                        </div>
+                                        <div class="form-group margin-top-15">
+                                            <label class="control-label col-md-3">
+                                                تواصل معنا (عربي)
+                                            </label>
+                                            <div class="col-md-7">
+                                                {!! Form::textarea("setting[contact_info]",(isset($setting['contact_info']))? $setting['contact_info'] : null,['class'=>'form-control summernote-editor', 'id' => 'contact_info'])!!}
+                                            </div>
+                                        </div>
+                                        <div class="form-group margin-top-15">
+                                            <label class="control-label col-md-3">
+                                                تواصل معنا (English)
+                                            </label>
+                                            <div class="col-md-7">
+                                                {!! Form::textarea("setting[contact_info_en]",(isset($setting['contact_info_en']))? $setting['contact_info_en'] : null,['class'=>'form-control summernote-editor', 'id' => 'contact_info_en'])!!}
+                                            </div>
                                         </div>
                                         <div class="form-group margin-top-15">
                                             <label class="control-label col-md-3">
@@ -139,8 +159,25 @@
 
 @endsection
 @section('script')
-
+<script src="{{ asset('/adminto/assets/plugins/summernote/dist/summernote.min.js') }}"></script>
+<script src="{{ asset('/adminto/assets/plugins/summernote/lang/summernote-ar-AR.js') }}"></script>
 <script>
+    $(function () {
+        $('.summernote-editor').summernote({
+            height: 220,
+            lang: 'ar-AR',
+            direction: 'rtl',
+            toolbar: [
+                ['style', ['style']],
+                ['font', ['bold', 'underline', 'clear']],
+                ['fontsize', ['fontsize']],
+                ['color', ['color']],
+                ['para', ['ul', 'ol', 'paragraph']],
+                ['insert', ['link']],
+                ['view', ['fullscreen', 'codeview']]
+            ]
+        });
+    });
     /* Loop through all dropdown buttons to toggle between hiding and showing its dropdown content - This allows the user to have multiple dropdowns without any conflict */
     var dropdown = document.getElementsByClassName("dropdown-btn");
     var i;

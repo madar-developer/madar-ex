@@ -95,7 +95,7 @@
                                                 سياسة الاستخدام (عربي)
                                             </label>
                                             <div class="col-md-7">
-                                                {!! Form::textarea("setting[privacy]",(isset($setting['privacy']))? $setting['privacy'] : null,['class'=>'form-control', 'style' => 'width: 100%; height: 150px; border: 1px solid #E3E3E3;border-radius: 4px;color: #565656;padding: 7px 12px;'])!!}
+                                                {!! Form::textarea("setting[privacy]",(isset($setting['privacy']))? $setting['privacy'] : null,['class'=>'form-control summernote-editor'])!!}
                                             </div>          
                                         </div>
                                         <div class="form-group margin-top-15">
@@ -103,7 +103,7 @@
                                                 سياسة الاستخدام (English)
                                             </label>
                                             <div class="col-md-7">
-                                                {!! Form::textarea("setting[privacy_en]",(isset($setting['privacy_en']))? $setting['privacy_en'] : null,['class'=>'form-control', 'style' => 'width: 100%; height: 150px; border: 1px solid #E3E3E3;border-radius: 4px;color: #565656;padding: 7px 12px;'])!!}
+                                                {!! Form::textarea("setting[privacy_en]",(isset($setting['privacy_en']))? $setting['privacy_en'] : null,['class'=>'form-control summernote-editor'])!!}
                                             </div>
                                         </div>
 
@@ -113,7 +113,7 @@
                                                 من نحن (عربي)
                                             </label>
                                             <div class="col-md-7">
-                                                {!! Form::textarea("setting[about]",(isset($setting['about']))? $setting['about'] : null,['class'=>'form-control', 'style' => 'width: 100%; height: 150px; border: 1px solid #E3E3E3;border-radius: 4px;color: #565656;padding: 7px 12px;'])!!}
+                                                {!! Form::textarea("setting[about]",(isset($setting['about']))? $setting['about'] : null,['class'=>'form-control summernote-editor'])!!}
                                             </div>          
                                         </div>
                                         <div class="form-group margin-top-15">
@@ -121,7 +121,7 @@
                                                 من نحن (English)
                                             </label>
                                             <div class="col-md-7">
-                                                {!! Form::textarea("setting[about_en]",(isset($setting['about_en']))? $setting['about_en'] : null,['class'=>'form-control', 'style' => 'width: 100%; height: 150px; border: 1px solid #E3E3E3;border-radius: 4px;color: #565656;padding: 7px 12px;'])!!}
+                                                {!! Form::textarea("setting[about_en]",(isset($setting['about_en']))? $setting['about_en'] : null,['class'=>'form-control summernote-editor'])!!}
                                             </div>
                                         </div>
                                         <div class="form-group margin-top-15">

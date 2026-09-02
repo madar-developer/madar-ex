@@ -805,6 +805,7 @@ class OrderController extends Controller
             }
         }
         $order->OrderLog()->create($data);
+        $this->linkOrderImagesToStatus($order, $request, 'reschedule');
         $this->updateDriverLastActivity($driver);
 
 

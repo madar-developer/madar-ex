@@ -73,6 +73,42 @@ class OrderController extends Controller
         ]);
     }
 
+    protected function requestImageIds(Request $request): array
+    {
+        $ids = $request->input('images_ids', []);
+        if (is_string($ids)) {
+            $decoded = json_decode($ids, true);
+            $ids = is_array($decoded) ? $decoded : preg_split('/\s*,\s*/', $ids);
+        }
+        if (! is_array($ids)) {
+            $ids = [$ids];
+        }
+
+        return array_values(array_filter(array_map('intval', $ids)));
+    }
+
+    protected function linkOrderImagesToStatus(Order $order, Request $request, ?string $status): void
+    {
+        $ids = $this->requestImageIds($request);
+        if (empty($ids) || ! $status) {
+            return;
+        }
+
+        $files = $order->Files()->whereIn('id', $ids)->get();
+        if ($files->isEmpty()) {
+            return;
+        }
+
+        $groupIds = $files->pluck('group_id')->filter()->unique()->values();
+        $query = $order->Files()->where(function ($q) use ($ids, $groupIds) {
+            $q->whereIn('id', $ids);
+            if ($groupIds->isNotEmpty()) {
+                $q->orWhereIn('group_id', $groupIds);
+            }
+        });
+        $query->update(['status' => $status]);
+    }
+
     public function index()
     {
         $driver = Auth::guard('api-driver')->user();
@@ -651,6 +687,7 @@ class OrderController extends Controller
             }
         }
         $order->OrderLog()->create($data);
+        $this->linkOrderImagesToStatus($order, $request, 'reschedule');
         $this->updateDriverLastActivity($driver);
 
 

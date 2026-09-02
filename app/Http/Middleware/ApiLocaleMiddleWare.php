@@ -21,9 +21,13 @@ class ApiLocaleMiddleWare
         //     'url'    => $request->fullUrl(),
         //     'data'   => $request->all()
         // ]);
-        if(Request()->header('lang')){
-            \App::setLocale(Request()->header('lang'));
-            config(['app.locale' => Request()->header('lang')]);
+        $locale = $request->header('app-lang') ?: $request->header('lang');
+        if ($locale) {
+            $locale = strtolower(substr((string) $locale, 0, 2));
+            if (in_array($locale, ['ar', 'en'], true)) {
+                \App::setLocale($locale);
+                config(['app.locale' => $locale]);
+            }
         }
         return $next($request);
     }

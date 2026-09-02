@@ -108,6 +108,9 @@ Route::group(['prefix' => '/v1', 'namespace' => 'Api'], function() {
     Route::get('/test-noti/{type}', 'TestNotiController@index');
     Route::get('/order-types', 'AppInfoController@OrderType');
     Route::get('/app-info', 'AppInfoController@index');
+    Route::get('/about', 'AppInfoController@about');
+    Route::get('/privacy', 'AppInfoController@privacy');
+    Route::get('/contact-us', 'AppInfoController@contactUs');
     Route::get('/times', 'AppInfoController@times');
     Route::get('/slider', 'AppInfoController@slider');
     Route::get('/get-statuses', 'AppInfoController@getStatuses');

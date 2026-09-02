@@ -28,6 +28,68 @@ class AppInfoController extends Controller
                 'code' => getMsgCode('success')
         ]);
     }
+
+    public function about()
+    {
+        return Response()->json([
+            'data' => [
+                'about' => $this->localizedSetting('about'),
+            ],
+            'message' => 'success',
+            'code' => getMsgCode('success'),
+        ]);
+    }
+
+    public function privacy()
+    {
+        return Response()->json([
+            'data' => [
+                'privacy' => $this->localizedSetting('privacy'),
+            ],
+            'message' => 'success',
+            'code' => getMsgCode('success'),
+        ]);
+    }
+
+    public function contactUs()
+    {
+        $info = Setting::whereIn('key', ['email', 'phone', 'facebook', 'twitter', 'instagram'])
+            ->pluck('value', 'key')
+            ->toArray();
+
+        return Response()->json([
+            'data' => [
+                'contact' => [
+                    'email' => $info['email'] ?? '',
+                    'phone' => $info['phone'] ?? '',
+                    'facebook' => $info['facebook'] ?? '',
+                    'twitter' => $info['twitter'] ?? '',
+                    'instagram' => $info['instagram'] ?? '',
+                ],
+            ],
+            'message' => 'success',
+            'code' => getMsgCode('success'),
+        ]);
+    }
+
+    protected function appLang(): string
+    {
+        $locale = strtolower((string) (request()->header('app-lang') ?: request()->header('lang') ?: app()->getLocale()));
+        $locale = substr($locale, 0, 2);
+
+        return in_array($locale, ['ar', 'en'], true) ? $locale : 'ar';
+    }
+
+    protected function localizedSetting(string $key): string
+    {
+        $locale = $this->appLang();
+        $localized = Setting::where('key', $key.'_'.$locale)->value('value');
+        if ($localized !== null && $localized !== '') {
+            return $localized;
+        }
+
+        return Setting::where('key', $key)->value('value') ?? '';
+    }
     public function times()
     {
 

@@ -14,6 +14,7 @@ use Excel;
 use App\Exports\GeneralExport;
 use App\Models\City;
 use App\Models\CompanyAddress;
+use App\Models\AttendanceRecord;
 use App\Models\Driver;
 use App\Models\OrderStatus;
 use Carbon\Carbon;
@@ -244,7 +245,43 @@ class OrderController extends Controller
             ? collect()
             : Driver::whereIn('id', $logDriverIds)->get()->keyBy('id');
 
-        return view('admin.orders.show', compact('order', 'title', 'orderLogs', 'lastLog', 'driversById', 'stepLabels', 'returnedStepLabel'));
+        $trackingData = null;
+        if ($order->status === 'at_office') {
+            $startAttendance = null;
+            if ($order->driver_id) {
+                $startAttendance = AttendanceRecord::where('driver_id', $order->driver_id)
+                    ->orderBy('id', 'asc')
+                    ->first();
+            }
+
+            $destinationAddress = trim(implode(', ', array_filter([
+                $order->adress_details,
+                $order->City?->name,
+                'Saudi Arabia',
+            ])));
+
+            $trackingData = [
+                'driver_id' => $order->driver_id,
+                'driver_name' => $order->Driver
+                    ? trim($order->Driver->first_name.' '.$order->Driver->last_name)
+                    : null,
+                'start' => $startAttendance ? [
+                    'lat' => (float) $startAttendance->latitude,
+                    'lng' => (float) $startAttendance->longitude,
+                    'label' => 'نقطة البداية',
+                    'time' => $startAttendance->created_at?->format('d/m/Y H:i'),
+                    'type' => $startAttendance->type,
+                ] : null,
+                'destination' => [
+                    'lat' => $order->latitude !== null && $order->latitude !== '' ? (float) $order->latitude : null,
+                    'lng' => $order->longitude !== null && $order->longitude !== '' ? (float) $order->longitude : null,
+                    'address' => $destinationAddress,
+                    'label' => 'عنوان التسليم',
+                ],
+            ];
+        }
+
+        return view('admin.orders.show', compact('order', 'title', 'orderLogs', 'lastLog', 'driversById', 'stepLabels', 'returnedStepLabel', 'trackingData'));
     }
 
     /**

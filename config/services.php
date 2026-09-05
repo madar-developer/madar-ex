@@ -37,6 +37,7 @@ return [
     'firebase' => [
         // 'credentials' => env('FIREBASE_CREDENTIALS'), // Path to service account JSON file
         'credentials' => storage_path('app/madarexpress-firebase-adminsdk-3facz-ae95777956.json'), // Path to service account JSON file
+        'project_id' => env('FIREBASE_PROJECT_ID', 'madarexpress'),
     ],
 
 ];

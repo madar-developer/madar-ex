@@ -24,11 +24,13 @@ Route::middleware(['apilocale'])->group(function () {
     Route::post('get-token', 'Api\ServiceController@getToken');
     Route::post('send-order', 'Api\ServiceController@addOrder');
     Route::post('get-order-history', 'Api\ServiceController@getHistory');
+Route::post('get-order-tracking', 'Api\ServiceController@getOrderTracking');
 Route::post('get-bill', 'Api\ServiceController@printPdf');
 Route::post('canel-order', 'Api\ServiceController@cancelOrder');
 
 Route::group(['prefix' => '/v1', 'namespace' => 'Api'], function() {
     Route::post('get-order-history', 'ServiceController@getHistory');
+    Route::post('get-order-tracking', 'ServiceController@getOrderTracking');
     Route::group(['prefix' => '/driver', 'namespace' => 'Driver'], function() {
         Route::post('/signin', 'AuthController@login');
         Route::post('/refresh', 'AuthController@refresh');
@@ -58,6 +60,8 @@ Route::group(['prefix' => '/v1', 'namespace' => 'Api'], function() {
             Route::post('orders/change-status', 'OrderController@changestatus');
             Route::post('orders/change-orders-status', 'OrderController@changestatusArr');
             Route::post('orders/reschedule', 'OrderController@reschedule');
+            // live GPS — triggers company location_notify_url webhooks
+            Route::post('location', 'LocationController@update');
             // attendance (geofence check-in/out)
             Route::get('attendance/geofences', 'AttendanceController@geofences');
             Route::get('attendance/today', 'AttendanceController@today');
@@ -85,6 +89,8 @@ Route::group(['prefix' => '/v1', 'namespace' => 'Api'], function() {
             Route::get('orders', 'OrderController@index');
             Route::post('orders', 'OrderController@index');
             Route::get('orders/{id}', 'OrderController@show');
+            Route::get('orders-tracking', 'TrackingController@show');
+            Route::post('orders-tracking', 'TrackingController@show');
             Route::post('orders/update/{id}', 'OrderController@update');
             Route::post('orders/store', 'OrderController@store');
             Route::get('invoices', 'CompanyController@invoices');
@@ -152,6 +158,7 @@ Route::group(['prefix' => '/v2', 'namespace' => 'Api\V2'], function() {
             Route::post('orders/change-status', 'OrderController@changestatus');
             Route::post('orders/change-orders-status', 'OrderController@changestatusArr');
             Route::post('orders/reschedule', 'OrderController@reschedule');
+            Route::post('location', '\App\Http\Controllers\Api\Driver\LocationController@update');
             // attendance (geofence check-in/out)
             Route::get('attendance/geofences', 'AttendanceController@geofences');
             Route::get('attendance/today', 'AttendanceController@today');

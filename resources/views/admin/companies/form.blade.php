@@ -58,6 +58,16 @@
                                 </p>
                             </div>
                         </div>
+                        <div class="form-group">
+                            <label class="">Webhook — location_notify_url <small class="text-muted">(تتبع موقع السائق)</small></label>
+                            <div class="">
+                                {!! Form::text("location_notify_url", null, ['class' => 'form-control', 'placeholder' => 'https://example.com/webhook/location']) !!}
+                                <p class="help-block text-muted m-b-0">
+                                    نستدعيه عند تغيّر موقع السائق لطلباتكم بحالة <code>at_office</code>
+                                    مع <code>refrence_no</code> و <code>lat</code> و <code>lng</code>.
+                                </p>
+                            </div>
+                        </div>
                         {{-- <div class="form-group">
                             <label class=""> تأكيد كلمه المرور <span></span></label>
                             <div class="">

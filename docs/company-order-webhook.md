@@ -152,3 +152,10 @@ This webhook is **separate** from:
 - **Madarx**-specific jobs (`SendMadarxWebhookJob`, `sendMadarxWebhook()`) used for specific company integrations
 
 Those flows use different payloads and triggers.
+
+## Related: driver location tracking
+
+For companies that need to **track the driver location** of an order (pull API by `refrence_no` + push webhook `location_notify_url`), see:
+
+- [`docs/company-order-tracking.md`](company-order-tracking.md)
+

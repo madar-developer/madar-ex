@@ -103,6 +103,15 @@
                                             <input type="text" name="notify_url" value="{{$admin->notify_url}}" class="form-control" placeholder="http://">
                                         </div>
                                     </div>
+                                    <div class="form-group margin-top-15">
+                                        <label class="control-label col-md-3">
+                                           Location Webhook URL (POST)
+                                        </label>
+                                        <div class="col-md-7">
+                                            <input type="text" name="location_notify_url" value="{{$admin->location_notify_url}}" class="form-control" placeholder="https://example.com/webhook/location">
+                                            <span class="help-block">Madar calls this when the driver location changes for your at_office orders</span>
+                                        </div>
+                                    </div>
                                     <div class="panel-footer">
                                         <div class="clearfix">
                                             <div class="col-md-9 col-md-offset-3">

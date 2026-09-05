@@ -48,6 +48,11 @@ class CompanySettingsController extends Controller
             $com->notify_url = $request->notify_url;
             $com->save();
         }
+        if($request->has('location_notify_url'))
+        {
+            $com->location_notify_url = $request->location_notify_url ?: null;
+            $com->save();
+        }
         return redirect()->back()->with('success', 'data added');
     }
 }

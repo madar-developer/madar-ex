@@ -20,6 +20,7 @@ use App\Http\Resources\Api\OrderV2Resource as OrderResource;
 use App\Http\Resources\Api\PMResource;
 use App\Http\Resources\Api\StatusResource;
 use App\Models\OrderStatus;
+use App\Services\OrderTrackingService;
 
 class ServiceController extends Controller
 {
@@ -194,6 +195,63 @@ class ServiceController extends Controller
             'code' => 200
         ], 200);
     }
+
+    /**
+     * Company integration: track order driver location by refrence_no.
+     *
+     * POST /api/get-order-tracking
+     *   rest_token  (required)
+     *   refrence_no (required) — merchant order reference
+     *
+     * When status = at_office → order details + driver_location
+     * Otherwise → tracking_available=false + current status
+     */
+    public function getOrderTracking(Request $request, OrderTrackingService $trackingService)
+    {
+        $rest_token = $request->get('rest_token');
+        $com = Company::where('rest_token', $rest_token)->first();
+        if (!$com) {
+            return response()->json([
+                'data' => [],
+                'errors' => ['token error'],
+                'message' => 'token error',
+                'code' => 103,
+            ], 200);
+        }
+
+        $refrenceNo = $request->get('refrence_no', $request->get('order_id'));
+        if (!$refrenceNo) {
+            return response()->json([
+                'data' => [],
+                'errors' => ['refrence_no is required'],
+                'message' => 'refrence_no is required',
+                'code' => 103,
+            ], 200);
+        }
+
+        $order = $com->Order()
+            ->with(['Driver', 'City', 'District', 'PaymentMethod'])
+            ->where('refrence_no', $refrenceNo)
+            ->first();
+
+        if (!$order) {
+            return response()->json([
+                'data' => [],
+                'errors' => ['not found'],
+                'message' => 'order not found',
+                'code' => 404,
+            ], 200);
+        }
+
+        $tracking = $trackingService->forCompany($order);
+
+        return response()->json([
+            'data' => $tracking,
+            'message' => $tracking['message'],
+            'code' => 200,
+        ], 200);
+    }
+
     public function getToken(Request $request)
     {
 

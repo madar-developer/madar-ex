@@ -16,7 +16,7 @@ class Company extends Authenticatable implements JWTSubject
     protected $fillable = [
         'name', 'email', 'password', 'phone', 'city_id' , 'adress_details' , 'commercial_record' , 'active' ,
         'inside_price' , 'outside_price' , 'inside_delivery' , 'outside_delivery' , 'inside_payment_method' ,
-        'outside_payment_method','image' , 'return_cost', 'latitude', 'longitude', 'address', 'c_o_d_cost', 'notify_url'
+        'outside_payment_method','image' , 'return_cost', 'latitude', 'longitude', 'address', 'c_o_d_cost', 'notify_url', 'location_notify_url'
     ];
     protected $hidden = [
         'password', 'remember_token',

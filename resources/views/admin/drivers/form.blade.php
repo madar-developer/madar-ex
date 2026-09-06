@@ -27,8 +27,26 @@
                     <div class="form-group">
                         <label class=""> رقم التليفون  *</label>
                         <div class="">
-                            {!! Form::text("phone",null,['class'=>'form-control',
-                            'required' => '' ])!!}
+                            @php
+                                $driverPhone = old('phone', isset($driver) ? $driver->phone : null);
+                                if (is_string($driverPhone) && $driverPhone !== '') {
+                                    $driverPhone = preg_replace('/\s+/', '', $driverPhone);
+                                    if (strpos($driverPhone, '+') !== 0) {
+                                        if (strpos($driverPhone, '00') === 0) {
+                                            $driverPhone = '+'.substr($driverPhone, 2);
+                                        } elseif (!preg_match('/^0/', $driverPhone)) {
+                                            $driverPhone = '+'.$driverPhone;
+                                        }
+                                    }
+                                }
+                            @endphp
+                            {!! Form::input('tel', 'phone', $driverPhone, [
+                                'class' => 'form-control',
+                                'id' => 'driver-phone',
+                                'required' => '',
+                                'dir' => 'ltr',
+                                'autocomplete' => 'tel',
+                            ]) !!}
                         </div>
                     </div>
 

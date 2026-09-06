@@ -49,6 +49,9 @@ trait DriverOperations
         }else{
             unset($data['password']);
         }
+        if (!empty($data['phone'])) {
+            $data['phone'] = preg_replace('/[\s\-()]/', '', $data['phone']);
+        }
 
 
         DB::beginTransaction();
@@ -109,6 +112,9 @@ trait DriverOperations
             $data['password'] = bcrypt($data['password']);
         }else{
             unset($data['password']);
+        }
+        if (!empty($data['phone'])) {
+            $data['phone'] = preg_replace('/[\s\-()]/', '', $data['phone']);
         }
         if ($request->has('cities')) {
             $Driver->DriverCity()->delete();

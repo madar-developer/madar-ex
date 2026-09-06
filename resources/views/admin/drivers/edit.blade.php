@@ -1,5 +1,11 @@
 @extends('admin.layout.app')
 @section('style')
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/intl-tel-input@24.8.2/build/css/intlTelInput.min.css">
+<style>
+    .iti { width: 100%; display: block; direction: ltr; }
+    .iti__country-list { z-index: 1050; text-align: left; direction: ltr; }
+    #driver-phone { direction: ltr; text-align: left; }
+</style>
 @endsection
 @section('content')
 
@@ -12,6 +18,7 @@
 <!-- end row -->
 @endsection
 @section('script')
+@include('admin.drivers.intl-phone-script')
 <script src="https://maps.googleapis.com/maps/api/js?key={{ getMapsKey() }}" async defer></script>
 <script type="text/javascript">
 

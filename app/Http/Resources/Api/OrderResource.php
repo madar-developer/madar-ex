@@ -77,7 +77,7 @@ class OrderResource extends JsonResource
     protected function buildOrderSteps()
     {
         $progressSteps = [
-            1 => 'تم الاستلام',
+            1 => 'جاري تجهيز الشحنة',
             2 => 'تم استلام الطلب من المتجر ',
             5 => 'الشحنه فى مستودع مدار ',
             6 => 'جاري التوصيل ',

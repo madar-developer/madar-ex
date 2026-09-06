@@ -392,7 +392,7 @@
                      @if(0)
                     <div class="state-bar">
                         <div class="step {{($step > 1)? 'done' : (($step == 1)? 'active' : '')}}">
-                            <div class="step-text">تم الاستلام</div>
+                            <div class="step-text">جاري تجهيز الشحنة</div>
                             <span>
                                 <i class="fa fa-archive" aria-hidden="true"></i>
                             </span>

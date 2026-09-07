@@ -84,7 +84,11 @@ class ProfileController extends Controller
             'msg' => "Please Use This Password To Login",
             'password' => $pass
         );
-        Mail::to($driver)->send(new SendMail($data));
+        try {
+            Mail::to($driver)->send(new SendMail($data));
+        } catch (\Throwable $th) {
+            //throw $th;
+        }
         return Response()->json([
                 'data' => new \stdClass,
                 'message' => 'Check Your Email Inbox',

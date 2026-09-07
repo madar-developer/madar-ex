@@ -54,6 +54,11 @@ class Company extends Authenticatable implements JWTSubject
         return $this->Hasmany(Order::class, 'company_id');
     }
 
+    public function messageTemplates()
+    {
+        return $this->belongsToMany(MessageTemplate::class, 'message_template_company');
+    }
+
     public function sallaToken()
     {
         return $this->hasOne(SallaToken::class, 'company_id');

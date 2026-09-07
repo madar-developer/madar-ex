@@ -351,6 +351,10 @@ Route::group(['namespace' =>'Admin'], function() {
         Route::resource('/products', 'ProductController');
         Route::resource('/sliders', 'SliderController');
         Route::resource('/notifications', 'NotificationController')->only(['index', 'store']);
+        Route::resource('/message-templates', 'MessageTemplateController')->except(['show']);
+        Route::get('/dev/salla', 'SallaDevController@index');
+        Route::post('/dev/salla/status', 'SallaDevController@updateStatus');
+        Route::post('/dev/salla/info', 'SallaDevController@orderInfo');
         Route::get('/notification-templates/sync', 'NotificationTemplateController@sync')->name('notification-templates.sync');
         Route::resource('/notification-templates', 'NotificationTemplateController')->only(['index', 'edit', 'update']);
 

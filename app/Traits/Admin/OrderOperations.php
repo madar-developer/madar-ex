@@ -18,6 +18,7 @@ use App\Notifications\AdminNotification;
 use App\Jobs\SendCompanyWebhookJob;
 use App\Services\SaudiAddressService;
 use App\Services\Salla\SallaOrderService;
+use App\Support\OrderStatusSms;
 use Illuminate\Support\Facades\Log;
 
 trait OrderOperations
@@ -286,28 +287,8 @@ trait OrderOperations
             {
                 $Order->Company()->first()->notify(new GeneralNotification($message, '/company/company-orders/'.$Order->id ) );
             }
-            if ($request->get('status') == 'at_office') {
-                $com_name = '';
-                if($Order->Company()->first())
-                {
-                    $com_name = $Order->Company->name;
-                }
-                $msg = notificationMessage('order.sms.out_for_delivery', [
-                    'recipient_name' => $Order->recipent_name,
-                    'serial' => $Order->serial,
-                    'company_name' => $com_name,
-                ]);
-                sendSMS(FormatPhone($Order->phone), $msg);
-            }
+            OrderStatusSms::sendFor($Order, $request->get('status'), $request->get('status') == 'at_office');
             if ($request->get('status') == 'init') {
-                $com_name = '';
-                if($Order->Company()->first())
-                {
-                    $com_name = $Order->Company->name;
-                }
-                // $msg = "تم خروج الطلب رقم $Order->serial من المتجر و جاري توصيلها اليكم.";
-                // $msg = "مرحبا $Order->recipent_name  ، شحنتك  $Order->serial  من  $com_name  في طريقها إليك وسيتم التواصل معكم عند اتجاه المندوب للعنوان";
-                // sendSMS(FormatPhone($Order->phone), $msg);
                 $Order->update(['receive_date' => Carbon::now()]);
             }
 

@@ -13,6 +13,7 @@ use App\Models\Admin;
 use App\Models\Company;
 use App\Models\OrderStatus;
 use App\Notifications\AdminNotification;
+use App\Support\OrderStatusSms;
 use Auth;
 
 trait OrderOperations
@@ -113,14 +114,9 @@ trait OrderOperations
             {
                 $Order->Company()->first()->notify(new GeneralNotification($message, '/company/company-orders/'.$Order->id ) );
             }
+            OrderStatusSms::sendFor($Order, $request->get('status'), $request->get('status') == 'init');
             if ($request->get('status') == 'init') {
-                $msg = notificationMessage('order.sms.out_for_delivery', [
-                    'recipient_name' => $Order->recipent_name,
-                    'serial' => $Order->refrence_no,
-                    'company_name' => $Order->Company->name ?? '',
-                ]);
                 $Order->update(['receive_date' => Carbon::now()]);
-                sendSMS($Order->phone, $msg);
             }
         }
 

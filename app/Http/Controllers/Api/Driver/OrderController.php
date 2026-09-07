@@ -17,6 +17,7 @@ use App\Models\Term;
 use App\Notifications\GeneralNotification;
 use App\Jobs\SendMadarxWebhookJob;
 use App\Jobs\SendCompanyWebhookJob;
+use App\Support\OrderStatusSms;
 use Carbon\Carbon;
 
 class OrderController extends Controller
@@ -350,9 +351,10 @@ class OrderController extends Controller
             }
 
             if ($request->get('status') == 'init') {
-                $msg = $this->orderOutForDeliverySms($Order);
-                sendSMS(FormatPhone($Order->phone), $msg);
+                OrderStatusSms::sendFor($Order, $request->get('status'), true);
                 $Order->update(['receive_date' => Carbon::now()]);
+            } else {
+                OrderStatusSms::sendFor($Order, $request->get('status'));
             }
         }
 
@@ -487,9 +489,10 @@ class OrderController extends Controller
             }
 
             if ($request->get('status') == 'init') {
-                $msg = $this->orderOutForDeliverySms($Order);
-                sendSMS(FormatPhone($Order->phone), $msg);
+                OrderStatusSms::sendFor($Order, $request->get('status'), true);
                 $Order->update(['receive_date' => Carbon::now()]);
+            } else {
+                OrderStatusSms::sendFor($Order, $request->get('status'));
             }
         }
 
@@ -617,9 +620,10 @@ class OrderController extends Controller
                 }
 
                 if ($request->get('status') == 'init') {
-                    $msg = $this->orderOutForDeliverySms($Order);
-                    sendSMS(FormatPhone($Order->phone), $msg);
+                    OrderStatusSms::sendFor($Order, $request->get('status'), true);
                     $Order->update(['receive_date' => Carbon::now()]);
+                } else {
+                    OrderStatusSms::sendFor($Order, $request->get('status'));
                 }
             }
 

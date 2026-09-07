@@ -52,6 +52,7 @@ trait DriverOperations
         if (!empty($data['phone'])) {
             $data['phone'] = preg_replace('/[\s\-()]/', '', $data['phone']);
         }
+        $data['flexible_attendance'] = (int) $request->get('flexible_attendance', 0) ? 1 : 0;
 
 
         DB::beginTransaction();
@@ -116,6 +117,7 @@ trait DriverOperations
         if (!empty($data['phone'])) {
             $data['phone'] = preg_replace('/[\s\-()]/', '', $data['phone']);
         }
+        $data['flexible_attendance'] = (int) $request->get('flexible_attendance', 0) ? 1 : 0;
         if ($request->has('cities')) {
             $Driver->DriverCity()->delete();
             foreach ($request->cities as $key ) {

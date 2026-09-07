@@ -73,6 +73,10 @@
                                             <td>رقم الجوال</td>
                                             <td>{{$driver->phone}}</td>
                                         </tr>
+                                        <tr>
+                                            <td>تسجيل الدخول المرن</td>
+                                            <td>{{ $driver->flexible_login ? 'مفعل' : 'غير مفعل' }}</td>
+                                        </tr>
                                     </tbody>
                                 </table>
                             </div>

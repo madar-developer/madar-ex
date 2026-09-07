@@ -22,6 +22,10 @@ class FCMController extends Controller
     public static function Push($title, $content, $token, $data, $activity = '')
     {
         try {
+            if (!app()->bound(Messaging::class)) {
+                return null;
+            }
+
             $messaging = app(Messaging::class);
 
             $tokens = is_array($token)
@@ -60,8 +64,10 @@ class FCMController extends Controller
             }
 
             return $messaging->sendMulticast($message, $tokens);
-        } catch (\Exception $e) {
-            report($e);
+        } catch (\Throwable $e) {
+            if (! $e instanceof \Illuminate\Contracts\Container\BindingResolutionException) {
+                report($e);
+            }
 
             return null;
         }

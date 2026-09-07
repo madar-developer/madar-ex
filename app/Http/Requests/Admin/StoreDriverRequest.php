@@ -29,6 +29,7 @@ class StoreDriverRequest extends FormRequest
             'phone'         => 'required|unique:drivers|max:255',
             'password'      => 'nullable|max:255',
             'image'         => 'nullable|image',
+            'flexible_attendance' => 'nullable|in:0,1',
         ];
     }
 }

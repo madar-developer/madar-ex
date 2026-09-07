@@ -58,8 +58,25 @@ class ProfileController extends Controller
 
     public function ForgetPassword(Request $request)
     {
-        $email = $request->get('email');
-        $driver = Driver::where('email', $email)->first();
+        $identifier = trim((string) ($request->get('email') ?: $request->get('phone') ?: ''));
+        $driver = $this->findDriverForPasswordReset($identifier);
+
+        if (!$driver) {
+            return Response()->json([
+                'data' => new \stdClass,
+                'message' => trans('words.no result'),
+                'code' => getMsgCode('notFound'),
+            ]);
+        }
+
+        if (empty($driver->email)) {
+            return Response()->json([
+                'data' => new \stdClass,
+                'message' => trans('words.no result'),
+                'code' => getMsgCode('notFound'),
+            ]);
+        }
+
         $pass = \Str::random(10);
         $driver->password = bcrypt($pass);
         $driver->save();
@@ -67,12 +84,30 @@ class ProfileController extends Controller
             'msg' => "Please Use This Password To Login",
             'password' => $pass
         );
-   			Mail::to($driver)->send(new SendMail($data));
+        Mail::to($driver)->send(new SendMail($data));
         return Response()->json([
                 'data' => new \stdClass,
                 'message' => 'Check Your Email Inbox',
                 'code' => getMsgCode('success')
         ]);
+    }
+
+    protected function findDriverForPasswordReset($identifier)
+    {
+        if ($identifier === '') {
+            return null;
+        }
+
+        if (filter_var($identifier, FILTER_VALIDATE_EMAIL)) {
+            return Driver::where('email', $identifier)->first();
+        }
+
+        $phone = preg_replace('/[\s\-()]/', '', $identifier);
+
+        return Driver::where('email', $identifier)
+            ->orWhere('phone', $identifier)
+            ->orWhere('phone', $phone)
+            ->first();
     }
     public function notifications(Request $request)
     {

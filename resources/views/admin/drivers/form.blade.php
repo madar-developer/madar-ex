@@ -168,6 +168,12 @@
                 </div>
             </div>
             <div class="form-group">
+                <label class="">تسجيل الدخول المرن</label>
+                <div class=" append">
+                    {!! Form::select("flexible_login", UserStatus(), null, ['class'=>"form-control select2", "autocomplete"=> 'off'])!!}
+                </div>
+            </div>
+            <div class="form-group">
                 <label class="">    الراتب  *</label>
                 <div class=" append">
                     {!! Form::number("fixed_salary",null,['class'=>"form-control  ", "autocomplete"=> 'off', 'min' => '0'])!!}

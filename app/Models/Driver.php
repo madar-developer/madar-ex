@@ -22,12 +22,13 @@ class Driver extends Authenticatable implements JWTSubject
         'license_date_expiration' , 'car_id' , 'remember_token', 'identity_expiration_date', 'car_receive_date', 'type', 'commission',
         'identity_image' , 'license_image' , 'form_image' , 'car_receive_date_hijri' , 'identity_expiration_date_hijri',
         'license_expiration_date_hijri' , 'fixed_salary' , 'commission', 'image',
-        'last_latitude', 'last_longitude', 'last_location_at',
+        'last_latitude', 'last_longitude', 'last_location_at', 'flexible_attendance',
     ];
     protected $casts = [
         'last_latitude' => 'float',
         'last_longitude' => 'float',
         'last_location_at' => 'datetime',
+        'flexible_attendance' => 'integer',
     ];
     protected $appends = [
         'cities', 'order_count', 'order_failed_count', 'order_delivered_count', 'delivering_orders_count', 'received_count'
@@ -149,5 +150,34 @@ class Driver extends Authenticatable implements JWTSubject
 
         return getImage($img);
     }
-    
+
+    public function getIdentityImageAttribute($img = null)
+    {
+        $img = $img ?? ($this->attributes['identity_image'] ?? null);
+        if ($img === null || $img === '') {
+            return $img;
+        }
+
+        return getImage($img);
+    }
+
+    public function getLicenseImageAttribute($img = null)
+    {
+        $img = $img ?? ($this->attributes['license_image'] ?? null);
+        if ($img === null || $img === '') {
+            return $img;
+        }
+
+        return getImage($img);
+    }
+
+    public function getFormImageAttribute($img = null)
+    {
+        $img = $img ?? ($this->attributes['form_image'] ?? null);
+        if ($img === null || $img === '') {
+            return $img;
+        }
+
+        return getImage($img);
+    }
 }

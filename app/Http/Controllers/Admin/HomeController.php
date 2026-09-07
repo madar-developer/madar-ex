@@ -61,9 +61,7 @@ class HomeController extends Controller
             ->where('last_activity', '>=', $statsFrom)
             ->withCount([
                 'Order as orders_count' => function ($q) use ($statsFrom) {
-                    $q->where('created_at', '>=', $statsFrom)
-                        ->where('status', '<>', 'returned')
-                        ->where('collected', '<>', 1);
+                    $q->where('created_at', '>=', $statsFrom);
                 },
                 'Order as processing_count' => function ($q) use ($statsFrom) {
                     $q->where('created_at', '>=', $statsFrom)

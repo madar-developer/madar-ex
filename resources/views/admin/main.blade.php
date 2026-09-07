@@ -498,7 +498,7 @@
             $.Dashboard1.init();
         }(window.jQuery);
 </script>
-@if(0)
+@if(1)
 <script type="text/javascript"
     src="https://maps.google.com/maps/api/js?sensor=false&libraries=places&key={{ getMapsKey() }}&language=ar"> 
 </script>

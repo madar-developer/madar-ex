@@ -72,16 +72,36 @@ class ProfileController extends Controller
     }
     public function ForgetPassword(Request $request)
     {
-        $email = $request->get('email');
-        $driver = Company::where('email', $email)->first();
+        $email = trim((string) ($request->get('email') ?: $request->get('phone') ?: ''));
+        $company = null;
+        if ($email !== '') {
+            $normalized = mb_strtolower($email);
+            $phone = preg_replace('/[\s\-()]/', '', $email);
+            $company = Company::query()
+                ->where(function ($q) use ($email, $normalized, $phone) {
+                    $q->whereRaw('LOWER(TRIM(email)) = ?', [$normalized])
+                        ->orWhere('phone', $email)
+                        ->orWhere('phone', $phone);
+                })
+                ->first();
+        }
+
+        if (!$company || empty($company->email)) {
+            return Response()->json([
+                'data' => new \stdClass,
+                'message' => trans('words.no result'),
+                'code' => getMsgCode('notFound'),
+            ]);
+        }
+
         $pass = \Str::random(10);
-        $driver->password = bcrypt($pass);
-        $driver->save();
+        $company->password = bcrypt($pass);
+        $company->save();
         $data = array(
             'msg' => "Please Use This Password To Login",
             'password' => $pass
         );
-   			Mail::to($driver)->send(new SendMail($data));
+        Mail::to($company)->send(new SendMail($data));
         return Response()->json([
                 'data' => new \stdClass,
                 'message' => 'Check Your Email Inbox',

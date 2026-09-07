@@ -64,7 +64,7 @@ class ProfileController extends Controller
         if (!$driver) {
             return Response()->json([
                 'data' => new \stdClass,
-                'message' => trans('words.no result'),
+                'message' => trans('words.emailNotFound'),
                 'code' => getMsgCode('notFound'),
             ]);
         }
@@ -72,7 +72,7 @@ class ProfileController extends Controller
         if (empty($driver->email)) {
             return Response()->json([
                 'data' => new \stdClass,
-                'message' => trans('words.no result'),
+                'message' => trans('words.emailNotFound'),
                 'code' => getMsgCode('notFound'),
             ]);
         }
@@ -98,15 +98,15 @@ class ProfileController extends Controller
             return null;
         }
 
-        if (filter_var($identifier, FILTER_VALIDATE_EMAIL)) {
-            return Driver::where('email', $identifier)->first();
-        }
-
+        $normalized = mb_strtolower(trim($identifier));
         $phone = preg_replace('/[\s\-()]/', '', $identifier);
 
-        return Driver::where('email', $identifier)
-            ->orWhere('phone', $identifier)
-            ->orWhere('phone', $phone)
+        return Driver::query()
+            ->where(function ($q) use ($identifier, $normalized, $phone) {
+                $q->whereRaw('LOWER(TRIM(email)) = ?', [$normalized])
+                    ->orWhere('phone', $identifier)
+                    ->orWhere('phone', $phone);
+            })
             ->first();
     }
     public function notifications(Request $request)

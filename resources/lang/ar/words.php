@@ -4,6 +4,7 @@ $li = \App\Models\OrderStatus::orderBy('sort','asc')->get();
 $arr = [
     'authFailed' => 'فشل التحقق يرجي تسجيل الدخول',
     'no result' => 'لا توجد نتائج',
+    'emailNotFound' => 'لا يوجد سائق بهذا البريد أو رقم الجوال',
     'account under review' => 'تم انشاء الحساب بنجاح و جاري مراجعه البيانات من الادارة',
     'all'           => 'تسليم كامل الطرد',
     'part'          => 'تسليم جزء من الطرد',

@@ -62,6 +62,46 @@ class HomeController extends Controller
                 return (int) $id;
             })
             ->values();
+
+        $activeDriversStats = Driver::query()
+            ->where('last_activity', '>=', Carbon::now()->subDays(7))
+            ->withCount([
+                'Order as orders_count' => function ($q) {
+                    $q->where('status', '<>', 'returned')->where('collected', '<>', 1);
+                },
+                'Order as processing_count' => function ($q) {
+                    $q->where('status', 'at_madar');
+                },
+                'Order as delivered_count' => function ($q) {
+                    $q->where('status', 'delivered');
+                },
+                'Order as failed_count' => function ($q) {
+                    $q->where('status', 'deliver_failed');
+                },
+            ])
+            ->orderByDesc('last_activity')
+            ->get(['id', 'first_name', 'last_name', 'phone', 'last_activity']);
+
+        $companiesStats = Company::query()
+            ->where('active', 1)
+            ->withExists(['sallaToken as is_salla'])
+            ->withCount([
+                'Order as orders_count' => function ($q) {
+                    $q->where('status', '<>', 'returned')->where('collected', '<>', 1);
+                },
+                'Order as processing_count' => function ($q) {
+                    $q->where('status', 'at_madar');
+                },
+                'Order as delivered_count' => function ($q) {
+                    $q->where('status', 'delivered');
+                },
+                'Order as failed_count' => function ($q) {
+                    $q->where('status', 'deliver_failed');
+                },
+            ])
+            ->orderByDesc('orders_count')
+            ->get(['id', 'name', 'phone']);
+
         $order_statuses_chart = [];
         $order_statuses_colors = [];
         foreach (OrderStatus::get() as $item)
@@ -92,7 +132,19 @@ class HomeController extends Controller
             return view('admin.branch_main', compact('search', 'companies_chart', 'orders_chart', 'orders', 'payments_chart', 'order_statuses_chart', 'order_statuses_colors'));
         }
         // return "1";
-    	return view('admin.main', compact('search', 'o_list', 'activeDriverIds', 'companies_chart', 'orders_chart', 'orders', 'payments_chart', 'order_statuses_chart', 'order_statuses_colors'));
+    	return view('admin.main', compact(
+            'search',
+            'o_list',
+            'activeDriverIds',
+            'activeDriversStats',
+            'companiesStats',
+            'companies_chart',
+            'orders_chart',
+            'orders',
+            'payments_chart',
+            'order_statuses_chart',
+            'order_statuses_colors'
+        ));
     }
     public function index_old()
     {

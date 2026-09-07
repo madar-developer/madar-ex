@@ -53,6 +53,11 @@ class Company extends Authenticatable implements JWTSubject
     {
         return $this->Hasmany(Order::class, 'company_id');
     }
+
+    public function sallaToken()
+    {
+        return $this->hasOne(SallaToken::class, 'company_id');
+    }
     public function BranchData()
     {
         return $this->morphOne(BranchData::class, 'taggable');

@@ -9,6 +9,7 @@ use App\Models\Order;
 use App\Models\OrderStatus;
 use App\Models\Invoice;
 use App\Models\Company;
+use App\Models\Driver;
 use Carbon\Carbon;
 use Auth;
 use App\Models\Files;
@@ -54,6 +55,13 @@ class HomeController extends Controller
                 }
             });
         $o_list = json_encode($o_list);
+        $activeDriverIds = Driver::query()
+            ->where('last_activity', '>=', Carbon::now()->subDays(7))
+            ->pluck('id')
+            ->map(function ($id) {
+                return (int) $id;
+            })
+            ->values();
         $order_statuses_chart = [];
         $order_statuses_colors = [];
         foreach (OrderStatus::get() as $item)
@@ -84,7 +92,7 @@ class HomeController extends Controller
             return view('admin.branch_main', compact('search', 'companies_chart', 'orders_chart', 'orders', 'payments_chart', 'order_statuses_chart', 'order_statuses_colors'));
         }
         // return "1";
-    	return view('admin.main', compact('search', 'o_list', 'companies_chart', 'orders_chart', 'orders', 'payments_chart', 'order_statuses_chart', 'order_statuses_colors'));
+    	return view('admin.main', compact('search', 'o_list', 'activeDriverIds', 'companies_chart', 'orders_chart', 'orders', 'payments_chart', 'order_statuses_chart', 'order_statuses_colors'));
     }
     public function index_old()
     {

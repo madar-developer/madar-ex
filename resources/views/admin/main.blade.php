@@ -581,6 +581,23 @@
     //     console.log(markers);
     // });
     var docRef = db.collection("drivers");
+    var activeDriverIds = @json($activeDriverIds ?? []);
+    function isActiveMapDriver(doc) {
+        if (!activeDriverIds.length) {
+            return false;
+        }
+        var data = doc.data() || {};
+        var candidates = [doc.id, data.id];
+        for (var c = 0; c < candidates.length; c++) {
+            if (candidates[c] === undefined || candidates[c] === null || candidates[c] === '') {
+                continue;
+            }
+            if (activeDriverIds.indexOf(parseInt(candidates[c], 10)) !== -1) {
+                return true;
+            }
+        }
+        return false;
+    }
 //     function(doc) {
 //     if (doc.exists) {
 //         console.log("Document data:", doc.data());
@@ -598,6 +615,9 @@ db.collection("drivers").onSnapshot((querySnapshot) => {
         var aarr = [];
         var i = 0;
     querySnapshot.forEach((doc) => {
+        if (!isActiveMapDriver(doc)) {
+            return;
+        }
         if (doc.data().locations !== undefined && doc.data().locations[0] !== undefined) {
             console.log(`${doc.id}` , doc.data().locations[0]);
             var htmlCard = `

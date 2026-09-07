@@ -55,32 +55,37 @@ class HomeController extends Controller
                 }
             });
         $o_list = json_encode($o_list);
-        $activeDriverIds = Driver::query()
-            ->where('last_activity', '>=', Carbon::now()->subDays(7))
-            ->pluck('id')
-            ->map(function ($id) {
-                return (int) $id;
-            })
-            ->values();
+        $statsFrom = Carbon::now()->subDays(7);
 
         $activeDriversStats = Driver::query()
-            ->where('last_activity', '>=', Carbon::now()->subDays(7))
+            ->where('last_activity', '>=', $statsFrom)
             ->withCount([
-                'Order as orders_count' => function ($q) {
-                    $q->where('status', '<>', 'returned')->where('collected', '<>', 1);
+                'Order as orders_count' => function ($q) use ($statsFrom) {
+                    $q->where('created_at', '>=', $statsFrom)
+                        ->where('status', '<>', 'returned')
+                        ->where('collected', '<>', 1);
                 },
-                'Order as processing_count' => function ($q) {
-                    $q->where('status', 'at_madar');
+                'Order as processing_count' => function ($q) use ($statsFrom) {
+                    $q->where('created_at', '>=', $statsFrom)
+                        ->where('status', 'at_madar');
                 },
-                'Order as delivered_count' => function ($q) {
-                    $q->where('status', 'delivered');
+                'Order as delivered_count' => function ($q) use ($statsFrom) {
+                    $q->where('created_at', '>=', $statsFrom)
+                        ->where('status', 'delivered');
                 },
-                'Order as failed_count' => function ($q) {
-                    $q->where('status', 'deliver_failed');
+                'Order as failed_count' => function ($q) use ($statsFrom) {
+                    $q->where('created_at', '>=', $statsFrom)
+                        ->where('status', 'deliver_failed');
                 },
             ])
             ->orderByDesc('last_activity')
             ->get(['id', 'first_name', 'last_name', 'phone', 'last_activity']);
+
+        $activeDriverIds = $activeDriversStats->pluck('id')
+            ->map(function ($id) {
+                return (int) $id;
+            })
+            ->values();
 
         $companiesStats = Company::query()
             ->where('active', 1)

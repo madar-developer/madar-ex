@@ -4,14 +4,14 @@ namespace App\Http\Controllers\Api\Driver;
 
 use App\Http\Controllers\Controller;
 use App\Http\Resources\Api\NotificationResource;
-use App\Models\SentNotification;
 use Illuminate\Http\Request;
 
 class NotificationController extends Controller
 {
     public function index()
     {
-        $notifications = SentNotification::activeForDriver()->get();
+        $user = auth('api-driver')->user();
+        $notifications = $user->notifications()->latest()->get();
 
         return response()->json([
             'data' => [
@@ -26,7 +26,7 @@ class NotificationController extends Controller
     {
         $user = auth('api-driver')->user();
         $user->unreadNotifications->where('id', $request->get('id'))->markAsRead();
-        $notifications = SentNotification::activeForDriver()->get();
+        $notifications = $user->notifications()->latest()->get();
 
         return response()->json([
             'data' => [

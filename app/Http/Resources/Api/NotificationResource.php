@@ -8,16 +8,12 @@ class NotificationResource extends JsonResource
 {
     public function toArray($request)
     {
-        $data = is_array($this->data) ? $this->data : [];
-
         return [
             'id' => $this->id,
-            'text' => $data['text'] ?? null,
-            'related_id' => $data['related_id'] ?? null,
-            'type' => $data['type'] ?? null,
-            'redirect' => $data['redirect'] ?? null,
-            'is_read' => $this->read_at !== null,
-            'read_at' => $this->read_at,
+            'title' => $this->title,
+            'description' => $this->description,
+            'type' => $this->type,
+            'days_count' => (int) $this->days_count,
             'created_at' => optional($this->created_at)->format('Y-m-d H:i:s'),
         ];
     }

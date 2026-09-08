@@ -10,7 +10,7 @@ use App\Models\PlayerId;
 use App\Models\Company;
 use App\Models\Circular;
 use App\Models\Driver;
-use App\Models\NotificaionsHistory;
+use App\Models\SentNotification;
 use Notification;
 
 class NotificationController extends Controller
@@ -74,18 +74,11 @@ class NotificationController extends Controller
                 
             }
 
+            $this->storeSentNotifications($request, $title, $content);
+
             if ($request->boolean('send_circular')) {
                 $this->storeCirculars($request, $title, $content);
             }
-
-            $companies = $request->input('companies', []);
-            $drivers = $request->input('drivers', []);
-            NotificaionsHistory::create([
-                'title' => $title,
-                'description' => $content,
-                'companies' => is_array($companies) ? implode(',', $companies) : (string) $companies,
-                'drivers' => is_array($drivers) ? implode(',', $drivers) : (string) $drivers,
-            ]);
             // send notification end
             return redirect()->back()->with('success', 'تم الارسال بنجاح');
 
@@ -96,14 +89,18 @@ class NotificationController extends Controller
         return is_array($values) && $values !== [] && ! in_array('', $values, true);
     }
 
-    protected function storeCirculars(Request $request, string $title, string $content): void
+    protected function audiencePayload(string $title, string $content): array
     {
-        $payload = [
+        return [
             'title' => $title,
             'description' => $content,
             'days_count' => 0,
         ];
+    }
 
+    protected function storeCirculars(Request $request, string $title, string $content): void
+    {
+        $payload = $this->audiencePayload($title, $content);
         $driversSelected = $this->isAudienceSelected($request->input('drivers'));
         $companiesSelected = $this->isAudienceSelected($request->input('companies'));
 
@@ -113,6 +110,21 @@ class NotificationController extends Controller
 
         if ($companiesSelected) {
             Circular::create($payload + ['type' => Circular::TYPE_COMPANY]);
+        }
+    }
+
+    protected function storeSentNotifications(Request $request, string $title, string $content): void
+    {
+        $payload = $this->audiencePayload($title, $content);
+        $driversSelected = $this->isAudienceSelected($request->input('drivers'));
+        $companiesSelected = $this->isAudienceSelected($request->input('companies'));
+
+        if ($driversSelected || ! $companiesSelected) {
+            SentNotification::create($payload + ['type' => SentNotification::TYPE_DRIVER]);
+        }
+
+        if ($companiesSelected) {
+            SentNotification::create($payload + ['type' => SentNotification::TYPE_COMPANY]);
         }
     }
 }

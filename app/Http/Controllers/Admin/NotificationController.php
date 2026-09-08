@@ -46,31 +46,14 @@ class NotificationController extends Controller
             //     }
             //     FCMController::Push($title, $content,$token,$data2);
             // }
-            if ($request->has('companies') && is_array($request->companies)) {
-                if (in_array('' , $request->companies)) {
-                    // 
-                } else if(in_array('all', $request->companies)) {
-                    // 
-                    $companies = Company::get();
-                    Notification::send($companies, new GeneralNotification($message, '#' ) );
-                }else{
-                    $companies = Company::whereIn('id', $request->companies)->get();
-                    Notification::send($companies, new GeneralNotification($message, '#' ) );
-                }
-                
+            $companies = $this->selectedCompanies($request);
+            if ($companies->isNotEmpty()) {
+                Notification::send($companies, new GeneralNotification($message, '#'));
             }
-            if ($request->has('drivers') && is_array($request->drivers)) {
-                if (in_array('' , $request->drivers)) {
-                    // 
-                } else if(in_array('all', $request->drivers)) {
-                    // 
-                    $drivers = Driver::get();
-                    Notification::send($drivers, new GeneralNotification($message, '#' ) );
-                }else{
-                    $drivers = Driver::whereIn('id', $request->drivers)->get();
-                    Notification::send($drivers, new GeneralNotification($message, '#' ) );
-                }
-                
+
+            $drivers = $this->selectedDrivers($request);
+            if ($drivers->isNotEmpty()) {
+                Notification::send($drivers, new GeneralNotification($message, '#'));
             }
 
             if ($request->boolean('send_circular')) {
@@ -81,9 +64,42 @@ class NotificationController extends Controller
 
     }
 
+    protected function cleanAudience($values): array
+    {
+        return array_values(array_filter((array) $values, function ($value) {
+            return $value !== '' && $value !== null && $value !== 'no';
+        }));
+    }
+
     protected function isAudienceSelected($values): bool
     {
-        return is_array($values) && $values !== [] && ! in_array('', $values, true);
+        return $this->cleanAudience($values) !== [];
+    }
+
+    protected function selectedCompanies(Request $request)
+    {
+        $values = $this->cleanAudience($request->input('companies'));
+        if ($values === []) {
+            return collect();
+        }
+        if (in_array('all', $values, true)) {
+            return Company::get();
+        }
+
+        return Company::whereIn('id', $values)->get();
+    }
+
+    protected function selectedDrivers(Request $request)
+    {
+        $values = $this->cleanAudience($request->input('drivers'));
+        if ($values === []) {
+            return collect();
+        }
+        if (in_array('all', $values, true)) {
+            return Driver::get();
+        }
+
+        return Driver::whereIn('id', $values)->get();
     }
 
     protected function storeCirculars(Request $request, string $title, string $content): void

@@ -91,9 +91,15 @@ class GeneralNotification extends Notification
             $related_id = $order_id;
             $type = 'order_details';
             $order = Order::find($order_id);
-            $company = $order->Company()->first();
-            $token = $company->PlayerId()->pluck('player_id')->toArray();
-            FCMController::Push('#'.$order_id, $this->message,$token,$data2, 'order_details');
+            $company = $order ? $order->Company()->first() : null;
+            if ($company) {
+                try {
+                    $token = $company->PlayerId()->pluck('player_id')->toArray();
+                    FCMController::Push('#'.$order_id, $this->message,$token,$data2, 'order_details');
+                } catch (\Throwable $e) {
+                    \Log::warning('GeneralNotification FCM failed', ['error' => $e->getMessage()]);
+                }
+            }
         }
         if (strpos($this->redirect, 'company/company-transfers') !== false) {
             $transfer_id = substr($this->redirect, 27);
@@ -109,17 +115,36 @@ class GeneralNotification extends Notification
             $related_id = $transfer_id;
             $type = 'transfer_details';
             $transfer = Transfer::find($transfer_id);
-            $company = $transfer->Company()->first();
-            $token = $company->PlayerId()->pluck('player_id')->toArray();
-            FCMController::Push('حوالة رقم '.$transfer_id, $this->message,$token,$data2, 'transfer_details');
+            $company = $transfer ? $transfer->Company()->first() : null;
+            if ($company) {
+                try {
+                    $token = $company->PlayerId()->pluck('player_id')->toArray();
+                    FCMController::Push('حوالة رقم '.$transfer_id, $this->message,$token,$data2, 'transfer_details');
+                } catch (\Throwable $e) {
+                    \Log::warning('GeneralNotification FCM failed', ['error' => $e->getMessage()]);
+                }
+            }
         }
 
-        $pusher->trigger('my-channel-'.$notifiable->id, 'general', $data);
+        try {
+            $pusher->trigger('my-channel-'.$notifiable->id, 'general', $data);
+        } catch (\Throwable $e) {
+            \Log::warning('GeneralNotification pusher failed', [
+                'notifiable_id' => $notifiable->id ?? null,
+                'error' => $e->getMessage(),
+            ]);
+        }
+
         return [
             'text' => $this->message,
             'related_id' => $related_id,
-            'type' => $type,
+            'type' => $type ?: 'general',
             'redirect' => $this->redirect,
         ];
+    }
+
+    public function toDatabase($notifiable)
+    {
+        return $this->toArray($notifiable);
     }
 }

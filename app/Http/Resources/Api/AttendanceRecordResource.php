@@ -16,6 +16,7 @@ class AttendanceRecordResource extends JsonResource
             'longitude' => (float) $this->longitude,
             'distance_meters' => $this->distance_meters,
             'within_geofence' => (bool) $this->within_geofence,
+            'notes' => $this->notes,
             'geofence' => $this->whenLoaded('geofence', function () {
                 return [
                     'id' => $this->geofence->id,

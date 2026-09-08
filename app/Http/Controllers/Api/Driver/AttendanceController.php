@@ -123,8 +123,9 @@ class AttendanceController extends Controller
         }
 
         $match = $this->geofenceService->findMatchingGeofence($latitude, $longitude);
+        $isFlexible = (int) $driver->flexible_attendance === 1;
 
-        if (!$match) {
+        if (!$match && !$isFlexible) {
             $nearest = $this->geofenceService->findNearestGeofence($latitude, $longitude);
 
             $message = 'أنت خارج نطاق الحضور المسموح';
@@ -151,14 +152,17 @@ class AttendanceController extends Controller
             ], 422);
         }
 
+        $nearest = $match ?: $this->geofenceService->findNearestGeofence($latitude, $longitude);
+
         $record = AttendanceRecord::create([
             'driver_id' => $driver->id,
-            'geofence_id' => $match['geofence']->id,
+            'geofence_id' => data_get($match, 'geofence.id') ?? data_get($nearest, 'geofence.id'),
             'type' => $type,
             'latitude' => $latitude,
             'longitude' => $longitude,
-            'distance_meters' => $match['distance'],
-            'within_geofence' => true,
+            'distance_meters' => data_get($match, 'distance') ?? data_get($nearest, 'distance'),
+            'within_geofence' => (bool) $match || $isFlexible,
+            'notes' => ($isFlexible && !$match) ? 'حضور مرن' : null,
         ]);
 
         $record->load('geofence');

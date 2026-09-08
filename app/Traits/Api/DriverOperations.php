@@ -113,8 +113,38 @@ trait DriverOperations
 
     public function deleteImage(Request $request)
     {
+        return $this->clearDriverImage('image');
+    }
+
+    public function deleteDocument(Request $request)
+    {
+        $field = $request->get('field') ?: $request->get('type');
+        $allowed = ['identity_image', 'license_image', 'form_image'];
+
+        if (! $field) {
+            foreach ($allowed as $key) {
+                if ($request->has($key) && ! in_array($request->get($key), [null, '', '0', false], true)) {
+                    $field = $key;
+                    break;
+                }
+            }
+        }
+
+        if (! in_array($field, $allowed, true)) {
+            return Response()->json([
+                'data' => new \stdClass,
+                'message' => 'field must be identity_image, license_image or form_image',
+                'code' => getMsgCode('validationErrors'),
+            ], 422);
+        }
+
+        return $this->clearDriverImage($field);
+    }
+
+    protected function clearDriverImage(string $field)
+    {
         $driver = auth('api-driver')->user();
-        $filename = $driver->getRawOriginal('image');
+        $filename = $driver->getRawOriginal($field);
         if ($filename) {
             if (strpos($filename, 'http') === 0 || strpos($filename, '/') !== false) {
                 $path = parse_url($filename, PHP_URL_PATH) ?: $filename;
@@ -126,7 +156,7 @@ trait DriverOperations
             }
         }
 
-        Driver::where('id', $driver->id)->update(['image' => null]);
+        Driver::where('id', $driver->id)->update([$field => null]);
         $driver = Driver::find($driver->id);
 
         return Response()->json([

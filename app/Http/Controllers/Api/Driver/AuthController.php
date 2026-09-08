@@ -33,7 +33,7 @@ class AuthController extends Controller
                 {
                     $driver = auth('api-driver')->user();
                     // $driver->update(['verify_code' => null]);
-                    if(Request()->has('fcm_token') && !$driver->PlayerId()->where('fcm_token', '=', $request->get('fcm_token'))->first() )
+                    if(Request()->has('fcm_token') && !$driver->PlayerId()->where('player_id', '=', $request->get('fcm_token'))->first() )
                     {
                         $driver->PlayerId()->create(['player_id' => $request->fcm_token]);
                     }

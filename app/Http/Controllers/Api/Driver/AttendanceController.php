@@ -28,6 +28,7 @@ class AttendanceController extends Controller
 
         return response()->json([
             'data' => AttendanceGeofenceResource::collection($geofences),
+            'driver' => Auth::guard('api-driver')->user(),
             'message' => 'success',
             'code' => getMsgCode('success'),
         ]);

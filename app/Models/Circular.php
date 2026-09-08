@@ -58,4 +58,17 @@ class Circular extends Model
             })
             ->latest();
     }
+
+    /**
+     * Driver circulars that should still be shown (days_count = 0 means no expiry).
+     */
+    public function scopeActiveForDriver(Builder $query): Builder
+    {
+        return $query->where('type', self::TYPE_DRIVER)
+            ->where(function (Builder $q) {
+                $q->where('days_count', 0)
+                    ->orWhereRaw('DATE_ADD(created_at, INTERVAL days_count DAY) >= ?', [now()]);
+            })
+            ->latest();
+    }
 }

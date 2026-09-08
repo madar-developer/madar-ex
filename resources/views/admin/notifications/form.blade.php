@@ -25,6 +25,15 @@
                                     {!! Form::textarea("content",null,['class'=>'form-control', 'placeholder' => 'المحتوي', 'required' => ''])!!}
                                 </div>
                             </div>
+                            <div class="form-group">
+                                <label class="col-md-3 control-label">ارسال تعميم</label>
+                                <div class="col-md-9">
+                                    <div class="checkbox checkbox-primary" style="padding-top: 7px;">
+                                        <input id="send_circular" name="send_circular" type="checkbox" value="1" {{ old('send_circular') ? 'checked' : '' }}>
+                                        <label for="send_circular">ارسال تعميم</label>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     </div>
                     <div class="col-lg-6">

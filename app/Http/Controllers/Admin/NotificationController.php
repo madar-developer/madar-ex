@@ -8,7 +8,9 @@ use App\Http\Controllers\Api\FCMController;
 use App\Notifications\GeneralNotification;
 use App\Models\PlayerId;
 use App\Models\Company;
-use App\Models\NotificationHistory;
+use App\Models\Circular;
+use App\Models\Driver;
+use App\Models\NotificaionsHistory;
 use Notification;
 
 class NotificationController extends Controller
@@ -71,11 +73,46 @@ class NotificationController extends Controller
                 }
                 
             }
-            $data['companies'] = implode(',', $data['companies']);
-            $data['drivers'] = implode(',', $data['drivers']);
-            NotificationHistory::create($data);
+
+            if ($request->boolean('send_circular')) {
+                $this->storeCirculars($request, $title, $content);
+            }
+
+            $companies = $request->input('companies', []);
+            $drivers = $request->input('drivers', []);
+            NotificaionsHistory::create([
+                'title' => $title,
+                'description' => $content,
+                'companies' => is_array($companies) ? implode(',', $companies) : (string) $companies,
+                'drivers' => is_array($drivers) ? implode(',', $drivers) : (string) $drivers,
+            ]);
             // send notification end
             return redirect()->back()->with('success', 'تم الارسال بنجاح');
 
+    }
+
+    protected function isAudienceSelected($values): bool
+    {
+        return is_array($values) && $values !== [] && ! in_array('', $values, true);
+    }
+
+    protected function storeCirculars(Request $request, string $title, string $content): void
+    {
+        $payload = [
+            'title' => $title,
+            'description' => $content,
+            'days_count' => 0,
+        ];
+
+        $driversSelected = $this->isAudienceSelected($request->input('drivers'));
+        $companiesSelected = $this->isAudienceSelected($request->input('companies'));
+
+        if ($driversSelected || ! $companiesSelected) {
+            Circular::create($payload + ['type' => Circular::TYPE_DRIVER]);
+        }
+
+        if ($companiesSelected) {
+            Circular::create($payload + ['type' => Circular::TYPE_COMPANY]);
+        }
     }
 }

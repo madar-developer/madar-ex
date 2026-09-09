@@ -50,13 +50,8 @@ class SallaDevController extends Controller
 
         $merchantId = $this->merchantIdFor($order);
         $sallaSlug = $this->statusMap[$data['status']] ?? $data['status'];
-        $shipmentId = $order->shipment_ref_id ?: $order->refrence_no;
-        $payload = [
-            'status' => $sallaSlug,
-            'shipment_number' => $order->shipment_ref_id,
-            'order_id' => $order->refrence_no,
-            'tracking_number' => $order->serial,
-        ];
+        $shipmentId = $service->resolveShipmentId($order);
+        $payload = $service->statusUpdatePayload($order, $sallaSlug, $merchantId);
 
         try {
             $salla = $service->updateStatus(
@@ -98,26 +93,42 @@ class SallaDevController extends Controller
         ]);
 
         $order = $this->findOrder($data['order_id']);
-        $sallaOrderId = $order?->refrence_no ?: $data['order_id'];
+        $sallaOrderId = $this->sallaOrderId($order) ?: $data['order_id'];
         $merchantId = $order ? $this->merchantIdFor($order) : null;
+        $shipmentId = $order ? $service->resolveShipmentId($order) : null;
 
         try {
             $salla = $service->details($sallaOrderId, [], $merchantId);
+            $shipment = null;
+            if ($shipmentId) {
+                try {
+                    $shipment = $service->shipmentDetails($shipmentId, $merchantId);
+                } catch (Throwable $shipmentError) {
+                    $shipment = [
+                        'ok' => false,
+                        'message' => $shipmentError->getMessage(),
+                        'salla_error' => $shipmentError instanceof SallaApiException ? $shipmentError->responseData : null,
+                    ];
+                }
+            }
 
             return response()->json([
                 'ok' => true,
                 'local_order' => $order ? $this->orderSummary($order, $merchantId) : null,
                 'request' => [
                     'salla_order_id' => $sallaOrderId,
+                    'shipment_id' => $shipmentId,
                     'merchant_id' => $merchantId,
                 ],
                 'salla' => $salla,
+                'salla_shipment' => $shipment,
             ]);
         } catch (Throwable $e) {
             return $this->errorResponse($e, [
                 'local_order' => $order ? $this->orderSummary($order, $merchantId) : null,
                 'request' => [
                     'salla_order_id' => $sallaOrderId,
+                    'shipment_id' => $shipmentId,
                     'merchant_id' => $merchantId,
                 ],
             ]);
@@ -161,6 +172,18 @@ class SallaDevController extends Controller
             ->value('merchant_id');
 
         return $merchantId ? (int) $merchantId : null;
+    }
+
+    protected function sallaOrderId(?Order $order): ?string
+    {
+        if (! $order) {
+            return null;
+        }
+
+        $payload = json_decode((string) $order->order_payload, true);
+        $sallaId = data_get($payload, 'id') ?: data_get($payload, 'data.id');
+
+        return $sallaId ? (string) $sallaId : ($order->refrence_no ?: null);
     }
 
     protected function orderSummary(Order $order, ?int $merchantId): array

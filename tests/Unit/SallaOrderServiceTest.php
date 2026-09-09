@@ -3,6 +3,7 @@
 namespace Tests\Unit;
 
 use App\Exceptions\SallaApiException;
+use App\Models\Order;
 use App\Services\Salla\SallaAuthService;
 use App\Services\Salla\SallaOrderService;
 use Illuminate\Support\Facades\Http;
@@ -91,5 +92,73 @@ class SallaOrderServiceTest extends TestCase
         $service->create([
             'customer' => ['name' => 'Bad Request Customer'],
         ]);
+    }
+
+    public function testStatusUpdatePayloadUsesExistingShippingNumberAndOmitsWaybillFields(): void
+    {
+        config()->set('salla.base_url', 'https://api.salla.dev/admin/v2');
+
+        Http::fake([
+            'https://api.salla.dev/admin/v2/shipments/1645456555' => Http::response([
+                'success' => true,
+                'data' => [
+                    'id' => 1645456555,
+                    'shipping_number' => 'mx-20260969925',
+                    'tracking_number' => 'mx-20260969925',
+                ],
+            ], 200),
+        ]);
+
+        $authService = Mockery::mock(SallaAuthService::class);
+        $authService->shouldReceive('getValidAccessToken')
+            ->once()
+            ->with(null)
+            ->andReturn('fake_access_token');
+
+        $order = new Order();
+        $order->serial = 'mx-20260969925';
+        $order->shipment_ref_id = '1645456555';
+        $order->refrence_no = '284449016';
+
+        $service = new SallaOrderService($authService);
+        $payload = $service->statusUpdatePayload($order, 'in_transit');
+
+        $this->assertSame([
+            'status' => 'in_transit',
+            'shipment_number' => 'mx-20260969925',
+        ], $payload);
+        $this->assertArrayNotHasKey('order_id', $payload);
+        $this->assertArrayNotHasKey('tracking_number', $payload);
+    }
+
+    public function testStatusUpdatePayloadFallsBackToSerialWhenShipmentLookupFails(): void
+    {
+        config()->set('salla.base_url', 'https://api.salla.dev/admin/v2');
+
+        Http::fake([
+            'https://api.salla.dev/admin/v2/shipments/1645456555' => Http::response([
+                'status' => 422,
+                'success' => false,
+            ], 422),
+        ]);
+
+        $authService = Mockery::mock(SallaAuthService::class);
+        $authService->shouldReceive('getValidAccessToken')
+            ->once()
+            ->with(null)
+            ->andReturn('fake_access_token');
+
+        $order = new Order();
+        $order->serial = 'mx-20260969925';
+        $order->shipment_ref_id = '1645456555';
+        $order->refrence_no = '284449016';
+
+        $service = new SallaOrderService($authService);
+        $payload = $service->statusUpdatePayload($order, 'in_transit');
+
+        $this->assertSame('in_transit', $payload['status']);
+        $this->assertSame('mx-20260969925', $payload['shipment_number']);
+        $this->assertArrayNotHasKey('order_id', $payload);
+        $this->assertArrayNotHasKey('tracking_number', $payload);
     }
 }

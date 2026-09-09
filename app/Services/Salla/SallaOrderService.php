@@ -3,6 +3,7 @@
 namespace App\Services\Salla;
 
 use App\Exceptions\SallaApiException;
+use App\Models\Order;
 use Illuminate\Http\Client\PendingRequest;
 use Illuminate\Support\Facades\Http;
 
@@ -34,6 +35,13 @@ class SallaOrderService
         return $this->handleResponse($response, 'Salla order details failed');
     }
 
+    public function shipmentDetails(int|string $shipmentId, ?int $merchantId = null): array
+    {
+        $response = $this->client($merchantId)->get("/shipments/{$shipmentId}");
+
+        return $this->handleResponse($response, 'Salla shipment details failed');
+    }
+
     public function update(int|string $shipmentId, array $payload, ?int $merchantId = null): array
     {
         // $response = $this->client($merchantId)->put("/orders/{$orderId}", $payload);
@@ -57,10 +65,45 @@ class SallaOrderService
 
     public function updateStatus(int|string $shipmentId, array $payload, ?int $merchantId = null): array
     {
-        // $response = $this->client($merchantId)->post("/orders/{$orderId}/status", $payload);
+        // Status-only updates must not resend order_id / tracking_number / pdf_label.
+        // Salla treats those as issuing a new waybill and returns 422 if one already exists.
         $response = $this->client($merchantId)->put("/shipments/{$shipmentId}", $payload);
 
         return $this->handleResponse($response, 'Salla update order status failed');
+    }
+
+    public function statusUpdatePayload(Order $order, string $sallaSlug, ?int $merchantId = null): array
+    {
+        return [
+            'status' => $sallaSlug,
+            'shipment_number' => $this->resolveShipmentNumber($order, $merchantId),
+        ];
+    }
+
+    public function resolveShipmentId(Order $order): int|string|null
+    {
+        return $order->shipment_ref_id ?: $order->serial;
+    }
+
+    protected function resolveShipmentNumber(Order $order, ?int $merchantId = null): string
+    {
+        $shipmentId = $this->resolveShipmentId($order);
+
+        if (! empty($shipmentId)) {
+            try {
+                $details = $this->shipmentDetails($shipmentId, $merchantId);
+                $existing = data_get($details, 'data.shipping_number')
+                    ?: data_get($details, 'data.tracking_number');
+
+                if (! empty($existing) && (string) $existing !== '0') {
+                    return (string) $existing;
+                }
+            } catch (\Throwable $e) {
+                // Use the local AWB. Salla requires this to match the first waybill request.
+            }
+        }
+
+        return (string) ($order->serial ?: $order->shipment_ref_id);
     }
 
     public function cancel(int|string $shipmentId, array $payload = [], ?int $merchantId = null): array

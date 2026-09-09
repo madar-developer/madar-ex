@@ -230,13 +230,37 @@ class SallaOrderController extends Controller
     public function createShipment (Request $request){
         $payload = $request->all();
         Log::channel('salla')->info('Salla Shipment created received', $payload);
-        // $order = Order::where('shipment_ref_id', $request->get('shipment_id'))->first();
-        // if(!$order){
-        $num = $request->get('order_id');
-            $order = Order::where('refrence_no', $request->get('order_id'))->orwhere('order_payload', 'like',  "%$num%")->first();
-        // }
+
+        $sallaOrderId = data_get($payload, 'data.order_id')
+            ?? data_get($payload, 'order_id')
+            ?? $request->get('order_id');
+        $sallaShipmentId = data_get($payload, 'data.id')
+            ?? data_get($payload, 'id')
+            ?? $request->get('shipment_id');
+
+        if (empty($sallaOrderId) && empty($sallaShipmentId)) {
+            return response()->json(['message' => 'Order not found'], 404);
+        }
+
+        $order = Order::where('order_source', 'salla')
+            ->where(function ($query) use ($sallaOrderId, $sallaShipmentId) {
+                if ($sallaOrderId) {
+                    $query->where('refrence_no', (string) $sallaOrderId)
+                        ->orWhere('order_payload', 'like', '%' . $sallaOrderId . '%');
+                }
+                if ($sallaShipmentId) {
+                    $query->orWhere('shipment_ref_id', (string) $sallaShipmentId)
+                        ->orWhere('serial', (string) $sallaShipmentId);
+                }
+            })
+            ->first();
+
         if(!$order){
             return response()->json(['message' => 'Order not found'], 404);
+        }
+
+        if (! empty($sallaShipmentId) && (string) $order->shipment_ref_id !== (string) $sallaShipmentId) {
+            $order->update(['shipment_ref_id' => (string) $sallaShipmentId]);
         }
 
         $shipmentType = strtolower((string) (

@@ -4,11 +4,24 @@ namespace App\Observers;
 
 use App\Models\Order;
 use App\Models\OrderLog;
+use App\Services\RegionAreaService;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Request;
 
 class OrderObserver
 {
+    public function saving(Order $order)
+    {
+        if (! $order->isDirty(['latitude', 'longitude']) && $order->exists) {
+            return;
+        }
+
+        $order->region_area_num = app(RegionAreaService::class)->codeFor(
+            $order->latitude,
+            $order->longitude
+        );
+    }
+
     /**
      * Handle the order "updated" event.
      *

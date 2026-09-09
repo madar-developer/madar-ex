@@ -287,6 +287,7 @@ Route::group(['namespace' =>'Admin'], function() {
         Route::resource('/company-cache-types', 'CompanyCacheTypeController');
         Route::resource('/carmaintaince', 'CarMaintenanceController');
         Route::get('/orders/region-map', 'OrderController@ordersRegionMap')->name('orders.region-map');
+        Route::resource('/region-areas', 'RegionAreaController')->except(['show']);
         Route::get('/orders/return-orders', 'OrderController@returnOrders')->name('orders.return-orders');
         Route::resource('/orders', 'OrderController');
         Route::post('/orders/{order}/return-to-merchant', 'OrderController@returnToMerchant')->name('orders.return-to-merchant');

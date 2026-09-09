@@ -476,6 +476,11 @@
 
                     </tr>
                     <tr>
+                        <th scope="row" style="  border: 1px solid gray;  color:#000;"> كود المنطقة </th>
+                        <td style="  border: 1px solid gray;">{{ $order->region_area_num ?: '-' }}</td>
+
+                    </tr>
+                    <tr>
                         <th scope="row" style="  border: 1px solid gray;  color:#000;"> عدد المنتجات </th>
                         <td style="  border: 1px solid gray;">{{$order->packages_number}}</td>
 

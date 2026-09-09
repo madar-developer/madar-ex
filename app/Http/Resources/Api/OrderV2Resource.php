@@ -42,6 +42,7 @@ class OrderV2Resource extends JsonResource
             'collected' => $this->collected,
             'latitude' => $this->latitude,
             'longitude' => $this->longitude,
+            'region_area_num' => $this->region_area_num,
             'signature' => $this->signature,
             'description' => $this->description,
             'receive_date' => $this->receive_date,

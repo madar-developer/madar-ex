@@ -168,9 +168,10 @@
                 </div>
             </div>
             <div class="form-group">
-                <label class="">تسجيل الدخول المرن</label>
+                <label class="">حضور مرن</label>
                 <div class=" append">
-                    {!! Form::select("flexible_login", UserStatus(), null, ['class'=>"form-control select2", "autocomplete"=> 'off'])!!}
+                    {!! Form::select("flexible_attendance", UserStatus(), isset($driver) ? (int) $driver->flexible_attendance : 0, ['class'=>"form-control select2", "autocomplete"=> 'off'])!!}
+                    <small class="text-muted">عند التفعيل يمكن للسائق تسجيل الحضور والانصراف من أي موقع</small>
                 </div>
             </div>
             <div class="form-group">

@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Services\Salla\SallaOrderActionService;
 use App\Services\Salla\SallaOrderService;
+use App\Services\Salla\SallaResponseLogger;
 use App\Traits\Admin\OrderOperations;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
@@ -116,11 +117,10 @@ class SallaOrderController extends Controller
             }
         }
 
-        Log::channel('salla')->info('Salla order cancelled', [
-            'order_id' => $order?->id,
-            'salla_order_id' => $orderId,
+        $this->logSallaWebhook('webhook.cancel', $payload, $order, [
             'shipment_id' => $shipmentId,
-            'merchant_id' => $merchantId,
+            'order_ref' => $orderId,
+            'salla_status' => 'cancelled',
         ]);
 
         return response()->json([
@@ -225,6 +225,12 @@ class SallaOrderController extends Controller
             $order->update($updateData);
         }
 
+        $this->logSallaWebhook('webhook.order', $payload, $order, [
+            'order_ref' => $sallaOrderId,
+            'shipment_id' => $order->shipment_ref_id,
+            'salla_status' => is_string($incomingStatusName) ? $incomingStatusName : null,
+        ]);
+
         return response()->json(['message' => 'Webhook received'], 200);
     }
     public function createShipment (Request $request){
@@ -290,6 +296,11 @@ class SallaOrderController extends Controller
             }
         }
 
+        $this->logSallaWebhook('webhook.shipment.creating', $payload, $order, [
+            'shipment_id' => $sallaShipmentId,
+            'order_ref' => $sallaOrderId,
+        ]);
+
         $pdf_url = $this->orderPdfDownloadUrl($order);
         return response()->json([
             'shipment_id' => $order->serial,
@@ -341,8 +352,41 @@ class SallaOrderController extends Controller
     public function updateShipment (Request $request){
         $payload = $request->all();
 
-        Log::channel('salla')->info('Salla Shipment updated received', $payload);
+        $sallaOrderId = data_get($payload, 'data.order_id') ?? $request->get('order_id');
+        $sallaShipmentId = data_get($payload, 'data.id') ?? $request->get('shipment_id');
+        $order = null;
+        if ($sallaOrderId || $sallaShipmentId) {
+            $order = Order::where('order_source', 'salla')
+                ->where(function ($query) use ($sallaOrderId, $sallaShipmentId) {
+                    if ($sallaOrderId) {
+                        $query->where('refrence_no', (string) $sallaOrderId)
+                            ->orWhere('order_payload', 'like', '%' . $sallaOrderId . '%');
+                    }
+                    if ($sallaShipmentId) {
+                        $query->orWhere('shipment_ref_id', (string) $sallaShipmentId)
+                            ->orWhere('serial', (string) $sallaShipmentId);
+                    }
+                })
+                ->first();
+        }
+
+        $this->logSallaWebhook('webhook.shipment.updated', $payload, $order, [
+            'shipment_id' => $sallaShipmentId,
+            'order_ref' => $sallaOrderId,
+        ]);
 
         return response()->json(['message' => 'Webhook received'], 200);
+    }
+
+    protected function logSallaWebhook(string $action, array $payload, ?Order $order, array $extra = []): void
+    {
+        app(SallaResponseLogger::class)->record(array_merge([
+            'action' => $action,
+            'direction' => 'inbound',
+            'http_status' => 200,
+            'success' => true,
+            'order' => $order,
+            'response' => $payload,
+        ], $extra));
     }
 }

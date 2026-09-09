@@ -21,15 +21,10 @@ class SallaOrderActionService
 
         $response = $this->client($merchantId)->post('/orders/actions', $payload);
 
-        if ($response->failed()) {
-            throw new SallaApiException(
-                responseData: $response->json() ?? [],
-                message: 'Salla order actions request failed',
-                code: $response->status()
-            );
-        }
-
-        return $response->json();
+        return $this->handleResponse($response, 'Salla order actions request failed', [
+            'action' => 'order.actions',
+            'request' => $payload,
+        ]);
     }
 
     public function changeStatus(
@@ -107,15 +102,37 @@ class SallaOrderActionService
     ): array {
         $response = $this->client($merchantId)->post("/orders/{$orderId}/status", $statusPayload);
 
+        return $this->handleResponse($response, 'Salla single order status update failed', [
+            'action' => 'order.status',
+            'order_ref' => $orderId,
+            'request' => $statusPayload,
+        ]);
+    }
+
+    protected function handleResponse($response, string $message, array $context = []): array
+    {
+        $body = $response->json();
+        $body = is_array($body) ? $body : [];
+
+        app(SallaResponseLogger::class)->record([
+            'action' => $context['action'] ?? $message,
+            'direction' => 'outbound',
+            'http_status' => $response->status(),
+            'success' => $response->successful(),
+            'order_ref' => $context['order_ref'] ?? null,
+            'request' => $context['request'] ?? null,
+            'response' => $body,
+        ]);
+
         if ($response->failed()) {
             throw new SallaApiException(
-                responseData: $response->json() ?? [],
-                message: 'Salla single order status update failed',
+                responseData: $body,
+                message: $message,
                 code: $response->status()
             );
         }
 
-        return $response->json();
+        return $body;
     }
 
     protected function client(?int $merchantId = null): PendingRequest

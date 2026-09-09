@@ -137,6 +137,11 @@ class Order extends Model
         return $this->Hasmany(OrderLog::class, 'order_id');
     }
 
+    public function SallaLogs()
+    {
+        return $this->hasMany(SallaOrderLog::class, 'order_id');
+    }
+
     public function Files()
     {
         return $this->morphMany(Files::class, 'taggable');

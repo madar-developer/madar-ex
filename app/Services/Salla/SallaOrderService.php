@@ -18,37 +18,51 @@ class SallaOrderService
     {
         $response = $this->client($merchantId)->post('/orders', $payload);
 
-        return $this->handleResponse($response, 'Salla create order failed');
+        return $this->handleResponse($response, 'Salla create order failed', [
+            'action' => 'order.create',
+            'request' => $payload,
+        ]);
     }
 
     public function list(array $filters = [], ?int $merchantId = null): array
     {
         $response = $this->client($merchantId)->get('/orders', $this->cleanQuery($filters));
 
-        return $this->handleResponse($response, 'Salla list orders failed');
+        return $this->handleResponse($response, 'Salla list orders failed', [
+            'action' => 'order.list',
+            'request' => $filters,
+        ]);
     }
 
     public function details(int|string $orderId, array $query = [], ?int $merchantId = null): array
     {
         $response = $this->client($merchantId)->get("/orders/{$orderId}", $this->cleanQuery($query));
 
-        return $this->handleResponse($response, 'Salla order details failed');
+        return $this->handleResponse($response, 'Salla order details failed', [
+            'action' => 'order.details',
+            'order_ref' => $orderId,
+        ]);
     }
 
     public function shipmentDetails(int|string $shipmentId, ?int $merchantId = null): array
     {
         $response = $this->client($merchantId)->get("/shipments/{$shipmentId}");
 
-        return $this->handleResponse($response, 'Salla shipment details failed');
+        return $this->handleResponse($response, 'Salla shipment details failed', [
+            'action' => 'shipment.details',
+            'shipment_id' => $shipmentId,
+        ]);
     }
 
     public function update(int|string $shipmentId, array $payload, ?int $merchantId = null): array
     {
-        // $response = $this->client($merchantId)->put("/orders/{$orderId}", $payload);
         $response = $this->client($merchantId)->put("/shipments/{$shipmentId}", $payload);
-        // update shipment details  through shepment id
 
-        return $this->handleResponse($response, 'Salla update shipment failed');
+        return $this->handleResponse($response, 'Salla update shipment failed', [
+            'action' => 'shipment.update',
+            'shipment_id' => $shipmentId,
+            'request' => $payload,
+        ]);
     }
 
     public function actions(array $operations, array $filters = [], ?int $merchantId = null): array
@@ -60,16 +74,21 @@ class SallaOrderService
 
         $response = $this->client($merchantId)->post('/orders/actions', $payload);
 
-        return $this->handleResponse($response, 'Salla order actions failed');
+        return $this->handleResponse($response, 'Salla order actions failed', [
+            'action' => 'order.actions',
+            'request' => $payload,
+        ]);
     }
 
     public function updateStatus(int|string $shipmentId, array $payload, ?int $merchantId = null): array
     {
-        // Status-only updates must not resend order_id / tracking_number / pdf_label.
-        // Salla treats those as issuing a new waybill and returns 422 if one already exists.
         $response = $this->client($merchantId)->put("/shipments/{$shipmentId}", $payload);
 
-        return $this->handleResponse($response, 'Salla update order status failed');
+        return $this->handleResponse($response, 'Salla update order status failed', [
+            'action' => 'shipment.update_status',
+            'shipment_id' => $shipmentId,
+            'request' => $payload,
+        ]);
     }
 
     public function statusUpdatePayload(Order $order, string $sallaSlug, ?int $merchantId = null): array
@@ -196,17 +215,32 @@ class SallaOrderService
             ->timeout(30);
     }
 
-    protected function handleResponse($response, string $message): array
+    protected function handleResponse($response, string $message, array $context = []): array
     {
+        $body = $response->json();
+        $body = is_array($body) ? $body : [];
+
+        app(SallaResponseLogger::class)->record([
+            'action' => $context['action'] ?? $message,
+            'direction' => 'outbound',
+            'http_status' => $response->status(),
+            'success' => $response->successful(),
+            'shipment_id' => $context['shipment_id'] ?? null,
+            'order_ref' => $context['order_ref'] ?? null,
+            'request' => $context['request'] ?? null,
+            'response' => $body,
+            'order' => $context['order'] ?? null,
+        ]);
+
         if ($response->failed()) {
             throw new SallaApiException(
-                responseData: $response->json() ?? [],
+                responseData: $body,
                 message: $message,
                 code: $response->status()
             );
         }
 
-        return $response->json();
+        return $body;
     }
 
     protected function cleanQuery(array $filters): array

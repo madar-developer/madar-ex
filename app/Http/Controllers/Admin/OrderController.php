@@ -281,7 +281,51 @@ class OrderController extends Controller
             ];
         }
 
-        return view('admin.orders.show', compact('order', 'title', 'orderLogs', 'lastLog', 'driversById', 'stepLabels', 'returnedStepLabel', 'trackingData'));
+        $sallaLogs = collect();
+        $sallaSnapshot = null;
+        if ($order->order_source === 'salla') {
+            $sallaLogs = $order->SallaLogs()->latest('id')->limit(30)->get();
+            $latestLog = $sallaLogs->first();
+            $payload = data_get($latestLog?->payload, 'response', []);
+            if (! is_array($payload) || ! $payload) {
+                $decoded = json_decode((string) $order->order_payload, true);
+                $payload = is_array($decoded) ? $decoded : [];
+            }
+
+            $statusName = data_get($payload, 'data.status.name')
+                ?: data_get($payload, 'status.name');
+            $statusSlug = $latestLog?->salla_status
+                ?: data_get($payload, 'data.status.slug')
+                ?: $order->source_status;
+
+            $sallaSnapshot = [
+                'status' => $statusSlug,
+                'status_name' => is_string($statusName) ? $statusName : null,
+                'shipment_id' => $latestLog?->shipment_id ?: $order->shipment_ref_id,
+                'tracking_number' => $latestLog?->tracking_number
+                    ?: data_get($payload, 'data.tracking_number')
+                    ?: $order->serial,
+                'order_id' => data_get($payload, 'data.order_id')
+                    ?: data_get($payload, 'data.id')
+                    ?: $order->refrence_no,
+                'courier' => data_get($payload, 'data.courier.name')
+                    ?: data_get($payload, 'data.courier_name'),
+                'updated_at' => $latestLog?->created_at,
+            ];
+        }
+
+        return view('admin.orders.show', compact(
+            'order',
+            'title',
+            'orderLogs',
+            'lastLog',
+            'driversById',
+            'stepLabels',
+            'returnedStepLabel',
+            'trackingData',
+            'sallaLogs',
+            'sallaSnapshot'
+        ));
     }
 
     /**

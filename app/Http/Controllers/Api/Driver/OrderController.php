@@ -117,6 +117,9 @@ class OrderController extends Controller
         if (Request()->has('status') && Request()->get('status') != '') {
             $orders = $orders->where('status', Request()->get('status') );
         }
+        if (Request()->has('region_area_num') && Request()->get('region_area_num') != '') {
+            $orders = $orders->where('region_area_num', Request()->get('region_area_num') );
+        }
         if (Request()->has('keywords') && Request()->get('keywords') != '') {
             $orders = $orders->where('refrence_no', 'like', '%' . Request()->get('keywords') . '%')
             ->orWhere('recipent_name', 'like', '%' . Request()->get('keywords') . '%')

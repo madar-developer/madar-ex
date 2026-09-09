@@ -433,6 +433,38 @@
         margin-bottom: 0;
         text-align: right;
     }
+    .salla-box {
+        margin-top: 8px;
+        margin-bottom: 24px;
+        direction: rtl;
+        text-align: right;
+    }
+    .salla-box h3 {
+        margin-bottom: 16px;
+    }
+    .salla-status-pill {
+        display: inline-block;
+        background: #0f766e;
+        color: #fff;
+        font-size: 13px;
+        padding: 4px 12px;
+        border-radius: 4px;
+        font-weight: 600;
+    }
+    .salla-status-pill.is-error {
+        background: #b71c1c;
+    }
+    .salla-log-table th,
+    .salla-log-table td {
+        text-align: right;
+        border: 1px solid #cfcfcf;
+        padding: 8px 10px;
+        font-size: 13px;
+    }
+    .salla-log-table thead th {
+        background: #f3f4f6;
+        color: #111;
+    }
 </style>
 @endsection
 @section('header')
@@ -501,6 +533,17 @@
                         <td style="  border: 1px solid gray;">{{@$order->OrderLog()->where('status', $order->status)->latest()->first()->details}}</td>
 
                     </tr>
+                    @if($order->order_source === 'salla')
+                    <tr>
+                        <th scope="row" style="  border: 1px solid gray; color:#000;"> الحالة في سلة </th>
+                        <td style="  border: 1px solid gray;">
+                            {{ $sallaSnapshot['status_name'] ?? $sallaSnapshot['status'] ?? $order->source_status ?? '-' }}
+                            @if(!empty($sallaSnapshot['status_name']) && !empty($sallaSnapshot['status']) && $sallaSnapshot['status_name'] !== $sallaSnapshot['status'])
+                                <span style="color:#666;">({{ $sallaSnapshot['status'] }})</span>
+                            @endif
+                        </td>
+                    </tr>
+                    @endif
                     <tr>
                         <th scope="row" style="  border: 1px solid gray; color:#000;"> رقم المرجع </th>
                         <td style="  border: 1px solid gray;">{{$order->refrence_no}}</td>
@@ -565,6 +608,82 @@
                 </tbody>
             </table>
         </div>
+        @if($order->order_source === 'salla')
+        <div class="col-md-12 salla-box">
+            <div class="col-md-12 text-center">
+                <h3>بيانات سلة</h3>
+            </div>
+            <table class="table table-striped salla-log-table" style="border: 1px solid gray;">
+                <tbody>
+                    <tr>
+                        <th style="width:220px;">الحالة في سلة</th>
+                        <td>
+                            <span class="salla-status-pill">
+                                {{ $sallaSnapshot['status_name'] ?? $sallaSnapshot['status'] ?? $order->source_status ?? '-' }}
+                            </span>
+                            @if(!empty($sallaSnapshot['status']) && ($sallaSnapshot['status_name'] ?? '') !== $sallaSnapshot['status'])
+                                <span style="margin-right:8px;color:#555;">{{ $sallaSnapshot['status'] }}</span>
+                            @endif
+                        </td>
+                    </tr>
+                    <tr>
+                        <th>رقم الشحنة</th>
+                        <td>{{ $sallaSnapshot['shipment_id'] ?? $order->shipment_ref_id ?? '-' }}</td>
+                    </tr>
+                    <tr>
+                        <th>رقم التتبع</th>
+                        <td>{{ $sallaSnapshot['tracking_number'] ?? $order->serial ?? '-' }}</td>
+                    </tr>
+                    <tr>
+                        <th>رقم الطلب في سلة</th>
+                        <td>{{ $sallaSnapshot['order_id'] ?? $order->refrence_no ?? '-' }}</td>
+                    </tr>
+                    <tr>
+                        <th>الناقل</th>
+                        <td>{{ $sallaSnapshot['courier'] ?? '-' }}</td>
+                    </tr>
+                    <tr>
+                        <th>آخر تحديث من سلة</th>
+                        <td>{{ $sallaSnapshot['updated_at'] ? $sallaSnapshot['updated_at']->format('Y-m-d H:i') : '-' }}</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <h4 class="m-t-20 m-b-10" style="text-align:right;">سجل استجابات سلة</h4>
+            <table class="table table-striped salla-log-table">
+                <thead>
+                    <tr>
+                        <th>التاريخ</th>
+                        <th>العملية</th>
+                        <th>الحالة في سلة</th>
+                        <th>النتيجة</th>
+                        <th>الملخص</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @forelse($sallaLogs as $log)
+                        <tr>
+                            <td>{{ $log->created_at?->format('Y-m-d H:i') }}</td>
+                            <td>{{ $log->actionLabel() }}</td>
+                            <td>
+                                @if($log->salla_status)
+                                    <span class="salla-status-pill {{ $log->success ? '' : 'is-error' }}">{{ $log->salla_status }}</span>
+                                @else
+                                    -
+                                @endif
+                            </td>
+                            <td>{{ $log->success ? 'نجاح' : 'فشل' }}@if($log->http_status) ({{ $log->http_status }}) @endif</td>
+                            <td>{{ $log->message ?: '-' }}</td>
+                        </tr>
+                    @empty
+                        <tr>
+                            <td colspan="5" class="text-center">لا توجد استجابات مسجلة بعد.</td>
+                        </tr>
+                    @endforelse
+                </tbody>
+            </table>
+        </div>
+        @endif
         @php $imageGroups = $order->imageGroups(); @endphp
         @if($imageGroups->isNotEmpty())
         <div class="col-md-12 order-image-groups">

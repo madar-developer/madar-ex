@@ -125,6 +125,7 @@ Route::group(['prefix' => '/v1', 'namespace' => 'Api'], function() {
     Route::get('/times', 'AppInfoController@times');
     Route::get('/slider', 'AppInfoController@slider');
     Route::get('/get-statuses', 'AppInfoController@getStatuses');
+    Route::get('/get-region-areas', 'AppInfoController@getRegionAreas');
     Route::get('/deliver-failed-option', 'AppInfoController@FailDeliverOption');
 });
 

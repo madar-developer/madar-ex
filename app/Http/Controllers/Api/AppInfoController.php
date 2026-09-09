@@ -12,6 +12,7 @@ use App\Models\FeedBack;
 use App\Models\Slider;
 use App\Models\Term;
 use App\Models\WorkTime;
+use App\Models\RegionArea;
 
 class AppInfoController extends Controller
 {
@@ -144,6 +145,29 @@ class AppInfoController extends Controller
                 'code' => getMsgCode('success')
         ]);
     }
+
+    public function getRegionAreas()
+    {
+        $regionAreas = RegionArea::active()
+            ->orderBy('title')
+            ->get(['code', 'title'])
+            ->map(function ($area) {
+                return [
+                    'key' => $area->code,
+                    'title' => $area->title,
+                ];
+            })
+            ->values();
+
+        return Response()->json([
+            'data' => [
+                'region_areas' => $regionAreas,
+            ],
+            'message' => 'success',
+            'code' => getMsgCode('success'),
+        ]);
+    }
+
     public function UploadFile(Request $request)
     {
         if(Request()->has('file_name'))

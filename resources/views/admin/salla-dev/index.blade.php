@@ -53,11 +53,11 @@
 
     <div class="col-md-6">
         <div class="card-box salla-dev-card">
-            <h4 class="header-title m-t-0 m-b-20">Get Salla order info</h4>
+            <h4 class="header-title m-t-0 m-b-20">Get Salla shipment info</h4>
             <form id="salla-info-form">
                 <div class="form-group">
                     <label>Order ID</label>
-                    <input type="text" name="order_id" class="form-control" placeholder="id / serial / refrence_no" required>
+                    <input type="text" name="order_id" class="form-control" placeholder="id / serial / refrence_no / shipment_ref_id" required>
                 </div>
                 <button type="submit" class="btn btn-primary waves-effect waves-light">Fire</button>
             </form>

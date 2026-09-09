@@ -93,46 +93,44 @@ class SallaDevController extends Controller
         ]);
 
         $order = $this->findOrder($data['order_id']);
-        $sallaOrderId = $this->sallaOrderId($order) ?: $data['order_id'];
-        $merchantId = $order ? $this->merchantIdFor($order) : null;
-        $shipmentId = $order ? $service->resolveShipmentId($order) : null;
-
-        try {
-            $salla = $service->details($sallaOrderId, [], $merchantId);
-            $shipment = null;
-            if ($shipmentId) {
-                try {
-                    $shipment = $service->shipmentDetails($shipmentId, $merchantId);
-                } catch (Throwable $shipmentError) {
-                    $shipment = [
-                        'ok' => false,
-                        'message' => $shipmentError->getMessage(),
-                        'salla_error' => $shipmentError instanceof SallaApiException ? $shipmentError->responseData : null,
-                    ];
-                }
-            }
-
+        if (! $order) {
             return response()->json([
-                'ok' => true,
-                'local_order' => $order ? $this->orderSummary($order, $merchantId) : null,
-                'request' => [
-                    'salla_order_id' => $sallaOrderId,
-                    'shipment_id' => $shipmentId,
-                    'merchant_id' => $merchantId,
-                ],
-                'salla' => $salla,
-                'salla_shipment' => $shipment,
-            ]);
-        } catch (Throwable $e) {
-            return $this->errorResponse($e, [
-                'local_order' => $order ? $this->orderSummary($order, $merchantId) : null,
-                'request' => [
-                    'salla_order_id' => $sallaOrderId,
-                    'shipment_id' => $shipmentId,
-                    'merchant_id' => $merchantId,
-                ],
-            ]);
+                'ok' => false,
+                'message' => 'Local order not found',
+            ], 404);
         }
+
+        $merchantId = $this->merchantIdFor($order);
+        $shipmentId = $service->resolveShipmentId($order);
+        $sallaOrderId = $this->sallaOrderId($order) ?: $data['order_id'];
+
+        // Shipping-company tokens have shipping.read_write, not orders.read.
+        // GET /orders will 401; GET /shipments is the supported lookup.
+        $shipment = $this->trySallaCall(
+            fn () => $shipmentId ? $service->shipmentDetails($shipmentId, $merchantId) : null
+        );
+        $sallaOrder = $this->trySallaCall(
+            fn () => $service->details($sallaOrderId, [], $merchantId)
+        );
+
+        $ok = $shipment['data'] !== null || $sallaOrder['data'] !== null;
+
+        return response()->json([
+            'ok' => $ok,
+            'message' => $ok
+                ? 'Salla lookup completed'
+                : ($shipment['error']['message'] ?? $sallaOrder['error']['message'] ?? 'Salla lookup failed'),
+            'local_order' => $this->orderSummary($order, $merchantId),
+            'request' => [
+                'salla_order_id' => $sallaOrderId,
+                'shipment_id' => $shipmentId,
+                'merchant_id' => $merchantId,
+            ],
+            'salla_shipment' => $shipment['data'],
+            'salla_order' => $sallaOrder['data'],
+            'salla_shipment_error' => $shipment['error'],
+            'salla_order_error' => $sallaOrder['error'],
+        ], $ok ? 200 : (($shipment['error']['status_code'] ?? $sallaOrder['error']['status_code'] ?? 422)));
     }
 
     protected function statusOptions(): array
@@ -198,6 +196,27 @@ class SallaDevController extends Controller
             'company_id' => $order->company_id,
             'merchant_id' => $merchantId,
         ];
+    }
+
+    protected function trySallaCall(callable $callback): array
+    {
+        try {
+            return [
+                'data' => $callback(),
+                'error' => null,
+            ];
+        } catch (Throwable $e) {
+            $status = $e->getCode() > 0 ? (int) $e->getCode() : 422;
+
+            return [
+                'data' => null,
+                'error' => [
+                    'message' => $e->getMessage(),
+                    'status_code' => $status >= 400 && $status < 600 ? $status : 422,
+                    'salla_error' => $e instanceof SallaApiException ? $e->responseData : null,
+                ],
+            ];
+        }
     }
 
     protected function errorResponse(Throwable $e, array $extra = [])

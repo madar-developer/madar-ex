@@ -17,12 +17,17 @@
                     <label for="active_checkbox">مفعّل</label>
                 </div>
             </div>
-            <p class="text-muted">ارسم المضلع على الخريطة (ثلاث نقاط على الأقل). يمكنك سحب الرؤوس للتعديل.</p>
+            <p class="text-muted" id="draw-hint">انقر على الخريطة لإضافة نقاط المضلع (ثلاث نقاط على الأقل)، ثم انقر نقراً مزدوجاً أو اضغط «إنهاء الرسم». يمكنك سحب الرؤوس للتعديل بعد الإنهاء.</p>
         </div>
         <div class="col-lg-8">
             <div class="form-group">
                 <label>المنطقة على الخريطة *</label>
                 {!! Form::text('address_display', null, ['class' => 'form-control', 'id' => 'autocomplete', 'placeholder' => 'ابحث عن موقع...']) !!}
+                <div class="m-t-10 m-b-10">
+                    <button type="button" class="btn btn-sm btn-primary" id="finish-polygon" disabled>إنهاء الرسم</button>
+                    <button type="button" class="btn btn-sm btn-default" id="undo-vertex" disabled>تراجع عن نقطة</button>
+                    <button type="button" class="btn btn-sm btn-danger" id="redraw-polygon">إعادة الرسم</button>
+                </div>
                 <div id="mapCanvas"></div>
                 <input type="hidden" name="coordinates" id="coordinates" value="{{ isset($area) ? e(json_encode($area->coordinates)) : '' }}">
             </div>

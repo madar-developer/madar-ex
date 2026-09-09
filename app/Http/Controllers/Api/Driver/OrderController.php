@@ -119,6 +119,7 @@ class OrderController extends Controller
         }
         if (Request()->has('keywords') && Request()->get('keywords') != '') {
             $orders = $orders->where('refrence_no', 'like', '%' . Request()->get('keywords') . '%')
+            ->orWhere('recipent_name', 'like', '%' . Request()->get('keywords') . '%')
             ->orWhere('address_details', 'like', '%' . Request()->get('keywords') . '%');
         }
         if (Request()->has('date') && Request()->get('date') != '') {

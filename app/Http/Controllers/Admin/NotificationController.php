@@ -10,6 +10,7 @@ use App\Models\PlayerId;
 use App\Models\Company;
 use App\Models\Circular;
 use App\Models\Driver;
+use App\Support\CircularSendRecorder;
 use Notification;
 
 class NotificationController extends Controller
@@ -58,6 +59,7 @@ class NotificationController extends Controller
 
             if ($request->boolean('send_circular')) {
                 $this->storeCirculars($request, $title, $content);
+                $this->recordCircularSend($request, $title, $content, $companies, $drivers);
             }
             // send notification end
             return redirect()->back()->with('success', 'تم الارسال بنجاح');
@@ -120,5 +122,35 @@ class NotificationController extends Controller
         if ($companiesSelected) {
             Circular::create($payload + ['type' => Circular::TYPE_COMPANY]);
         }
+    }
+
+    protected function recordCircularSend(Request $request, string $title, string $content, $companies, $drivers): void
+    {
+        $companyValues = $this->cleanAudience($request->input('companies'));
+        $driverValues = $this->cleanAudience($request->input('drivers'));
+        $driversSelected = $this->isAudienceSelected($request->input('drivers'));
+        $companiesSelected = $this->isAudienceSelected($request->input('companies'));
+
+        $allCompanies = $companiesSelected && (in_array('all', $companyValues, true) || $companies->isEmpty());
+        $allDrivers = $driversSelected && (in_array('all', $driverValues, true) || $drivers->isEmpty() || ! $this->isAudienceSelected($request->input('drivers')));
+
+        if ($allCompanies) {
+            $companies = Company::query()->get(['id', 'name']);
+        }
+        if ($allDrivers) {
+            $drivers = Driver::query()->get(['id', 'first_name', 'last_name']);
+        }
+
+        CircularSendRecorder::record(
+            $title,
+            $content,
+            $companies,
+            $drivers,
+            [],
+            [
+                'all_companies' => $allCompanies,
+                'all_drivers' => $allDrivers,
+            ]
+        );
     }
 }

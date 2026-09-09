@@ -42,22 +42,19 @@
                                 <label class="col-md-3 control-label">المستلم (companies)</label>
                                 <div class="col-md-9">
                                     @php
-                                    $def = [
-                                        '' => 'no',
-                                        'all' => 'الكل'
-                                ];
-                                        $companies = \App\Models\Company::pluck('name', 'id')->toArray();
+                                        $audienceDefaults = ['all' => 'الكل'];
+                                        $companies = $audienceDefaults + \App\Models\Company::orderBy('name')->pluck('name', 'id')->toArray();
+                                        $drivers = $audienceDefaults + \App\Models\Driver::orderBy('first_name')->get()->mapWithKeys(function ($driver) {
+                                            return [$driver->id => trim($driver->first_name.' '.$driver->last_name)];
+                                        })->toArray();
                                     @endphp
-                                    {!! Form::select("companies[]",array_merge($def, $companies),null,['class'=>"form-control select2 multiple", 'multiple' => '', 'style' =>"width: 90%; display: inline-block;"])!!}
+                                    {!! Form::select("companies[]", $companies, null, ['class'=>"form-control select2 multiple", 'multiple' => 'multiple', 'style' =>"width: 90%; display: inline-block;"]) !!}
                                 </div>
                             </div>
                             <div class="form-group">
                                 <label class="col-md-3 control-label">المستلم (drivers)</label>
                                 <div class="col-md-9">
-                                    @php
-                                        $drivers = \App\Models\Driver::pluck('first_name', 'id')->toArray();
-                                    @endphp
-                                    {!! Form::select("drivers[]",array_merge($def, $drivers),null,['class'=>"form-control select2 multiple", 'multiple' => '', 'style' =>"width: 90%; display: inline-block;"])!!}
+                                    {!! Form::select("drivers[]", $drivers, null, ['class'=>"form-control select2 multiple", 'multiple' => 'multiple', 'style' =>"width: 90%; display: inline-block;"]) !!}
                                 </div>
                             </div>
 

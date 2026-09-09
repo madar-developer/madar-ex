@@ -307,6 +307,8 @@ Route::group(['namespace' =>'Admin'], function() {
         Route::resource('/attendance-geofences', 'AttendanceGeofenceController');
         Route::get('/attendance-records', 'AttendanceRecordController@index')->name('attendance-records.index');
         Route::resource('/circulars', 'CircularController');
+        Route::get('/circular-sends', 'CircularSendController@index')->name('circular-sends.index');
+        Route::get('/circular-sends/{id}', 'CircularSendController@show')->name('circular-sends.show');
         Route::resource('/drivers', 'DriverController');
         Route::get('/drivers-charts', 'DriverController@charts')->name('drivers-charts');
         Route::get('/driver-finance-orders/{id}', 'DriverController@DFOrders');

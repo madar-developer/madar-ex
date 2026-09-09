@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\Admin\StoreCircularRequest;
 use App\Http\Requests\Admin\UpdateCircularRequest;
 use App\Models\Circular;
+use App\Support\CircularSendRecorder;
 
 class CircularController extends Controller
 {
@@ -31,7 +32,8 @@ class CircularController extends Controller
 
     public function store(StoreCircularRequest $request)
     {
-        Circular::create($request->validated());
+        $circular = Circular::create($request->validated());
+        CircularSendRecorder::forCircularType($circular->type, $circular->title, $circular->description);
 
         return redirect('/dashboard/circulars')->with('success', 'تمت الإضافة بنجاح');
     }

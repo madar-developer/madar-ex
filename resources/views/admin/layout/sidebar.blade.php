@@ -146,6 +146,7 @@
                                     <li><a href="{{ url('/dashboard/avaliable-methods') }}">    طرق التحصيل</a></li>
                                     <li><a href="{{ url('/dashboard/order-status') }}">    حالات الطلب </a></li>
                                     <li><a href="{{ url('/dashboard/circulars') }}"> التعاميم </a></li>
+                                    <li><a href="{{ url('/dashboard/circular-sends') }}"> سجل إرسال التعاميم </a></li>
                                     <li><a href="{{ url('/dashboard/settings/permissions') }}">     الصلاحيات </a></li>
                                     <li><a href="{{ url('/dashboard/settings/site') }}">     اعدادات عامة </a></li>
 
@@ -156,6 +157,7 @@
                                 <a href="javascript:void(0);" class="waves-effect"><i class="zmdi zmdi-notifications"></i> <span>  التنبيهات  </span> <span class="menu-arrow"></span></a>
                                 <ul class="list-unstyled">
                                     <li><a href="{{ url('dashboard/notifications') }}">ارسال تنبيهات</a></li>
+                                    <li><a href="{{ url('/dashboard/circular-sends') }}"> سجل إرسال التعاميم </a></li>
                                     <li><a href="{{ url('dashboard/notification-templates') }}">رسائل النظام و SMS</a></li>
                                     <!-- <li><a href="{{ url('dashboard/message-templates') }}">قوالب رسائل الشركات</a></li> -->
                                 </ul>

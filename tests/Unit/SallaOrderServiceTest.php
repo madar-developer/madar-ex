@@ -161,4 +161,81 @@ class SallaOrderServiceTest extends TestCase
         $this->assertArrayNotHasKey('order_id', $payload);
         $this->assertArrayNotHasKey('tracking_number', $payload);
     }
+
+    public function testStatusUpdatePayloadOmitsShipmentNumberWhenSallaHasNone(): void
+    {
+        config()->set('salla.base_url', 'https://api.salla.dev/admin/v2');
+
+        Http::fake([
+            'https://api.salla.dev/admin/v2/shipments/2029546661' => Http::response([
+                'success' => true,
+                'data' => [
+                    'id' => 2029546661,
+                    'shipping_number' => '0',
+                    'tracking_number' => '0',
+                ],
+            ], 200),
+        ]);
+
+        $authService = Mockery::mock(SallaAuthService::class);
+        $authService->shouldReceive('getValidAccessToken')
+            ->once()
+            ->with(null)
+            ->andReturn('fake_access_token');
+
+        $order = new Order();
+        $order->serial = 'mx-20260970079';
+        $order->shipment_ref_id = '2029546661';
+        $order->refrence_no = '284848316';
+
+        $service = new SallaOrderService($authService);
+        $payload = $service->statusUpdatePayload($order, 'delivering');
+
+        $this->assertSame(['status' => 'delivering'], $payload);
+        $this->assertArrayNotHasKey('shipment_number', $payload);
+    }
+
+    public function testUpdateStatusForOrderRetriesWithoutShipmentNumber(): void
+    {
+        config()->set('salla.base_url', 'https://api.salla.dev/admin/v2');
+
+        $error = [
+            'status' => 422,
+            'success' => false,
+            'error' => [
+                'code' => 'error',
+                'message' => 'alert.invalid_fields',
+                'fields' => [
+                    'shipment_number' => [
+                        'نوع شركة الشحن لا يتطلب إرسال رقم الشحنة، يرجي تحديث حالة الشحنة الي قيد المعالجة',
+                    ],
+                ],
+            ],
+        ];
+
+        Http::fake([
+            'https://api.salla.dev/admin/v2/shipments/2029546661' => Http::sequence()
+                ->push(['success' => false], 422)
+                ->push($error, 422)
+                ->push(['success' => true, 'data' => ['status' => ['slug' => 'in_progress']]], 200)
+                ->push(['success' => true, 'data' => ['status' => ['slug' => 'delivering']]], 200),
+        ]);
+
+        $authService = Mockery::mock(SallaAuthService::class);
+        $authService->shouldReceive('getValidAccessToken')
+            ->andReturn('fake_access_token');
+
+        $order = new Order();
+        $order->serial = 'mx-20260970079';
+        $order->shipment_ref_id = '2029546661';
+        $order->refrence_no = '284848316';
+
+        $service = new SallaOrderService($authService);
+        $result = $service->updateStatusForOrder($order, 'delivering');
+
+        $this->assertSame(['status' => 'delivering'], $result['payload']);
+        $this->assertSame('delivering', data_get($result, 'response.data.status.slug'));
+
+        Http::assertSentCount(4);
+    }
 }

@@ -50,37 +50,30 @@ class SallaDevController extends Controller
 
         $merchantId = $this->merchantIdFor($order);
         $sallaSlug = $this->statusMap[$data['status']] ?? $data['status'];
-        $shipmentId = $service->resolveShipmentId($order);
-        $payload = $service->statusUpdatePayload($order, $sallaSlug, $merchantId);
 
         try {
-            $salla = $service->updateStatus(
-                shipmentId: $shipmentId,
-                payload: $payload,
-                merchantId: $merchantId
-            );
+            $result = $service->updateStatusForOrder($order, $sallaSlug, $merchantId);
 
             return response()->json([
                 'ok' => true,
                 'local_order' => $this->orderSummary($order, $merchantId),
                 'request' => [
-                    'shipment_id' => $shipmentId,
+                    'shipment_id' => $result['shipment_id'],
                     'local_status' => $data['status'],
                     'salla_slug' => $sallaSlug,
                     'merchant_id' => $merchantId,
-                    'payload' => $payload,
+                    'payload' => $result['payload'],
                 ],
-                'salla' => $salla,
+                'salla' => $result['response'],
             ]);
         } catch (Throwable $e) {
             return $this->errorResponse($e, [
                 'local_order' => $this->orderSummary($order, $merchantId),
                 'request' => [
-                    'shipment_id' => $shipmentId,
+                    'shipment_id' => $service->resolveShipmentId($order),
                     'local_status' => $data['status'],
                     'salla_slug' => $sallaSlug,
                     'merchant_id' => $merchantId,
-                    'payload' => $payload,
                 ],
             ]);
         }

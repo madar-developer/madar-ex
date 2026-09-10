@@ -417,12 +417,10 @@ trait OrderOperations
         $sallaSlug = $statusMap[$localStatus] ?? $localStatus;
 
         try {
-            $salla = app(SallaOrderService::class);
-            $payload = $salla->statusUpdatePayload($order, $sallaSlug, (int) $merchantId);
-            $salla->updateStatus(
-                shipmentId: $salla->resolveShipmentId($order),
-                payload: $payload,
-                merchantId: (int) $merchantId
+            app(SallaOrderService::class)->updateStatusForOrder(
+                $order,
+                $sallaSlug,
+                (int) $merchantId
             );
         } catch (\Throwable $e) {
             Log::error('Salla status sync failed', [

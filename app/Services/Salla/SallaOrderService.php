@@ -93,9 +93,38 @@ class SallaOrderService
 
     public function statusUpdatePayload(Order $order, string $sallaSlug, ?int $merchantId = null): array
     {
-        return [
+        $payload = [
             'status' => $sallaSlug,
-            'shipment_number' => $this->resolveShipmentNumber($order, $merchantId),
+        ];
+
+        $shipmentNumber = $this->resolveShipmentNumber($order, $merchantId);
+        if ($shipmentNumber) {
+            $payload['shipment_number'] = $shipmentNumber;
+        }
+
+        return $payload;
+    }
+
+    public function updateStatusForOrder(Order $order, string $sallaSlug, ?int $merchantId = null): array
+    {
+        $shipmentId = $this->resolveShipmentId($order);
+        $payload = $this->statusUpdatePayload($order, $sallaSlug, $merchantId);
+
+        try {
+            $response = $this->updateStatus($shipmentId, $payload, $merchantId);
+        } catch (SallaApiException $e) {
+            if (! $this->rejectsShipmentNumber($e)) {
+                throw $e;
+            }
+
+            $payload = ['status' => $sallaSlug];
+            $response = $this->updateStatusWithoutShipmentNumber($shipmentId, $sallaSlug, $merchantId);
+        }
+
+        return [
+            'response' => $response,
+            'payload' => $payload,
+            'shipment_id' => $shipmentId,
         ];
     }
 
@@ -104,7 +133,34 @@ class SallaOrderService
         return $order->shipment_ref_id ?: $order->serial;
     }
 
-    protected function resolveShipmentNumber(Order $order, ?int $merchantId = null): string
+    protected function updateStatusWithoutShipmentNumber(
+        int|string $shipmentId,
+        string $sallaSlug,
+        ?int $merchantId = null
+    ): array {
+        $needsInProgressFirst = ! in_array($sallaSlug, ['created', 'in_progress', 'cancelled'], true);
+
+        if ($needsInProgressFirst) {
+            try {
+                $this->updateStatus($shipmentId, ['status' => 'in_progress'], $merchantId);
+            } catch (SallaApiException $e) {
+                // Already past in_progress (e.g. delivering/delivered) — continue to the target status.
+            }
+        }
+
+        return $this->updateStatus($shipmentId, ['status' => $sallaSlug], $merchantId);
+    }
+
+    protected function rejectsShipmentNumber(SallaApiException $e): bool
+    {
+        $fields = data_get($e->responseData, 'error.fields.shipment_number', []);
+        $text = implode(' ', is_array($fields) ? $fields : [(string) $fields]);
+
+        return str_contains($text, 'لا يتطلب إرسال رقم الشحنة')
+            || str_contains($text, 'قيد المعالجة');
+    }
+
+    protected function resolveShipmentNumber(Order $order, ?int $merchantId = null): ?string
     {
         $shipmentId = $this->resolveShipmentId($order);
 
@@ -117,12 +173,17 @@ class SallaOrderService
                 if (! empty($existing) && (string) $existing !== '0') {
                     return (string) $existing;
                 }
+
+                // Salla already has the shipment but no AWB — some courier types reject shipment_number.
+                return null;
             } catch (\Throwable $e) {
-                // Use the local AWB. Salla requires this to match the first waybill request.
+                // Unknown current number; keep a local fallback for waybill-based stores.
             }
         }
 
-        return (string) ($order->serial ?: $order->shipment_ref_id);
+        $fallback = (string) ($order->serial ?: $order->shipment_ref_id);
+
+        return $fallback !== '' ? $fallback : null;
     }
 
     public function cancel(int|string $shipmentId, array $payload = [], ?int $merchantId = null): array

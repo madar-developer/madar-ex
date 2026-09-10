@@ -6,7 +6,6 @@ use App\Exceptions\SallaApiException;
 use App\Http\Controllers\Controller;
 use App\Models\Order;
 use App\Models\OrderStatus;
-use App\Models\SallaToken;
 use App\Services\Salla\SallaOrderService;
 use Illuminate\Http\Request;
 use Throwable;
@@ -157,12 +156,7 @@ class SallaDevController extends Controller
 
     protected function merchantIdFor(Order $order): ?int
     {
-        $merchantId = SallaToken::where('company_id', $order->company_id)
-            ->whereNotNull('merchant_id')
-            ->latest('id')
-            ->value('merchant_id');
-
-        return $merchantId ? (int) $merchantId : null;
+        return app(\App\Services\Salla\SallaAuthService::class)->merchantIdForOrder($order);
     }
 
     protected function sallaOrderId(?Order $order): ?string

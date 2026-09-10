@@ -238,4 +238,50 @@ class SallaOrderServiceTest extends TestCase
 
         Http::assertSentCount(4);
     }
+
+    public function testUpdateStatusForOrderFallsBackToSerialWhenShipmentUnassigned(): void
+    {
+        config()->set('salla.base_url', 'https://api.salla.dev/admin/v2');
+
+        $unassigned = [
+            'status' => 422,
+            'success' => false,
+            'error' => [
+                'code' => 'error',
+                'message' => 'لم تعد الشحنة مسندة إليكم',
+            ],
+        ];
+
+        Http::fake([
+            'https://api.salla.dev/admin/v2/shipments/2029546661' => Http::sequence()
+                ->push($unassigned, 422)
+                ->push($unassigned, 422),
+            'https://api.salla.dev/admin/v2/shipments/mx-20260970079' => Http::sequence()
+                ->push([
+                    'success' => true,
+                    'data' => [
+                        'id' => 'mx-20260970079',
+                        'shipping_number' => '0',
+                        'tracking_number' => '0',
+                    ],
+                ], 200)
+                ->push(['success' => true, 'data' => ['status' => ['slug' => 'in_transit']]], 200),
+        ]);
+
+        $authService = Mockery::mock(SallaAuthService::class);
+        $authService->shouldReceive('getValidAccessToken')
+            ->andReturn('fake_access_token');
+
+        $order = new Order();
+        $order->serial = 'mx-20260970079';
+        $order->shipment_ref_id = '2029546661';
+        $order->refrence_no = '284848316';
+
+        $service = new SallaOrderService($authService);
+        $result = $service->updateStatusForOrder($order, 'in_transit');
+
+        $this->assertSame('mx-20260970079', $result['shipment_id']);
+        $this->assertSame(['status' => 'in_transit'], $result['payload']);
+        $this->assertSame('in_transit', data_get($result, 'response.data.status.slug'));
+    }
 }

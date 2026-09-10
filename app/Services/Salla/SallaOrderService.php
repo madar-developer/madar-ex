@@ -54,6 +54,16 @@ class SallaOrderService
         ]);
     }
 
+    public function listShipments(array $filters = [], ?int $merchantId = null): array
+    {
+        $response = $this->client($merchantId)->get('/shipments', $this->cleanQuery($filters));
+
+        return $this->handleResponse($response, 'Salla list shipments failed', [
+            'action' => 'shipment.list',
+            'request' => $filters,
+        ]);
+    }
+
     public function update(int|string $shipmentId, array $payload, ?int $merchantId = null): array
     {
         $response = $this->client($merchantId)->put("/shipments/{$shipmentId}", $payload);
@@ -91,13 +101,13 @@ class SallaOrderService
         ]);
     }
 
-    public function statusUpdatePayload(Order $order, string $sallaSlug, ?int $merchantId = null): array
+    public function statusUpdatePayload(Order $order, string $sallaSlug, ?int $merchantId = null, int|string|null $shipmentId = null): array
     {
         $payload = [
             'status' => $sallaSlug,
         ];
 
-        $shipmentNumber = $this->resolveShipmentNumber($order, $merchantId);
+        $shipmentNumber = $this->resolveShipmentNumber($order, $merchantId, $shipmentId);
         if ($shipmentNumber) {
             $payload['shipment_number'] = $shipmentNumber;
         }
@@ -107,30 +117,132 @@ class SallaOrderService
 
     public function updateStatusForOrder(Order $order, string $sallaSlug, ?int $merchantId = null): array
     {
-        $shipmentId = $this->resolveShipmentId($order);
-        $payload = $this->statusUpdatePayload($order, $sallaSlug, $merchantId);
+        $lastException = null;
+        $tried = [];
+        $ids = $this->localCandidateShipmentIds($order);
 
-        try {
-            $response = $this->updateStatus($shipmentId, $payload, $merchantId);
-        } catch (SallaApiException $e) {
-            if (! $this->rejectsShipmentNumber($e)) {
-                throw $e;
+        while ($ids) {
+            $shipmentId = array_shift($ids);
+            $key = (string) $shipmentId;
+            if ($key === '' || isset($tried[$key])) {
+                continue;
+            }
+            $tried[$key] = true;
+
+            $payload = $this->statusUpdatePayload($order, $sallaSlug, $merchantId, $shipmentId);
+
+            try {
+                $response = $this->updateStatus($shipmentId, $payload, $merchantId);
+            } catch (SallaApiException $e) {
+                if ($this->rejectsShipmentNumber($e)) {
+                    $payload = ['status' => $sallaSlug];
+                    try {
+                        $response = $this->updateStatusWithoutShipmentNumber($shipmentId, $sallaSlug, $merchantId);
+                    } catch (SallaApiException $retryError) {
+                        $e = $retryError;
+                        if (! $this->isUnassigned($retryError)) {
+                            throw $retryError;
+                        }
+                    }
+                } elseif (! $this->isUnassigned($e)) {
+                    throw $e;
+                }
+
+                if ($this->isUnassigned($e)) {
+                    $lastException = $e;
+                    if (! $ids) {
+                        $ids = $this->shipmentIdsFromSallaList($order, $merchantId);
+                    }
+                    continue;
+                }
             }
 
-            $payload = ['status' => $sallaSlug];
-            $response = $this->updateStatusWithoutShipmentNumber($shipmentId, $sallaSlug, $merchantId);
+            if ($order->exists && (string) $order->shipment_ref_id !== (string) $shipmentId) {
+                $order->update(['shipment_ref_id' => (string) $shipmentId]);
+            }
+
+            return [
+                'response' => $response,
+                'payload' => $payload,
+                'shipment_id' => $shipmentId,
+            ];
         }
 
-        return [
-            'response' => $response,
-            'payload' => $payload,
-            'shipment_id' => $shipmentId,
-        ];
+        if ($lastException) {
+            throw $lastException;
+        }
+
+        throw new SallaApiException(
+            responseData: [],
+            message: 'Salla update order status failed: missing shipment id',
+            code: 422
+        );
     }
 
     public function resolveShipmentId(Order $order): int|string|null
     {
         return $order->shipment_ref_id ?: $order->serial;
+    }
+
+    protected function localCandidateShipmentIds(Order $order): array
+    {
+        $ids = [];
+        foreach (array_filter([
+            $order->shipment_ref_id,
+            $order->serial,
+            ...$this->shipmentIdsFromPayload($order),
+        ]) as $id) {
+            $ids[(string) $id] = $id;
+        }
+
+        return array_values($ids);
+    }
+
+    protected function shipmentIdsFromPayload(Order $order): array
+    {
+        $payload = json_decode((string) $order->order_payload, true) ?: [];
+
+        return array_filter([
+            data_get($payload, 'shipping.id'),
+            data_get($payload, 'shipping.shipment_id'),
+            data_get($payload, 'data.shipping.id'),
+            data_get($payload, 'data.shipping.shipment_id'),
+        ]);
+    }
+
+    protected function shipmentIdsFromSallaList(Order $order, ?int $merchantId = null): array
+    {
+        $orderIds = array_filter([
+            data_get(json_decode((string) $order->order_payload, true) ?: [], 'id'),
+            data_get(json_decode((string) $order->order_payload, true) ?: [], 'data.id'),
+            $order->refrence_no,
+        ]);
+
+        $ids = [];
+        foreach (array_unique($orderIds) as $orderId) {
+            try {
+                $list = $this->listShipments(['order_id' => $orderId], $merchantId);
+            } catch (\Throwable $e) {
+                continue;
+            }
+
+            foreach (data_get($list, 'data', []) as $shipment) {
+                if (is_array($shipment) && ! empty($shipment['id'])) {
+                    $ids[] = $shipment['id'];
+                }
+            }
+        }
+
+        return $ids;
+    }
+
+    protected function isUnassigned(SallaApiException $e): bool
+    {
+        $message = (string) data_get($e->responseData, 'error.message', '');
+        $fields = json_encode(data_get($e->responseData, 'error.fields', []), JSON_UNESCAPED_UNICODE);
+
+        return str_contains($message, 'لم تعد الشحنة مسندة')
+            || str_contains((string) $fields, 'لم تعد الشحنة مسندة');
     }
 
     protected function updateStatusWithoutShipmentNumber(
@@ -160,9 +272,9 @@ class SallaOrderService
             || str_contains($text, 'قيد المعالجة');
     }
 
-    protected function resolveShipmentNumber(Order $order, ?int $merchantId = null): ?string
+    protected function resolveShipmentNumber(Order $order, ?int $merchantId = null, int|string|null $shipmentId = null): ?string
     {
-        $shipmentId = $this->resolveShipmentId($order);
+        $shipmentId = $shipmentId ?: $this->resolveShipmentId($order);
 
         if (! empty($shipmentId)) {
             try {

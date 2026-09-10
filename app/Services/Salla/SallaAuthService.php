@@ -3,6 +3,7 @@
 namespace App\Services\Salla;
 
 use App\Models\Company;
+use App\Models\Order;
 use App\Models\SallaToken;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Cache;
@@ -66,6 +67,25 @@ class SallaAuthService
         }
 
         return $this->refreshAccessToken($token)->access_token;
+    }
+
+    public function merchantIdForOrder(Order $order): ?int
+    {
+        $payload = json_decode((string) $order->order_payload, true) ?: [];
+        $fromPayload = data_get($payload, 'store.id')
+            ?? data_get($payload, 'data.store.id')
+            ?? data_get($payload, 'merchant.id');
+
+        if ($fromPayload && SallaToken::where('merchant_id', (int) $fromPayload)->exists()) {
+            return (int) $fromPayload;
+        }
+
+        $merchantId = SallaToken::where('company_id', $order->company_id)
+            ->whereNotNull('merchant_id')
+            ->latest('id')
+            ->value('merchant_id');
+
+        return $merchantId ? (int) $merchantId : null;
     }
 
     public function refreshAccessToken(SallaToken $token): SallaToken

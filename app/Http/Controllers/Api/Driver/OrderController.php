@@ -19,6 +19,8 @@ use App\Jobs\SendMadarxWebhookJob;
 use App\Jobs\SendCompanyWebhookJob;
 use App\Support\OrderStatusSms;
 use Carbon\Carbon;
+use App\Services\Salla\SallaOrderService;
+use App\Models\SallaToken;
 
 class OrderController extends Controller
 {
@@ -360,6 +362,9 @@ class OrderController extends Controller
             } else {
                 OrderStatusSms::sendFor($Order, $request->get('status'));
             }
+            
+            // Sync status back to Salla for orders that originated from Salla.
+            $this->syncSallaOrderStatus($Order, (string) $request->get('status'));
         }
 
 
@@ -629,6 +634,8 @@ class OrderController extends Controller
                 } else {
                     OrderStatusSms::sendFor($Order, $request->get('status'));
                 }
+                // Sync status back to Salla for orders that originated from Salla.
+                $this->syncSallaOrderStatus($Order, (string) $request->get('status'));
             }
 
 
@@ -699,6 +706,8 @@ class OrderController extends Controller
         $this->updateDriverLastActivity($driver);
 
 
+            // Sync status back to Salla for orders that originated from Salla.
+            $this->syncSallaOrderStatus($order, 'reschedule');
         $order = new OrderResource($order);
         return Response()->json([
             'data'          => [
@@ -873,6 +882,61 @@ class OrderController extends Controller
                 'message' => 'success',
                 'code' => getMsgCode('success')
         ]);
+    }
+    
+    protected function syncSallaOrderStatus(Order $order, string $localStatus): void
+    {
+        if ($order->order_source !== 'salla' || empty($order->refrence_no)) {
+            return;
+        }
+
+        $merchantId = SallaToken::where('company_id', $order->company_id)
+            ->whereNotNull('merchant_id')
+            ->latest('id')
+            ->value('merchant_id');
+
+        if (empty($merchantId)) {
+            Log::warning('Salla status sync skipped: missing merchant id', [
+                'order_id' => $order->id,
+                'company_id' => $order->company_id,
+                'local_status' => $localStatus,
+            ]);
+            return;
+        }
+
+        $statusMap = [
+            'new' => 'created',
+            'init' => 'in_progress',
+            'at_madar' => 'in_transit',
+            // 'at_office' => 'received_at_final_hub',
+            'at_office' => 'delivering',
+            'reschedule' => 'to_be_reattempted',
+            'deliver_failed' => 'unable_to_deliver',
+            'delivered' => 'delivered',
+            'returned' => 'return_to_origin',
+            'cancelled' => 'cancelled',
+        ];
+
+        $sallaSlug = $statusMap[$localStatus] ?? $localStatus;
+
+        try {
+            $salla = app(SallaOrderService::class);
+            $payload = $salla->statusUpdatePayload($order, $sallaSlug, (int) $merchantId);
+            $salla->updateStatus(
+                shipmentId: $salla->resolveShipmentId($order),
+                payload: $payload,
+                merchantId: (int) $merchantId
+            );
+        } catch (\Throwable $e) {
+            Log::error('Salla status sync failed', [
+                'order_id' => $order->id,
+                'refrence_no' => $order->refrence_no,
+                'merchant_id' => $merchantId,
+                'local_status' => $localStatus,
+                'salla_slug' => $sallaSlug,
+                'error' => $e->getMessage(),
+            ]);
+        }
     }
     
 }

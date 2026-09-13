@@ -194,7 +194,7 @@ class AppInfoController extends Controller
     public function FailDeliverOption()
     {
 
-        $terms = Term::where('group', 'deliver_failed')->select('id','description')->get();
+        $terms = Term::where('group', 'deliver_failed')->select('id', 'key', 'description')->get();
 
         return Response()->json([
                 'data' => [

@@ -53,6 +53,43 @@ class CircularController extends Controller
         ]);
     }
 
+    public function markAsReadArr(Request $request)
+    {
+        $request->validate([
+            'ids' => ['required', 'array', 'min:1'],
+            'ids.*' => ['required', 'integer'],
+        ]);
+
+        $driverId = auth('api-driver')->id();
+        $circulars = Circular::activeForDriver()
+            ->whereIn('id', $request->get('ids'))
+            ->get();
+
+        foreach ($circulars as $circular) {
+            $read = CircularRead::firstOrCreate(
+                [
+                    'circular_id' => $circular->id,
+                    'driver_id' => $driverId,
+                ],
+                [
+                    'read_at' => now(),
+                ]
+            );
+
+            if ($read->read_at === null) {
+                $read->update(['read_at' => now()]);
+            }
+        }
+
+        return response()->json([
+            'data' => [
+                'circulars' => CircularResource::collection($this->driverCirculars()),
+            ],
+            'message' => 'success',
+            'code' => getMsgCode('success'),
+        ]);
+    }
+
     protected function driverCirculars()
     {
         $driverId = auth('api-driver')->id();

@@ -6,6 +6,7 @@ use App\Exceptions\SallaApiException;
 use App\Http\Controllers\Controller;
 use App\Models\Order;
 use App\Models\OrderStatus;
+use App\Models\SallaToken;
 use App\Services\Salla\SallaOrderService;
 use Illuminate\Http\Request;
 use Throwable;
@@ -49,30 +50,37 @@ class SallaDevController extends Controller
 
         $merchantId = $this->merchantIdFor($order);
         $sallaSlug = $this->statusMap[$data['status']] ?? $data['status'];
+        $shipmentId = $service->resolveShipmentId($order);
+        $payload = $service->statusUpdatePayload($order, $sallaSlug, $merchantId);
 
         try {
-            $result = $service->updateStatusForOrder($order, $sallaSlug, $merchantId);
+            $salla = $service->updateStatus(
+                shipmentId: $shipmentId,
+                payload: $payload,
+                merchantId: $merchantId
+            );
 
             return response()->json([
                 'ok' => true,
                 'local_order' => $this->orderSummary($order, $merchantId),
                 'request' => [
-                    'shipment_id' => $result['shipment_id'],
+                    'shipment_id' => $shipmentId,
                     'local_status' => $data['status'],
                     'salla_slug' => $sallaSlug,
                     'merchant_id' => $merchantId,
-                    'payload' => $result['payload'],
+                    'payload' => $payload,
                 ],
-                'salla' => $result['response'],
+                'salla' => $salla,
             ]);
         } catch (Throwable $e) {
             return $this->errorResponse($e, [
                 'local_order' => $this->orderSummary($order, $merchantId),
                 'request' => [
-                    'shipment_id' => $service->resolveShipmentId($order),
+                    'shipment_id' => $shipmentId,
                     'local_status' => $data['status'],
                     'salla_slug' => $sallaSlug,
                     'merchant_id' => $merchantId,
+                    'payload' => $payload,
                 ],
             ]);
         }
@@ -156,7 +164,12 @@ class SallaDevController extends Controller
 
     protected function merchantIdFor(Order $order): ?int
     {
-        return app(\App\Services\Salla\SallaAuthService::class)->merchantIdForOrder($order);
+        $merchantId = SallaToken::where('company_id', $order->company_id)
+            ->whereNotNull('merchant_id')
+            ->latest('id')
+            ->value('merchant_id');
+
+        return $merchantId ? (int) $merchantId : null;
     }
 
     protected function sallaOrderId(?Order $order): ?string

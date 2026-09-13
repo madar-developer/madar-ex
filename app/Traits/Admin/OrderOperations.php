@@ -12,6 +12,7 @@ use Carbon\Carbon;
 use App\Models\Admin;
 use App\Models\Company;
 use App\Models\OrderStatus;
+use App\Models\SallaToken;
 use App\Models\Term;
 use App\Notifications\AdminNotification;
 use App\Jobs\SendCompanyWebhookJob;
@@ -386,7 +387,10 @@ trait OrderOperations
             return;
         }
 
-        $merchantId = app(\App\Services\Salla\SallaAuthService::class)->merchantIdForOrder($order);
+        $merchantId = SallaToken::where('company_id', $order->company_id)
+            ->whereNotNull('merchant_id')
+            ->latest('id')
+            ->value('merchant_id');
 
         if (empty($merchantId)) {
             Log::warning('Salla status sync skipped: missing merchant id', [
@@ -413,10 +417,12 @@ trait OrderOperations
         $sallaSlug = $statusMap[$localStatus] ?? $localStatus;
 
         try {
-            app(SallaOrderService::class)->updateStatusForOrder(
-                $order,
-                $sallaSlug,
-                (int) $merchantId
+            $salla = app(SallaOrderService::class);
+            $payload = $salla->statusUpdatePayload($order, $sallaSlug, (int) $merchantId);
+            $salla->updateStatus(
+                shipmentId: $salla->resolveShipmentId($order),
+                payload: $payload,
+                merchantId: (int) $merchantId
             );
         } catch (\Throwable $e) {
             Log::error('Salla status sync failed', [

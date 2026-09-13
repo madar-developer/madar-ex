@@ -162,6 +162,10 @@ class SallaOrderController extends Controller
             return response()->json(['message' => 'Company not active'], 404);
         }
 
+        $shipping_app_id = data_get($payload, 'data.shipping.app_id');
+        if ($shipping_app_id != 990460187) {
+            return response()->json(['message' => 'Invalid shipping app id'], 404);
+        }
         $order = Order::where('refrence_no', (string) $sallaOrderId)->first();
         $incomingStatusName = data_get($payload, 'data.status.name')
             ?? data_get($payload, 'data.status.slug')

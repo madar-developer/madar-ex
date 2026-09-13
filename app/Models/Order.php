@@ -43,9 +43,13 @@ class Order extends Model
                 $levels = ['at_office'];
                 break;
             case 'at_office':
-                $levels = ['deliver_failed', 'delivered', 'reschedule'];
+                $levels = ['deliver_failed', 'delivered', 'reschedule', 'emergency_case'];
                 break;
             case 'deliver_failed':
+                // $levels = ['delivered', 'returned', 'at_office', 'init'];
+                $levels = ['returned', 'at_office'];
+                break;
+            case 'emergency_case':
                 // $levels = ['delivered', 'returned', 'at_office', 'init'];
                 $levels = ['returned', 'at_office'];
                 break;

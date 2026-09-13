@@ -151,7 +151,7 @@ Route::group(['prefix' => '/v2', 'namespace' => 'Api\V2'], function() {
             Route::post('delete-notifications', 'NotificationController@markAsReadArr');
             Route::get('circulars', 'CircularController@index');
             Route::post('read-circular', 'CircularController@markAsRead');
-            Route::post('read-circulars', 'CircularController@markAsReadArr');
+            Route::post('delete-circulars', 'CircularController@markAsReadArr');
             Route::post('profile-update', 'ProfileController@update');
             Route::post('delete-image', 'ProfileController@deleteImage');
             Route::delete('delete-image', 'ProfileController@deleteImage');

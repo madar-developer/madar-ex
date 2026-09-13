@@ -31,7 +31,8 @@ class Driver extends Authenticatable implements JWTSubject
         'flexible_attendance' => 'integer',
     ];
     protected $appends = [
-        'cities', 'order_count', 'order_failed_count', 'order_delivered_count', 'delivering_orders_count', 'received_count'
+        'cities', 'order_count', 'order_failed_count', 'order_delivered_count', 'delivering_orders_count', 'received_count',
+        'has_delivering_order', 'is_checked_in',
     ];
 /**
      * Get the identifier that will be stored in the subject claim of the JWT.
@@ -122,6 +123,27 @@ class Driver extends Authenticatable implements JWTSubject
     public function getReceivedCountAttribute()
     {
         return $this->Order()->where('status', 'init')->whereDate('updated_at', Carbon::now()->toDateString())->where('collected','<>', 1)->count();
+    }
+
+    public function getHasDeliveringOrderAttribute()
+    {
+        return $this->Order()->where('status', 'at_office')->exists() ? 1 : 0;
+    }
+
+    public function getIsCheckedInAttribute()
+    {
+        $todayRecords = $this->attendanceRecords()
+            ->today()
+            ->where('within_geofence', true)
+            ->orderBy('created_at')
+            ->get();
+
+        $lastCheckIn = $todayRecords->where('type', AttendanceRecord::TYPE_CHECK_IN)->last();
+        $lastCheckOut = $todayRecords->where('type', AttendanceRecord::TYPE_CHECK_OUT)->last();
+
+        $isCheckedIn = $lastCheckIn && (! $lastCheckOut || $lastCheckIn->created_at > $lastCheckOut->created_at);
+
+        return $isCheckedIn ? 1 : 0;
     }
     /**
      * Get all of the post's Files.

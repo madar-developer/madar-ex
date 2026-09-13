@@ -44,8 +44,10 @@ Route::group(['prefix' => '/v1', 'namespace' => 'Api'], function() {
             Route::get('finance', 'ProfileController@finance');
             Route::get('notifications', 'NotificationController@index');
             Route::post('delete-notification', 'NotificationController@markAsRead');
+            Route::post('delete-notifications', 'NotificationController@markAsReadArr');
             Route::get('circulars', 'CircularController@index');
             Route::post('read-circular', 'CircularController@markAsRead');
+            Route::post('delete-circulars', 'CircularController@markAsReadArr');
             Route::post('profile-update', 'ProfileController@update');
             Route::post('delete-image', 'ProfileController@deleteImage');
             Route::delete('delete-image', 'ProfileController@deleteImage');
@@ -146,8 +148,10 @@ Route::group(['prefix' => '/v2', 'namespace' => 'Api\V2'], function() {
             Route::get('finance', 'ProfileController@finance');
             Route::get('notifications', 'NotificationController@index');
             Route::post('delete-notification', 'NotificationController@markAsRead');
+            Route::post('delete-notifications', 'NotificationController@markAsReadArr');
             Route::get('circulars', 'CircularController@index');
             Route::post('read-circular', 'CircularController@markAsRead');
+            Route::post('read-circulars', 'CircularController@markAsReadArr');
             Route::post('profile-update', 'ProfileController@update');
             Route::post('delete-image', 'ProfileController@deleteImage');
             Route::delete('delete-image', 'ProfileController@deleteImage');

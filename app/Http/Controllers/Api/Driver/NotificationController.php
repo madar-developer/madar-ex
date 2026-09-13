@@ -39,6 +39,26 @@ class NotificationController extends Controller
         ]);
     }
 
+    public function markAsReadArr(Request $request)
+    {
+        $request->validate([
+            'ids' => ['required', 'array', 'min:1'],
+            'ids.*' => ['required'],
+        ]);
+
+        $user = auth('api-driver')->user();
+        $user->unreadNotifications->whereIn('id', $request->get('ids'))->markAsRead();
+        $notifications = $this->driverNotifications($user);
+
+        return response()->json([
+            'data' => [
+                'notifications' => NotificationResource::collection($notifications),
+            ],
+            'message' => 'success',
+            'code' => getMsgCode('success'),
+        ]);
+    }
+
     protected function driverNotifications($driver)
     {
         return DatabaseNotification::query()

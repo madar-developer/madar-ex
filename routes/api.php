@@ -120,6 +120,9 @@ Route::group(['prefix' => '/v1', 'namespace' => 'Api'], function() {
     });
 
     Route::get('/test-noti/{type}', 'TestNotiController@index');
+    Route::match(['get', 'post'], '/test-driver-notification/order', 'TestDriverNotificationController@order');
+    Route::match(['get', 'post'], '/test-driver-notification/attendance', 'TestDriverNotificationController@attendance');
+    Route::match(['get', 'post'], '/test-driver-notification/general', 'TestDriverNotificationController@general');
     Route::get('/order-types', 'AppInfoController@OrderType');
     Route::get('/app-info', 'AppInfoController@index');
     Route::get('/about', 'AppInfoController@about');

@@ -63,18 +63,21 @@ class DriverNotification extends Notification
             $payload['order_id'] = $this->relatedId;
         }
 
-        // try {
+        try {
             $tokens = $notifiable->PlayerId()->pluck('player_id')->toArray();
             if (!empty($tokens)) {
-                \Log::info('DriverNotification FCM tokens', $tokens);
+                \Log::info('DriverNotification FCM tokens', [
+                    'driver_id' => $notifiable->id ?? null,
+                    'tokens' => $tokens,
+                ]);
                 FCMController::Push($title, $content, $tokens, $payload, $this->activity);
             }
-        // } catch (\Throwable $e) {
-        //     \Log::warning('DriverNotification FCM failed', [
-        //         'driver_id' => $notifiable->id ?? null,
-        //         'error' => $e->getMessage(),
-        //     ]);
-        // }
+        } catch (\Throwable $e) {
+            \Log::warning('DriverNotification FCM failed', [
+                'driver_id' => $notifiable->id ?? null,
+                'error' => $e->getMessage(),
+            ]);
+        }
 
         return [
             'text' => $content,

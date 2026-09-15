@@ -99,6 +99,29 @@ class TestDriverNotificationController extends Controller
             $contentEn
         );
     }
+    public function circular(Request $request)
+    {
+        $driver = $this->findDriver($request);
+        if (!$driver instanceof Driver) {
+            return $driver;
+        }
+
+        $titleAr = $request->get('title_ar', $request->get('title', 'تعميم عام'));
+        $titleEn = $request->get('title_en', $request->get('title', 'General notification'));
+        $contentAr = $request->get('content_ar', $request->get('content', 'لديك تعميم عام جديد'));
+        $contentEn = $request->get('content_en', $request->get('content', 'You have a new general notification'));
+
+        return $this->send(
+            $driver,
+            $titleAr,
+            $contentAr,
+            'circular',
+            null,
+            '#',
+            $titleEn,
+            $contentEn
+        );
+    }
 
     protected function findDriver(Request $request)
     {

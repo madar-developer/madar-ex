@@ -18,7 +18,7 @@ class FirestoreDriverLocationService
     public function __construct()
     {
         $this->projectId = (string) (config('services.firebase.project_id') ?: 'madarexpress');
-        $this->credentialsPath = config('services.firebase.credentials');
+        $this->credentialsPath = \App\Support\FirebaseCredentials::path() ?: config('services.firebase.credentials');
     }
 
     /**

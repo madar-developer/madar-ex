@@ -27,14 +27,18 @@ class AppServiceProvider extends ServiceProvider
             return new SaudiAddressService();
         });
 
-        $credentialsPath = config('services.firebase.credentials') ?? env('FIREBASE_CREDENTIALS');
-        if ($credentialsPath && is_file($credentialsPath)) {
-            $this->app->singleton(Messaging::class, function () use ($credentialsPath) {
-                return (new FirebaseFactory)
-                    ->withServiceAccount($credentialsPath)
-                    ->createMessaging();
-            });
-        }
+        $this->app->singleton(Messaging::class, function () {
+            $credentialsPath = \App\Support\FirebaseCredentials::path();
+            if (!$credentialsPath) {
+                throw new \RuntimeException(
+                    'Firebase credentials file not found. Set FIREBASE_CREDENTIALS or place the service account JSON in storage/app.'
+                );
+            }
+
+            return (new FirebaseFactory)
+                ->withServiceAccount($credentialsPath)
+                ->createMessaging();
+        });
     }
 
     /**

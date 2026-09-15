@@ -155,10 +155,12 @@ class TestDriverNotificationController extends Controller
             'data' => [
                 'notification' => new NotificationResource($notification),
                 'token_count' => count($driverNotification->fcmTokens),
-                'fcm_sent' => $driverNotification->fcmResult !== null,
+                'fcm_sent' => (bool) ($driverNotification->fcmResult['ok'] ?? false),
                 'fcm_result' => $driverNotification->fcmResult,
             ],
-            'message' => count($driverNotification->fcmTokens) ? 'success' : 'notification stored, but driver has no FCM token',
+            'message' => ($driverNotification->fcmResult['ok'] ?? false)
+                ? 'success'
+                : (($driverNotification->fcmResult['error'] ?? null) ?: (count($driverNotification->fcmTokens) ? 'notification stored, FCM send failed' : 'notification stored, but driver has no FCM token')),
             'code' => getMsgCode('success'),
         ]);
     }

@@ -66,6 +66,7 @@ class DriverNotification extends Notification
         try {
             $tokens = $notifiable->PlayerId()->pluck('player_id')->toArray();
             if (!empty($tokens)) {
+                \Log::log('DriverNotification FCM tokens', $tokens);
                 FCMController::Push($title, $content, $tokens, $payload, $this->activity);
             }
         } catch (\Throwable $e) {

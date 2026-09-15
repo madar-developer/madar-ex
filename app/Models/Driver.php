@@ -68,6 +68,26 @@ class Driver extends Authenticatable implements JWTSubject
     {
         return $this->morphMany(PlayerId::class, 'taggable');
     }
+
+    /**
+     * FCM device tokens stored on player_ids (legacy App\Driver and App\Models\Driver).
+     *
+     * @return array<int, string>
+     */
+    public function fcmTokens(): array
+    {
+        return PlayerId::query()
+            ->where('taggable_id', $this->id)
+            ->where(function ($query) {
+                $query->whereIn('taggable_type', [self::class, 'App\\Models\\Driver', 'App\\Driver'])
+                    ->orWhere('taggable_type', 'like', '%Driver%');
+            })
+            ->pluck('player_id')
+            ->filter(static fn ($token) => is_string($token) ? trim($token) !== '' : (string) $token !== '')
+            ->unique()
+            ->values()
+            ->all();
+    }
     public function Car()
     {
         return $this->belongsto(Car::class, 'car_id');

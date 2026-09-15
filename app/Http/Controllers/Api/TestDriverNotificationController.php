@@ -138,7 +138,7 @@ class TestDriverNotificationController extends Controller
         string $titleEn,
         string $contentEn
     ) {
-        $driver->notify(new DriverNotification(
+        $driverNotification = new DriverNotification(
             $titleAr,
             $contentAr,
             $type,
@@ -146,15 +146,19 @@ class TestDriverNotificationController extends Controller
             $redirect,
             $titleEn,
             $contentEn
-        ));
+        );
+        $driver->notify($driverNotification);
 
         $notification = $driver->notifications()->latest()->first();
 
         return response()->json([
             'data' => [
                 'notification' => new NotificationResource($notification),
+                'token_count' => count($driverNotification->fcmTokens),
+                'fcm_sent' => $driverNotification->fcmResult !== null,
+                'fcm_result' => $driverNotification->fcmResult,
             ],
-            'message' => 'success',
+            'message' => count($driverNotification->fcmTokens) ? 'success' : 'notification stored, but driver has no FCM token',
             'code' => getMsgCode('success'),
         ]);
     }

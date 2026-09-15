@@ -18,6 +18,8 @@ class DriverNotification extends Notification
     private $relatedId;
     private $redirect;
     private $activity;
+    public $fcmResult;
+    public $fcmTokens = [];
 
     public function __construct(
         string $titleAr,
@@ -64,13 +66,28 @@ class DriverNotification extends Notification
         }
 
         try {
-            $tokens = $notifiable->PlayerId()->pluck('player_id')->toArray();
-            if (!empty($tokens)) {
+            $tokens = method_exists($notifiable, 'fcmTokens')
+                ? $notifiable->fcmTokens()
+                : $notifiable->PlayerId()->pluck('player_id')->toArray();
+            $this->fcmTokens = $tokens;
+
+            if ($tokens === []) {
+                \Log::warning('DriverNotification skipped FCM: no tokens', [
+                    'driver_id' => $notifiable->id ?? null,
+                ]);
+            } else {
                 \Log::info('DriverNotification FCM tokens', [
                     'driver_id' => $notifiable->id ?? null,
-                    'tokens' => $tokens,
+                    'token_count' => count($tokens),
                 ]);
-                FCMController::Push($title, $content, $tokens, $payload, $this->activity);
+                $this->fcmResult = FCMController::Push(
+                    $title,
+                    $content,
+                    $tokens,
+                    $payload,
+                    'FLUTTER_NOTIFICATION_CLICK',
+                    null
+                );
             }
         } catch (\Throwable $e) {
             \Log::warning('DriverNotification FCM failed', [

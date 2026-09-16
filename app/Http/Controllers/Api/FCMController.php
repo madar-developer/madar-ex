@@ -90,7 +90,7 @@ class FCMController extends Controller
                 }
             }
             if ($activity !== '') {
-                $dataPayload['click_action'] = $activity;
+                // $dataPayload['click_action'] = $activity;
             }
 
             $androidNotification = [

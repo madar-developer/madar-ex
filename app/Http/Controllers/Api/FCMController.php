@@ -97,11 +97,8 @@ class FCMController extends Controller
                 'title' => (string) $title,
                 'body' => (string) $content,
                 'sound' => $data['type'] ?? 'default',
+                'channel_id' => ($data['type'] ?? 'default').'_notifications_channel',
             ];
-            if ($channelId) {
-                // $androidNotification['channel_id'] = $channelId;
-                $androidNotification['channel_id'] = ($data['type'] ?? 'default'). '_notifications_channel';
-            }
             if ($activity !== '') {
                 // $androidNotification['click_action'] = $activity;
             }

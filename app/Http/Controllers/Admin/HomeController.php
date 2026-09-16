@@ -67,6 +67,14 @@ class HomeController extends Controller
                     $q->where('created_at', '>=', $statsFrom)
                         ->where('status', 'at_madar');
                 },
+                'Order as delivering_count' => function ($q) use ($statsFrom) {
+                    $q->where('created_at', '>=', $statsFrom)
+                        ->where('status', 'at_office');
+                },
+                'Order as reschedule_count' => function ($q) use ($statsFrom) {
+                    $q->where('created_at', '>=', $statsFrom)
+                        ->where('status', 'reschedule');
+                },
                 'Order as delivered_count' => function ($q) use ($statsFrom) {
                     $q->where('created_at', '>=', $statsFrom)
                         ->where('status', 'delivered');
@@ -85,21 +93,38 @@ class HomeController extends Controller
             })
             ->values();
 
+        $companiesStatsFrom = Carbon::now()->subDays(30);
+
         $companiesStats = Company::query()
             ->where('active', 1)
+            ->whereHas('Order', function ($q) use ($companiesStatsFrom) {
+                $q->where('created_at', '>=', $companiesStatsFrom);
+            })
             ->withExists(['sallaToken as is_salla'])
             ->withCount([
-                'Order as orders_count' => function ($q) {
-                    $q->where('status', '<>', 'returned')->where('collected', '<>', 1);
+                'Order as orders_count' => function ($q) use ($companiesStatsFrom) {
+                    $q->where('created_at', '>=', $companiesStatsFrom)
+                        ->where('status', '<>', 'returned')->where('collected', '<>', 1);
                 },
-                'Order as processing_count' => function ($q) {
-                    $q->where('status', 'at_madar');
+                'Order as processing_count' => function ($q) use ($companiesStatsFrom) {
+                    $q->where('created_at', '>=', $companiesStatsFrom)
+                        ->where('status', 'at_madar');
                 },
-                'Order as delivered_count' => function ($q) {
-                    $q->where('status', 'delivered');
+                'Order as delivering_count' => function ($q) use ($companiesStatsFrom) {
+                    $q->where('created_at', '>=', $companiesStatsFrom)
+                        ->where('status', 'at_office');
                 },
-                'Order as failed_count' => function ($q) {
-                    $q->where('status', 'deliver_failed');
+                'Order as reschedule_count' => function ($q) use ($companiesStatsFrom) {
+                    $q->where('created_at', '>=', $companiesStatsFrom)
+                        ->where('status', 'reschedule');
+                },
+                'Order as delivered_count' => function ($q) use ($companiesStatsFrom) {
+                    $q->where('created_at', '>=', $companiesStatsFrom)
+                        ->where('status', 'delivered');
+                },
+                'Order as failed_count' => function ($q) use ($companiesStatsFrom) {
+                    $q->where('created_at', '>=', $companiesStatsFrom)
+                        ->where('status', 'deliver_failed');
                 },
             ])
             ->orderByDesc('orders_count')

@@ -85,6 +85,8 @@
 
     .dash-stats-table .num.orders { color: #188ae2; }
     .dash-stats-table .num.processing { color: #f7b84b; }
+    .dash-stats-table .num.delivering { color: #3b82f6; }
+    .dash-stats-table .num.reschedule { color: #8b5cf6; }
     .dash-stats-table .num.delivered { color: #10c469; }
     .dash-stats-table .num.failed { color: #f1556c; }
 
@@ -228,6 +230,8 @@
                                 <th>السائق</th>
                                 <th class="num">الطلبات</th>
                                 <th class="num">بالمستودع</th>
+                                <th class="num">جاري التوصيل</th>
+                                <th class="num">جدولة التوصيل</th>
                                 <th class="num">تم التسليم</th>
                                 <th class="num">تعذر</th>
                             </tr>
@@ -238,6 +242,8 @@
                                     <td class="name-col">{{ trim(($driver->first_name ?? '').' '.($driver->last_name ?? '')) ?: ('سائق #'.$driver->id) }}</td>
                                     <td class="num orders">{{ $driver->orders_count }}</td>
                                     <td class="num processing">{{ $driver->processing_count }}</td>
+                                    <td class="num delivering">{{ $driver->delivering_count }}</td>
+                                    <td class="num reschedule">{{ $driver->reschedule_count }}</td>
                                     <td class="num delivered">{{ $driver->delivered_count }}</td>
                                     <td class="num failed">{{ $driver->failed_count }}</td>
                                 </tr>
@@ -254,7 +260,7 @@
     <div class="col-lg-6">
         <div class="dash-stats-card">
             <div class="dash-stats-head">
-                <h4>الشركات النشطة</h4>
+                <h4>الشركات النشطة (آخر 30 يومًا)</h4>
                 <span class="dash-stats-count">{{ ($companiesStats ?? collect())->count() }}</span>
             </div>
             <div class="dash-stats-table-wrap">
@@ -266,6 +272,8 @@
                                 <th>سلة</th>
                                 <th class="num">الطلبات</th>
                                 <th class="num">بالمستودع</th>
+                                <th class="num">جاري التوصيل</th>
+                                <th class="num">جدولة التسليم</th>
                                 <th class="num">تم التسليم</th>
                                 <th class="num">تعذر</th>
                             </tr>
@@ -283,6 +291,8 @@
                                     </td>
                                     <td class="num orders">{{ $company->orders_count }}</td>
                                     <td class="num processing">{{ $company->processing_count }}</td>
+                                    <td class="num delivering">{{ $company->delivering_count }}</td>
+                                    <td class="num reschedule">{{ $company->reschedule_count }}</td>
                                     <td class="num delivered">{{ $company->delivered_count }}</td>
                                     <td class="num failed">{{ $company->failed_count }}</td>
                                 </tr>
@@ -290,7 +300,7 @@
                         </tbody>
                     </table>
                 @else
-                    <p class="dash-stats-empty">لا توجد شركات نشطة</p>
+                    <p class="dash-stats-empty">لا توجد شركات نشطة خلال آخر 30 يومًا</p>
                 @endif
             </div>
         </div>

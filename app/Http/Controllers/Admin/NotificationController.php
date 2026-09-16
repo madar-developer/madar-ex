@@ -6,7 +6,6 @@ use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
 use App\Http\Controllers\Api\FCMController;
 use App\Notifications\GeneralNotification;
-use App\Models\PlayerId;
 use App\Models\Company;
 use App\Models\Circular;
 use App\Models\Driver;
@@ -22,48 +21,108 @@ class NotificationController extends Controller
     }
     public function store(Request $request)
     {
-    	$title = '';
-    	$data = $request->all();
-    	// send notification
-            $title =$data['title'];
-            $content = $data['content'];
-            $type = "general";
-            $data2 = [
-                'type' => $type,
-            ];
-            $message = $title . ' : ' . $content;
+        $request->validate([
+            'title' => 'required|string',
+            'content' => 'required|string',
+        ]);
 
-            // if ($request->has('driver_id')) {
-            //     $data2 = [
-            //         'type' => 'profile_error',
-            //     ];
-            //     $token = PlayerId::where('taggable_type', 'LIKE', '%Driver%')->where('taggable_id', $request->get('driver_id') )->pluck('player_id')->toArray();
-            //     FCMController::Push($title, $content,$token,$data2);
-            // }else{
-            //     if ($data['type'] == 'all') {
-            //         $token = PlayerId::pluck('player_id')->toArray();
-            //     }else {
-            //         $token = PlayerId::where('taggable_type', 'LIKE', '%'.$data['type'].'%')->pluck('player_id')->toArray();
-            //     }
-            //     FCMController::Push($title, $content,$token,$data2);
-            // }
-            $companies = $this->selectedCompanies($request);
-            if ($companies->isNotEmpty()) {
-                Notification::send($companies, new GeneralNotification($message, '#'));
+        $title = $request->get('title');
+        $content = $request->get('content');
+        $message = $title . ' : ' . $content;
+
+        $companies = $this->selectedCompanies($request);
+        $drivers = $this->selectedDrivers($request);
+
+        if ($companies->isNotEmpty()) {
+            Notification::send($companies, new GeneralNotification($message, '#'));
+            $this->pushFirebase($companies, $title, $content, 'general');
+        }
+
+        if ($drivers->isNotEmpty()) {
+            Notification::send($drivers, new GeneralNotification($message, '#'));
+            $this->pushFirebase($drivers, $title, $content, 'general');
+        }
+
+        if ($request->boolean('send_circular')) {
+            $this->storeCirculars($request, $title, $content);
+            $this->recordCircularSend($request, $title, $content, $companies, $drivers);
+            $this->pushFirebase($companies, $title, $content, 'circular');
+            $this->pushFirebase($drivers, $title, $content, 'circular');
+        }
+
+        return redirect()->back()->with('success', 'تم الارسال بنجاح');
+    }
+
+    /**
+     * Send a high-priority FCM push to driver/company device tokens.
+     */
+    protected function pushFirebase($notifiables, string $title, string $content, string $type): void
+    {
+        if (!$notifiables || $notifiables->isEmpty()) {
+            return;
+        }
+
+        $driverTokens = [];
+        $companyTokens = [];
+
+        foreach ($notifiables as $notifiable) {
+            if ($notifiable instanceof Driver) {
+                $driverTokens = array_merge(
+                    $driverTokens,
+                    method_exists($notifiable, 'fcmTokens')
+                        ? $notifiable->fcmTokens()
+                        : $notifiable->PlayerId()->pluck('player_id')->all()
+                );
+                continue;
             }
 
-            $drivers = $this->selectedDrivers($request);
-            if ($drivers->isNotEmpty()) {
-                Notification::send($drivers, new GeneralNotification($message, '#'));
+            if (method_exists($notifiable, 'PlayerId')) {
+                $companyTokens = array_merge(
+                    $companyTokens,
+                    $notifiable->PlayerId()->pluck('player_id')->all()
+                );
             }
+        }
 
-            if ($request->boolean('send_circular')) {
-                $this->storeCirculars($request, $title, $content);
-                $this->recordCircularSend($request, $title, $content, $companies, $drivers);
+        $payload = [
+            'title_ar' => $title,
+            'title_en' => $title,
+            'content_ar' => $content,
+            'content_en' => $content,
+            'type' => $type,
+        ];
+
+        $this->pushFirebaseTokens($driverTokens, $title, $content, $payload, 'FLUTTER_NOTIFICATION_CLICK', null);
+        $this->pushFirebaseTokens(
+            $companyTokens,
+            $title,
+            $content,
+            $payload,
+            $type,
+            'com.madar_al_reyadah.algeri_client'
+        );
+    }
+
+    protected function pushFirebaseTokens(array $tokens, string $title, string $content, array $payload, string $activity, ?string $channelId): void
+    {
+        $tokens = array_values(array_unique(array_filter(array_map('strval', $tokens), static function ($token) {
+            return trim($token) !== '';
+        })));
+
+        if ($tokens === []) {
+            return;
+        }
+
+        foreach (array_chunk($tokens, 500) as $chunk) {
+            $result = FCMController::Push($title, $content, $chunk, $payload, $activity, $channelId);
+            if (empty($result['ok'])) {
+                \Log::warning('Admin notification FCM failed', [
+                    'type' => $payload['type'] ?? null,
+                    'token_count' => count($chunk),
+                    'error' => $result['error'] ?? null,
+                ]);
             }
-            // send notification end
-            return redirect()->back()->with('success', 'تم الارسال بنجاح');
-
+        }
     }
 
     protected function cleanAudience($values): array

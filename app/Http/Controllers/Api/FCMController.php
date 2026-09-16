@@ -106,16 +106,17 @@ class FCMController extends Controller
                 // $androidNotification['click_action'] = $activity;
             }
 
-            $android = AndroidConfig::fromArray([
+            $androidConfig = [
                 'priority' => 'high',
                 'ttl' => '86400s',
                 'notification' => $androidNotification,
-            ]);
+            ];
+            $android = AndroidConfig::fromArray($androidConfig);
             if (method_exists($android, 'withHighPriority')) {
                 $android = $android->withHighPriority();
             }
 
-            $apns = ApnsConfig::fromArray([
+            $apnsConfig = [
                 'headers' => [
                     'apns-priority' => '10',
                     'apns-push-type' => 'alert',
@@ -129,7 +130,8 @@ class FCMController extends Controller
                         'sound' => 'default',
                     ],
                 ],
-            ]);
+            ];
+            $apns = ApnsConfig::fromArray($apnsConfig);
             if (method_exists($apns, 'withImmediatePriority')) {
                 $apns = $apns->withImmediatePriority();
             }
@@ -145,9 +147,22 @@ class FCMController extends Controller
                 $message = $message->withDefaultSounds();
             }
 
+            $sentPayload = [
+                'notification' => [
+                    'title' => (string) $title,
+                    'body' => (string) $content,
+                ],
+                'data' => $dataPayload,
+                'android' => $androidConfig,
+                'apns' => $apnsConfig,
+                'token_count' => count($tokens),
+            ];
+            $result['sent'] = $sentPayload;
+
             if (count($tokens) === 1) {
                 $result['report'] = $messaging->send($message->toToken($tokens[0]));
                 $result['ok'] = true;
+                self::logPush($sentPayload, $result);
 
                 return $result;
             }
@@ -163,6 +178,8 @@ class FCMController extends Controller
             if (!$result['ok']) {
                 $result['error'] = 'FCM sendAll reported zero successes';
             }
+
+            self::logPush($sentPayload, $result);
 
             return $result;
         } catch (MessagingException $e) {
@@ -186,6 +203,19 @@ class FCMController extends Controller
 
             return $result;
         }
+    }
+
+    protected static function logPush(array $sentPayload, array $result): void
+    {
+        \Log::info('FCM push', [
+            'sent' => $sentPayload,
+            'response' => $result['report'] ?? null,
+            'ok' => $result['ok'] ?? false,
+            'error' => $result['error'] ?? null,
+            'valid_tokens' => $result['valid_tokens'] ?? 0,
+            'invalid_tokens' => $result['invalid_tokens'] ?? 0,
+            'unknown_tokens' => $result['unknown_tokens'] ?? 0,
+        ]);
     }
 
     protected static function summarizeReport($report): array

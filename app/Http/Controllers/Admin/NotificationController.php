@@ -49,7 +49,7 @@ class NotificationController extends Controller
             $this->pushFirebase($companies, $title, $content, 'circular');
             $this->pushFirebase($drivers, $title, $content, 'circular');
         }
-
+         // Log firbase response and final object sent to firebase
         return redirect()->back()->with('success', 'تم الارسال بنجاح');
     }
 

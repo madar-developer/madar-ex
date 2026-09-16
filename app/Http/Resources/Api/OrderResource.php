@@ -2,6 +2,7 @@
 
 namespace App\Http\Resources\Api;
 
+use App\Models\MessageTemplate;
 use Illuminate\Http\Resources\Json\JsonResource;
 
 class OrderResource extends JsonResource
@@ -52,6 +53,7 @@ class OrderResource extends JsonResource
             'status_image' => $this->status_image,
             'status_color' => $this->status_color,
             'available_statuses' => $this->available_statuses,
+            'message_template' => $this->messageTemplatePayload(),
             'company' => new CompanyResource($this->Company()->first()),
             'payment_method' => $p_m,
             'steps' => $this->buildOrderSteps(),
@@ -72,6 +74,30 @@ class OrderResource extends JsonResource
                     'images' => $group['images'],
                 ];
             })->values(),
+        ];
+    }
+
+    protected function messageTemplatePayload(): ?array
+    {
+        $status = (string) $this->status;
+        if ($status === '') {
+            return null;
+        }
+
+        $template = MessageTemplate::forCompanyStatus(
+            $this->company_id ? (int) $this->company_id : null,
+            $status
+        );
+        if (!$template) {
+            return null;
+        }
+
+        return [
+            'id' => $template->id,
+            'name' => $template->name,
+            'status' => $template->status,
+            'body' => $template->body,
+            'message' => $template->render($this->resource, $status),
         ];
     }
 

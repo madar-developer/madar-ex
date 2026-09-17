@@ -55,32 +55,32 @@ class HomeController extends Controller
                 }
             });
         $o_list = json_encode($o_list);
-        $statsFrom = Carbon::now()->subDays(7);
+        $today = Carbon::today()->toDateString();
 
         $activeDriversStats = Driver::query()
-            ->where('last_activity', '>=', $statsFrom)
+            ->whereDate('last_activity', $today)
             ->withCount([
-                'Order as orders_count' => function ($q) use ($statsFrom) {
-                    $q->where('created_at', '>=', $statsFrom);
+                'Order as orders_count' => function ($q) use ($today) {
+                    $q->whereDate('updated_at', $today);
                 },
-                'Order as processing_count' => function ($q) use ($statsFrom) {
-                    $q->where('created_at', '>=', $statsFrom)
+                'Order as processing_count' => function ($q) use ($today) {
+                    $q->whereDate('updated_at', $today)
                         ->where('status', 'at_madar');
                 },
-                'Order as delivering_count' => function ($q) use ($statsFrom) {
-                    $q->where('created_at', '>=', $statsFrom)
+                'Order as delivering_count' => function ($q) use ($today) {
+                    $q->whereDate('updated_at', $today)
                         ->where('status', 'at_office');
                 },
-                'Order as reschedule_count' => function ($q) use ($statsFrom) {
-                    $q->where('created_at', '>=', $statsFrom)
+                'Order as reschedule_count' => function ($q) use ($today) {
+                    $q->whereDate('updated_at', $today)
                         ->where('status', 'reschedule');
                 },
-                'Order as delivered_count' => function ($q) use ($statsFrom) {
-                    $q->where('created_at', '>=', $statsFrom)
+                'Order as delivered_count' => function ($q) use ($today) {
+                    $q->whereDate('updated_at', $today)
                         ->where('status', 'delivered');
                 },
-                'Order as failed_count' => function ($q) use ($statsFrom) {
-                    $q->where('created_at', '>=', $statsFrom)
+                'Order as failed_count' => function ($q) use ($today) {
+                    $q->whereDate('updated_at', $today)
                         ->where('status', 'deliver_failed');
                 },
             ])
@@ -92,6 +92,20 @@ class HomeController extends Controller
                 return (int) $id;
             })
             ->values();
+
+        // Today's stats keyed by driver id, used by the live tracking map info card
+        $activeDriversStatsMap = $activeDriversStats->mapWithKeys(function ($driver) {
+            return [(int) $driver->id => [
+                'name' => trim(($driver->first_name ?? '').' '.($driver->last_name ?? '')) ?: ('سائق #'.$driver->id),
+                'phone' => $driver->phone,
+                'orders_count' => (int) $driver->orders_count,
+                'processing_count' => (int) $driver->processing_count,
+                'delivering_count' => (int) $driver->delivering_count,
+                'reschedule_count' => (int) $driver->reschedule_count,
+                'delivered_count' => (int) $driver->delivered_count,
+                'failed_count' => (int) $driver->failed_count,
+            ]];
+        });
 
         $companiesStatsFrom = Carbon::now()->subDays(30);
 
@@ -165,6 +179,7 @@ class HomeController extends Controller
             'o_list',
             'activeDriverIds',
             'activeDriversStats',
+            'activeDriversStatsMap',
             'companiesStats',
             'companies_chart',
             'orders_chart',

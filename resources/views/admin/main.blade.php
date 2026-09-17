@@ -219,7 +219,7 @@
     <div class="col-lg-6">
         <div class="dash-stats-card">
             <div class="dash-stats-head">
-                <h4>السائقون النشطون (آخر 7 أيام)</h4>
+                <h4>السائقون النشطون اليوم</h4>
                 <span class="dash-stats-count">{{ ($activeDriversStats ?? collect())->count() }}</span>
             </div>
             <div class="dash-stats-table-wrap">
@@ -251,7 +251,7 @@
                         </tbody>
                     </table>
                 @else
-                    <p class="dash-stats-empty">لا يوجد سائقون نشطون خلال آخر 7 أيام</p>
+                    <p class="dash-stats-empty">لا يوجد سائقون نشطون اليوم</p>
                 @endif
             </div>
         </div>
@@ -782,9 +782,11 @@
     // });
     var docRef = db.collection("drivers");
     var activeDriverIds = @json($activeDriverIds ?? []);
-    function isActiveMapDriver(doc) {
+    var activeDriverStats = @json($activeDriversStatsMap ?? new stdClass);
+    // Returns today's driver id when the Firestore doc belongs to a driver active today
+    function activeMapDriverId(doc) {
         if (!activeDriverIds.length) {
-            return false;
+            return null;
         }
         var data = doc.data() || {};
         var candidates = [doc.id, data.id];
@@ -792,11 +794,12 @@
             if (candidates[c] === undefined || candidates[c] === null || candidates[c] === '') {
                 continue;
             }
-            if (activeDriverIds.indexOf(parseInt(candidates[c], 10)) !== -1) {
-                return true;
+            var driverId = parseInt(candidates[c], 10);
+            if (activeDriverIds.indexOf(driverId) !== -1) {
+                return driverId;
             }
         }
-        return false;
+        return null;
     }
 //     function(doc) {
 //     if (doc.exists) {
@@ -815,30 +818,41 @@ db.collection("drivers").onSnapshot((querySnapshot) => {
         var aarr = [];
         var i = 0;
     querySnapshot.forEach((doc) => {
-        if (!isActiveMapDriver(doc)) {
+        var driverId = activeMapDriverId(doc);
+        if (driverId === null) {
             return;
         }
         if (doc.data().locations !== undefined && doc.data().locations[0] !== undefined) {
             console.log(`${doc.id}` , doc.data().locations[0]);
+            var stats = activeDriverStats[driverId] || {};
+            var driverName = stats.name || doc.data().name || ('سائق #' + driverId);
             var htmlCard = `
             <div class="map-menu">
-                            <div class="d-name"> `+doc.data().name+` </div>
+                            <div class="d-name"> `+driverName+` </div>
                             <div class="flex-wrap">
                                 <div class="item">
-                                    <span class="lbl">عدد الطلبات : </span>
-                                    <span class="val">`+doc.data().order_count+`</span>
+                                    <span class="lbl">طلبات اليوم : </span>
+                                    <span class="val">`+(stats.orders_count || 0)+`</span>
+                                </div>
+                                <div class="item">
+                                    <span class="lbl">بالمستودع : </span>
+                                    <span class="val">`+(stats.processing_count || 0)+`</span>
                                 </div>
                                 <div class="item">
                                     <span class="lbl">جاري التوصيل : </span>
-                                    <span class="val">`+doc.data().order_delivered_count+`</span>
+                                    <span class="val">`+(stats.delivering_count || 0)+`</span>
+                                </div>
+                                <div class="item">
+                                    <span class="lbl">جدولة التوصيل : </span>
+                                    <span class="val">`+(stats.reschedule_count || 0)+`</span>
                                 </div>
                                 <div class="item">
                                     <span class="lbl">تم التسليم : </span>
-                                    <span class="val">`+doc.data().delivering_orders_count+`</span>
+                                    <span class="val">`+(stats.delivered_count || 0)+`</span>
                                 </div>
                                 <div class="item">
                                     <span class="lbl">لم تسلم : </span>
-                                    <span class="val">`+doc.data().order_failed_count+`</span>
+                                    <span class="val">`+(stats.failed_count || 0)+`</span>
                                 </div>
                             </div>
                         </div>

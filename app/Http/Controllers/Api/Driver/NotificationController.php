@@ -23,6 +23,19 @@ class NotificationController extends Controller
             'code' => getMsgCode('success'),
         ]);
     }
+    public function OrderNotifications()
+    {
+        $user = auth('api-driver')->user();
+        $notifications = $this->driverNotificationsForOrder($user);
+
+        return response()->json([
+            'data' => [
+                'notifications' => NotificationResource::collection($notifications),
+            ],
+            'message' => 'success',
+            'code' => getMsgCode('success'),
+        ]);
+    }
 
     public function markAsRead(Request $request)
     {
@@ -64,6 +77,15 @@ class NotificationController extends Controller
         return DatabaseNotification::query()
             ->where('notifiable_id', $driver->id)
             ->whereIn('notifiable_type', [Driver::class, 'App\\Driver'])
+            ->latest()
+            ->get();
+    }
+    protected function driverNotificationsForOrder($driver)
+    {
+        return DatabaseNotification::query()
+            ->where('notifiable_id', $driver->id)
+            ->whereIn('notifiable_type', [Driver::class, 'App\\Driver'])
+            ->where('data->order_id', $order->id)
             ->latest()
             ->get();
     }

@@ -43,6 +43,7 @@ Route::group(['prefix' => '/v1', 'namespace' => 'Api'], function() {
             Route::get('statistics', 'ProfileController@statistics');
             Route::get('finance', 'ProfileController@finance');
             Route::get('notifications', 'NotificationController@index');
+            Route::get('notifications-for-orders', 'NotificationController@OrderNotifications');
             Route::post('delete-notification', 'NotificationController@markAsRead');
             Route::post('delete-notifications', 'NotificationController@markAsReadArr');
             Route::get('circulars', 'CircularController@index');
@@ -151,6 +152,7 @@ Route::group(['prefix' => '/v2', 'namespace' => 'Api\V2'], function() {
             Route::get('statistics', 'ProfileController@statistics');
             Route::get('finance', 'ProfileController@finance');
             Route::get('notifications', 'NotificationController@index');
+            Route::get('notifications-for-orders', 'NotificationController@OrderNotifications');
             Route::post('delete-notification', 'NotificationController@markAsRead');
             Route::post('delete-notifications', 'NotificationController@markAsReadArr');
             Route::get('circulars', 'CircularController@index');

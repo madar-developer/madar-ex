@@ -138,29 +138,6 @@
             </div>
         </div>
     </div>
-    @foreach (\App\Models\OrderStatus::/*whereIn('key', ['at_office', 'delivered'])->*/get() as $item)
-
-    <div class="col-lg-3 col-md-6">
-        <a href="{{url('/company/company-orders?status='.$item->key)}}">
-        <div class="card-box" style="background-color: {{$item->color}};">
-
-
-            <h4 class="header-title m-t-0 m-b-30" style="color: #000;"> الطلبات {{$item->name}}</h4>
-
-            <div class="widget-chart-1">
-                <div class="widget-chart-box-1">
-                    <img src="{{getImage($item->image)}}" alt="" srcset="">
-                </div>
-                <div class="widget-detail-1">
-                    <h2 class="p-t-10 m-b-0" style="color: #000;">
-                        {{\App\Models\Order::where('company_id', auth('company')->id())->where('status','=',$item->key)->count()}} </h2>
-                        <p class="text-muted"> {{$item->name}} </p>
-                    </div>
-                </div>
-            </div>
-        </a>
-        </div>
-    @endforeach
     
     <div class="col-lg-9 col-md-6">
         <div class="dash-stats-card">
@@ -202,6 +179,30 @@
             </div>
         </div>
     </div>
+    @foreach (\App\Models\OrderStatus::/*whereIn('key', ['at_office', 'delivered'])->*/get() as $item)
+
+    <div class="col-lg-3 col-md-6">
+        <a href="{{url('/company/company-orders?status='.$item->key)}}">
+        <div class="card-box" style="background-color: {{$item->color}};">
+
+
+            <h4 class="header-title m-t-0 m-b-30" style="color: #000;"> الطلبات {{$item->name}}</h4>
+
+            <div class="widget-chart-1">
+                <div class="widget-chart-box-1">
+                    <img src="{{getImage($item->image)}}" alt="" srcset="">
+                </div>
+                <div class="widget-detail-1">
+                    <h2 class="p-t-10 m-b-0" style="color: #000;">
+                        {{\App\Models\Order::where('company_id', auth('company')->id())->where('status','=',$item->key)->count()}} </h2>
+                        <p class="text-muted"> {{$item->name}} </p>
+                    </div>
+                </div>
+            </div>
+        </a>
+        </div>
+    @endforeach
+    
 
     {{-- <div class="col-lg-3 col-md-6">
         <div class="card-box widget-user">

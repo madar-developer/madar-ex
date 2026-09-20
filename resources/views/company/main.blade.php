@@ -106,40 +106,7 @@
 
 
 
-    <div class="col-lg-3 col-md-6">
-        <div class="card-box stat" style="background-color: #c2daf4;">
-
-
-            <h4 class="header-title m-t-0 m-b-30">عدد  الطلبات</h4>
-
-            <div class="widget-chart-1">
-                <div class="widget-chart-box-1">
-                    <i class="fa fa-archive" aria-hidden="true"></i>
-                </div>
-                <div class="widget-detail-1">
-                    <h2 class="p-t-10 m-b-0">  {{\App\Models\Order::where('company_id', auth('company')->id())->count()}} </h2>
-                </div>
-            </div>
-        </div>
-    </div>
-    <div class="col-lg-3 col-md-6 ">
-        <div class="card-box stat" style="background-color: #c2daf4;">
-
-
-            <h4 class="header-title m-t-0 m-b-30">عدد  الفواتير</h4>
-
-            <div class="widget-chart-1">
-                <div class="widget-chart-box-1">
-                    <i class="fa fa-files-o" aria-hidden="true"></i>
-                </div>
-                <div class="widget-detail-1">
-                    <h2 class="p-t-10 m-b-0">  {{\App\Models\Invoice::whereHas('Order', function($q){$q->where('company_id', auth('company')->id());})->count()}} </h2>
-                </div>
-            </div>
-        </div>
-    </div>
-    
-    <div class="col-lg-9 col-md-6">
+<div class="col-lg-9 col-md-6">
         <div class="dash-stats-card">
             <div class="dash-stats-head">
                 <h4>المدن النشطة (آخر 30 يومًا)</h4>
@@ -179,6 +146,39 @@
             </div>
         </div>
     </div>
+    <div class="col-lg-3 col-md-6">
+        <div class="card-box stat" style="background-color: #c2daf4;">
+
+
+            <h4 class="header-title m-t-0 m-b-30">عدد  الطلبات</h4>
+
+            <div class="widget-chart-1">
+                <div class="widget-chart-box-1">
+                    <i class="fa fa-archive" aria-hidden="true"></i>
+                </div>
+                <div class="widget-detail-1">
+                    <h2 class="p-t-10 m-b-0">  {{\App\Models\Order::where('company_id', auth('company')->id())->count()}} </h2>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-3 col-md-6 ">
+        <div class="card-box stat" style="background-color: #c2daf4;">
+
+
+            <h4 class="header-title m-t-0 m-b-30">عدد  الفواتير</h4>
+
+            <div class="widget-chart-1">
+                <div class="widget-chart-box-1">
+                    <i class="fa fa-files-o" aria-hidden="true"></i>
+                </div>
+                <div class="widget-detail-1">
+                    <h2 class="p-t-10 m-b-0">  {{\App\Models\Invoice::whereHas('Order', function($q){$q->where('company_id', auth('company')->id());})->count()}} </h2>
+                </div>
+            </div>
+        </div>
+    </div>
+    
     @foreach (\App\Models\OrderStatus::/*whereIn('key', ['at_office', 'delivered'])->*/get() as $item)
 
     <div class="col-lg-3 col-md-6">

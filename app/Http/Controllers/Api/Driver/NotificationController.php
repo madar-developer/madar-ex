@@ -85,8 +85,13 @@ class NotificationController extends Controller
         return DatabaseNotification::query()
             ->where('notifiable_id', $driver->id)
             ->whereIn('notifiable_type', [Driver::class, 'App\\Driver'])
-            ->where('data->order_id', $order->id)
             ->latest()
-            ->get();
+            ->get()
+            ->filter(function ($notification) {
+                $data = is_array($notification->data) ? $notification->data : [];
+
+                return ($data['type'] ?? null) === 'order';
+            })
+            ->values();
     }
 }

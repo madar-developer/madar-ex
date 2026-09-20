@@ -161,6 +161,47 @@
         </a>
         </div>
     @endforeach
+    
+    <div class="col-lg-9 col-md-6">
+        <div class="dash-stats-card">
+            <div class="dash-stats-head">
+                <h4>المدن النشطة (آخر 30 يومًا)</h4>
+                <span class="dash-stats-count">{{ ($citiesStats ?? collect())->count() }}</span>
+            </div>
+            <div class="dash-stats-table-wrap">
+                @if(($citiesStats ?? collect())->isNotEmpty())
+                    <table class="table table-striped table-bordered dash-stats-table">
+                        <thead>
+                            <tr>
+                                <th>المدينة</th>
+                                <th class="num">الطلبات</th>
+                                <th class="num">بالمستودع</th>
+                                <th class="num">جاري التوصيل</th>
+                                <th class="num">جدولة التسليم</th>
+                                <th class="num">تم التسليم</th>
+                                <th class="num">تعذر</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach($citiesStats as $city)
+                                <tr>
+                                    <td class="name-col">{{ $city->name }}</td>
+                                    <td class="num orders">{{ $city->orders_count }}</td>
+                                    <td class="num processing">{{ $city->processing_count }}</td>
+                                    <td class="num delivering">{{ $city->delivering_count }}</td>
+                                    <td class="num reschedule">{{ $city->reschedule_count }}</td>
+                                    <td class="num delivered">{{ $city->delivered_count }}</td>
+                                    <td class="num failed">{{ $city->failed_count }}</td>
+                                </tr>
+                            @endforeach
+                        </tbody>
+                    </table>
+                @else
+                    <p class="dash-stats-empty">لا توجد مدن نشطة خلال آخر 30 يومًا</p>
+                @endif
+            </div>
+        </div>
+    </div>
 
     {{-- <div class="col-lg-3 col-md-6">
         <div class="card-box widget-user">
@@ -175,6 +216,7 @@
 <!-- end row -->
 
 <div class="row flex-row">
+    @if(0)
     <div class="col-lg-6">
         <div class="dash-stats-card">
             <div class="dash-stats-head">
@@ -215,47 +257,7 @@
             </div>
         </div>
     </div>
-
-    <div class="col-lg-6">
-        <div class="dash-stats-card">
-            <div class="dash-stats-head">
-                <h4>المدن النشطة (آخر 30 يومًا)</h4>
-                <span class="dash-stats-count">{{ ($citiesStats ?? collect())->count() }}</span>
-            </div>
-            <div class="dash-stats-table-wrap">
-                @if(($citiesStats ?? collect())->isNotEmpty())
-                    <table class="table table-striped table-bordered dash-stats-table">
-                        <thead>
-                            <tr>
-                                <th>المدينة</th>
-                                <th class="num">الطلبات</th>
-                                <th class="num">بالمستودع</th>
-                                <th class="num">جاري التوصيل</th>
-                                <th class="num">جدولة التسليم</th>
-                                <th class="num">تم التسليم</th>
-                                <th class="num">تعذر</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @foreach($citiesStats as $city)
-                                <tr>
-                                    <td class="name-col">{{ $city->name }}</td>
-                                    <td class="num orders">{{ $city->orders_count }}</td>
-                                    <td class="num processing">{{ $city->processing_count }}</td>
-                                    <td class="num delivering">{{ $city->delivering_count }}</td>
-                                    <td class="num reschedule">{{ $city->reschedule_count }}</td>
-                                    <td class="num delivered">{{ $city->delivered_count }}</td>
-                                    <td class="num failed">{{ $city->failed_count }}</td>
-                                </tr>
-                            @endforeach
-                        </tbody>
-                    </table>
-                @else
-                    <p class="dash-stats-empty">لا توجد مدن نشطة خلال آخر 30 يومًا</p>
-                @endif
-            </div>
-        </div>
-    </div>
+    @endif
 </div>
 
 <div class="row">

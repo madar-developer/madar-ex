@@ -269,7 +269,16 @@ class OrderController extends Controller
         if ($request->has('notes')) {
             $data['notes'] = $request->get('notes');
         }
-
+       // if request has latitude and longitude, update the order latitude and longitude and log this in order log
+       if ($request->has('latitude') && $request->has('longitude')) {
+            $data['latitude'] = $request->get('latitude');
+            $data['longitude'] = $request->get('longitude');
+            $order->OrderLog()->create([
+                'status' => 'location_updated',
+                'details' => 'Location updated to ' . $request->get('latitude') . ', ' . $request->get('longitude'),
+            ]);
+            $order->update(['latitude' => $request->get('latitude'), 'longitude' => $request->get('longitude')]);
+       }
         if ($request->has('signature')) {
             $data['signature'] = $request->get('signature');
         }

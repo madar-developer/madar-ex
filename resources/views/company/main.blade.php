@@ -1,6 +1,100 @@
 @extends('company.layout.app')
 @section('style')
 
+<style>
+    .text-muted {
+        color: #000 !important;
+    }
+
+    .dash-stats-card {
+        background: #fff;
+        border: 1px solid #e6ecf2;
+        border-radius: 6px;
+        padding: 10px 12px 6px;
+        margin-bottom: 16px;
+    }
+
+    .dash-stats-card .dash-stats-head {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 8px;
+        padding-bottom: 6px;
+        border-bottom: 1px solid #edf1f5;
+    }
+
+    .dash-stats-card .dash-stats-head h4 {
+        margin: 0;
+        color: #1a2857;
+        font-size: 14px;
+        font-weight: 700;
+    }
+
+    .dash-stats-card .dash-stats-count {
+        background: #e8f1fb;
+        color: #1a2857;
+        border-radius: 12px;
+        padding: 1px 8px;
+        font-size: 11px;
+        font-weight: 700;
+    }
+
+    .dash-stats-table-wrap {
+        max-height: 280px;
+        overflow: auto;
+    }
+
+    .dash-stats-table {
+        width: 100%;
+        margin: 0;
+        font-size: 12px;
+    }
+
+    .dash-stats-table > thead > tr > th,
+    .dash-stats-table > tbody > tr > td {
+        padding: 5px 6px !important;
+        vertical-align: middle !important;
+        white-space: nowrap;
+        border-color: #edf1f5 !important;
+    }
+
+    .dash-stats-table > thead > tr > th {
+        background: #f5f8fb;
+        color: #4b5563;
+        font-weight: 700;
+        font-size: 11px;
+        position: sticky;
+        top: 0;
+        z-index: 1;
+    }
+
+    .dash-stats-table .name-col {
+        white-space: normal;
+        font-weight: 700;
+        color: #271f22;
+        max-width: 140px;
+    }
+
+    .dash-stats-table .num {
+        text-align: center;
+        font-weight: 700;
+    }
+
+    .dash-stats-table .num.orders { color: #188ae2; }
+    .dash-stats-table .num.processing { color: #f7b84b; }
+    .dash-stats-table .num.delivering { color: #3b82f6; }
+    .dash-stats-table .num.reschedule { color: #8b5cf6; }
+    .dash-stats-table .num.delivered { color: #10c469; }
+    .dash-stats-table .num.failed { color: #f1556c; }
+
+    .dash-stats-empty {
+        color: #6b7280;
+        text-align: center;
+        padding: 18px 8px;
+        margin: 0;
+        font-size: 12px;
+    }
+</style>
 <script src="{{ asset('/adminto/assets/js/modernizr.min.js')}}"></script>
 @endsection
 @section('content')
@@ -79,6 +173,91 @@
     </div><!-- end col --> --}}
 </div>
 <!-- end row -->
+
+<div class="row flex-row">
+    <div class="col-lg-6">
+        <div class="dash-stats-card">
+            <div class="dash-stats-head">
+                <h4>السائقون النشطون اليوم</h4>
+                <span class="dash-stats-count">{{ ($activeDriversStats ?? collect())->count() }}</span>
+            </div>
+            <div class="dash-stats-table-wrap">
+                @if(($activeDriversStats ?? collect())->isNotEmpty())
+                    <table class="table table-striped table-bordered dash-stats-table">
+                        <thead>
+                            <tr>
+                                <th>السائق</th>
+                                <th class="num">الطلبات</th>
+                                <th class="num">بالمستودع</th>
+                                <th class="num">جاري التوصيل</th>
+                                <th class="num">جدولة التوصيل</th>
+                                <th class="num">تم التسليم</th>
+                                <th class="num">تعذر</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach($activeDriversStats as $driver)
+                                <tr>
+                                    <td class="name-col">{{ trim(($driver->first_name ?? '').' '.($driver->last_name ?? '')) ?: ('سائق #'.$driver->id) }}</td>
+                                    <td class="num orders">{{ $driver->orders_count }}</td>
+                                    <td class="num processing">{{ $driver->processing_count }}</td>
+                                    <td class="num delivering">{{ $driver->delivering_count }}</td>
+                                    <td class="num reschedule">{{ $driver->reschedule_count }}</td>
+                                    <td class="num delivered">{{ $driver->delivered_count }}</td>
+                                    <td class="num failed">{{ $driver->failed_count }}</td>
+                                </tr>
+                            @endforeach
+                        </tbody>
+                    </table>
+                @else
+                    <p class="dash-stats-empty">لا يوجد سائقون نشطون اليوم</p>
+                @endif
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-6">
+        <div class="dash-stats-card">
+            <div class="dash-stats-head">
+                <h4>المدن النشطة (آخر 30 يومًا)</h4>
+                <span class="dash-stats-count">{{ ($citiesStats ?? collect())->count() }}</span>
+            </div>
+            <div class="dash-stats-table-wrap">
+                @if(($citiesStats ?? collect())->isNotEmpty())
+                    <table class="table table-striped table-bordered dash-stats-table">
+                        <thead>
+                            <tr>
+                                <th>المدينة</th>
+                                <th class="num">الطلبات</th>
+                                <th class="num">بالمستودع</th>
+                                <th class="num">جاري التوصيل</th>
+                                <th class="num">جدولة التسليم</th>
+                                <th class="num">تم التسليم</th>
+                                <th class="num">تعذر</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach($citiesStats as $city)
+                                <tr>
+                                    <td class="name-col">{{ $city->name }}</td>
+                                    <td class="num orders">{{ $city->orders_count }}</td>
+                                    <td class="num processing">{{ $city->processing_count }}</td>
+                                    <td class="num delivering">{{ $city->delivering_count }}</td>
+                                    <td class="num reschedule">{{ $city->reschedule_count }}</td>
+                                    <td class="num delivered">{{ $city->delivered_count }}</td>
+                                    <td class="num failed">{{ $city->failed_count }}</td>
+                                </tr>
+                            @endforeach
+                        </tbody>
+                    </table>
+                @else
+                    <p class="dash-stats-empty">لا توجد مدن نشطة خلال آخر 30 يومًا</p>
+                @endif
+            </div>
+        </div>
+    </div>
+</div>
+
 <div class="row">
 
     <div class="col-md-6">
@@ -91,6 +270,7 @@
             </div>
         </div>
     </div><!-- end col -->
+    @if(0)
     <div class="col-md-6">
         <div class="card-box">
             <h4 class="header-title m-t-0">ربط متجر سلة</h4>
@@ -109,6 +289,7 @@
             @endif
         </div>
     </div>
+    @endif
 </div>
 
 

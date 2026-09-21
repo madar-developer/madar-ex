@@ -8,7 +8,10 @@ use App\Http\Controllers\Controller;
 use App\Traits\Admin\CompanyOrderOperations;
 use Illuminate\Http\Request;
 use App\Models\Admin;
+use App\Models\AttendanceRecord;
+use App\Models\Driver;
 use App\Models\Order;
+use App\Models\OrderStatus;
 use Auth;
 use Excel;
 use Carbon\Carbon;
@@ -139,7 +142,81 @@ class CompanyOrderController extends Controller
     public function show(Order $company_order)
     {
         $title = 'عرض طلب';
-        return view('company.orders.show', compact('company_order', 'title'));
+        $order = $company_order;
+        $order->load(['Company.City', 'City', 'Driver', 'Files']);
+        $orderLogs = $order->OrderLog()->orderBy('id', 'asc')->get();
+        $lastLog = $order->OrderLog()->orderByDesc('id')->first();
+        $statusNameMap = OrderStatus::whereIn('key', ['new', 'not_received', 'init', 'at_madar', 'at_office', 'delivered', 'returned'])
+            ->get()
+            ->keyBy('key');
+        $nameFor = function (string $key) use ($statusNameMap): string {
+            $status = $statusNameMap->get($key);
+            if (!$status) {
+                return $key;
+            }
+
+            return (string) ($status->getTranslation('name', 'ar') ?: $key);
+        };
+        $stepLabels = [
+            $nameFor('new'),
+            $nameFor('init'),
+            $nameFor('at_madar'),
+            $nameFor('at_office'),
+            $nameFor('delivered'),
+        ];
+        $returnedStepLabel = $nameFor('returned');
+        $logDriverIds = $orderLogs->where('added_by_type', 'driver')->pluck('added_by_id')->filter()->unique()->values();
+        $driversById = $logDriverIds->isEmpty()
+            ? collect()
+            : Driver::whereIn('id', $logDriverIds)->get()->keyBy('id');
+
+        $trackingData = null;
+        if ($order->status === 'at_office') {
+            $startAttendance = null;
+            if ($order->driver_id) {
+                $startAttendance = AttendanceRecord::where('driver_id', $order->driver_id)
+                    ->orderBy('id', 'asc')
+                    ->first();
+            }
+
+            $destinationAddress = trim(implode(', ', array_filter([
+                $order->adress_details,
+                $order->City?->name,
+                'Saudi Arabia',
+            ])));
+
+            $trackingData = [
+                'driver_id' => $order->driver_id,
+                'driver_name' => $order->Driver
+                    ? trim($order->Driver->first_name.' '.$order->Driver->last_name)
+                    : null,
+                'start' => $startAttendance ? [
+                    'lat' => (float) $startAttendance->latitude,
+                    'lng' => (float) $startAttendance->longitude,
+                    'label' => 'نقطة البداية',
+                    'time' => $startAttendance->created_at?->format('d/m/Y H:i'),
+                    'type' => $startAttendance->type,
+                ] : null,
+                'destination' => [
+                    'lat' => $order->latitude !== null && $order->latitude !== '' ? (float) $order->latitude : null,
+                    'lng' => $order->longitude !== null && $order->longitude !== '' ? (float) $order->longitude : null,
+                    'address' => $destinationAddress,
+                    'label' => 'عنوان التسليم',
+                ],
+            ];
+        }
+
+        return view('company.orders.show', compact(
+            'company_order',
+            'order',
+            'title',
+            'orderLogs',
+            'lastLog',
+            'driversById',
+            'stepLabels',
+            'returnedStepLabel',
+            'trackingData'
+        ));
     }
 
     /**

@@ -127,6 +127,7 @@
     <div style="width: 29.1%; text-align:center; border: 1px solid; border-right:0; height:8.5rem; padding-top:5px; ">
         {{-- quad code --}}
         {!! str_replace('< version="1.0" standalone="no"?>','',str_replace('?xml', '',DNS2D::getBarcodeSVG($order->serial.'', 'QRCODE',5,5))) !!}
+        {{ $order->region_area_num ?? '' }}
     </div>
 </div>
 {{-- <div style="width: 100%; border-right:0px solid #000; height:6rem; border: 1px solid; height:6rem; text-align:center;">

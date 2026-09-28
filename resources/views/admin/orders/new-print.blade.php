@@ -13,6 +13,38 @@
             margin: auto;
         }
     </style>
+    <style>
+        .qr-section {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+        }
+        
+        .qr-code {
+            display: block;
+            text-align: center;
+            width: 100%;
+        }
+        
+        .qr-code svg {
+            display: block;
+            margin: 0 auto;
+        }
+        
+        .region-code {
+            display: block;
+            width: 100%;
+            text-align: center;
+            font-weight: bold;
+            margin-top: 4px;
+        }
+        .qr-code svg {
+            display: block;
+            margin: 0 auto;
+        }
+    </style>
     <title>bill</title>
 </head>
 
@@ -134,8 +166,14 @@
                 </div>
 
             </div>
-            <div class="w25">
-                {!! DNS2D::getBarcodeSVG($order->serial.'', 'QRCODE',4,4) !!}
+            <div class="w25 qr-section">
+                <div class="qr-code">
+                    {!! DNS2D::getBarcodeSVG($order->serial.'', 'QRCODE', 4, 4) !!}
+                </div>
+            
+                <div class="region-code">
+                    {{ $order->region_area_num ?? '' }}
+                </div>
             </div>
 
         </div>

@@ -6,10 +6,12 @@ namespace App\Exports;
 use Illuminate\Contracts\View\View;
 use Maatwebsite\Excel\Concerns\FromView;
 use Maatwebsite\Excel\Concerns\ShouldAutoSize;
+use Maatwebsite\Excel\Concerns\WithCustomValueBinder;
 use Maatwebsite\Excel\Concerns\WithEvents;
 use Maatwebsite\Excel\Events\AfterSheet;
+use PhpOffice\PhpSpreadsheet\Cell\StringValueBinder;
 
-class GeneralExport implements FromView, ShouldAutoSize, WithEvents
+class GeneralExport extends StringValueBinder implements FromView, ShouldAutoSize, WithEvents, WithCustomValueBinder
 {
     public $items;
     public $view;

@@ -47,7 +47,7 @@ class MessageTemplateController extends Controller
     public function create()
     {
         $title = 'إضافة قالب رسالة';
-        $companies = Company::orderBy('name')->pluck('name', 'id')->toArray();
+        $companies = Company::where('active', 1)->orderBy('name')->pluck('name', 'id')->toArray();
 
         return view('admin.message-templates.add', compact('title', 'companies'));
     }

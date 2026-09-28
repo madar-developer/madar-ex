@@ -159,7 +159,7 @@
                                     <li><a href="{{ url('dashboard/notifications') }}">ارسال تنبيهات</a></li>
                                     <li><a href="{{ url('/dashboard/circular-sends') }}"> سجل إرسال التعاميم </a></li>
                                     <li><a href="{{ url('dashboard/notification-templates') }}">رسائل النظام و SMS</a></li>
-                                    <!-- <li><a href="{{ url('dashboard/message-templates') }}">قوالب رسائل الشركات</a></li> -->
+                                    <li><a href="{{ url('dashboard/message-templates') }}">قوالب رسائل الشركات</a></li>
                                 </ul>
                             </li>
 

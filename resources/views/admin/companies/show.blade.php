@@ -107,6 +107,16 @@
                                             <td style=" text-align:right; border: 1px solid gray;">{{$company->adress_details}}</td>
 
                                         </tr>
+                                        <tr>
+                                            <th scope="row" style="text-align: right; border: 1px solid gray; color:#000;"> السائقون المخصصون</th>
+                                            <td style=" text-align:right; border: 1px solid gray;">
+                                                @forelse($company->Drivers as $driver)
+                                                    {{ trim($driver->first_name.' '.$driver->last_name) }}@if(!$loop->last)، @endif
+                                                @empty
+                                                    —
+                                                @endforelse
+                                            </td>
+                                        </tr>
                                     </tbody>
                                 </table>
                             </div>
@@ -115,18 +125,24 @@
                                 <div class="col-md-12 text-center" style="">
                                     <h3> تفاصيل الطلبات </h3>
                                 </div>
-                                <table class="table table-striped" style="  border: 1px solid gray;">
+                                <table class="table table-striped" style="border: 1px solid gray;">
                                     <thead>
-
-                                    <tbody>
-
-                                        @foreach (OrderStatus() as $key => $value)
                                         <tr>
-                                            <th scope="row" style="text-align:right;  border: 1px solid gray;  color:#000;">الطلبات {{$value}}</th>
-                                            <td style="  border: 1px solid gray;color:#000;">{{$company->Order()->where('status','=',$key)->count()}}</td>
-
+                                            <th scope="col" style="text-align:right; border: 1px solid gray; color:#000;">الحالة</th>
+                                            <th scope="col" style="text-align:right; border: 1px solid gray; color:#000;">العدد</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @foreach ($orderStatuses as $key => $value)
+                                        <tr>
+                                            <th scope="row" style="text-align:right; border: 1px solid gray; color:#000;">الطلبات {{ $value }}</th>
+                                            <td style="border: 1px solid gray; color:#000;">{{ $orderCounts[$key] ?? 0 }}</td>
                                         </tr>
                                         @endforeach
+                                        <tr>
+                                            <th scope="row" style="text-align:right; border: 1px solid gray; color:#000;">الإجمالي</th>
+                                            <td style="border: 1px solid gray; color:#000;">{{ $orderTotal }}</td>
+                                        </tr>
                                     </tbody>
                                 </table>
                             </div>

@@ -24,6 +24,8 @@ class UpdateCompanyRequest extends FormRequest
     public function rules()
     {
         return [
+            'driver_ids' => 'nullable|array',
+            'driver_ids.*' => 'integer|exists:drivers,id',
             'name'          => 'max:255',
             // 'email'         => 'email|unique:companies,email,'.$company->id.'|max:255',
             // 'phone'         => 'unique:companies,phone,'.$company->id.'|max:255',

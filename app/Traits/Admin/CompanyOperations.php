@@ -45,6 +45,7 @@ trait CompanyOperations
             }
             $Company->BranchData()->create(['admin_id' => $branch_id]);
         }
+        $this->syncAssignedDrivers($Company, $request);
         DB::commit();
         return $Company;
     }
@@ -70,7 +71,19 @@ trait CompanyOperations
                 unset($data['password']);
            }
         $Company->update($data);
+        $this->syncAssignedDrivers($Company, $request);
         return $Company;
+    }
+
+    protected function syncAssignedDrivers(Company $company, $request): void
+    {
+        $ids = $request->input('driver_ids', []);
+        if (! is_array($ids)) {
+            $ids = [];
+        }
+
+        $ids = array_values(array_unique(array_filter(array_map('intval', $ids))));
+        $company->Drivers()->sync($ids);
     }
 
     /**

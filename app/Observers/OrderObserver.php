@@ -4,12 +4,30 @@ namespace App\Observers;
 
 use App\Models\Order;
 use App\Models\OrderLog;
+use App\Services\CompanyDriverAssigner;
 use App\Services\RegionAreaService;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Request;
 
 class OrderObserver
 {
+    public function creating(Order $order)
+    {
+        if ($this->orderHasDriver($order)) {
+            return;
+        }
+
+        $companyId = (int) $order->company_id;
+        if ($companyId <= 0) {
+            return;
+        }
+
+        $driverId = app(CompanyDriverAssigner::class)->pickDriverId($companyId);
+        if ($driverId) {
+            $order->driver_id = $driverId;
+        }
+    }
+
     public function saving(Order $order)
     {
         if (! $order->isDirty(['latitude', 'longitude']) && $order->exists) {
@@ -63,6 +81,11 @@ class OrderObserver
         OrderLog::where('order_id', $order->id)
             ->where('id', $log->id)
             ->delete();
+    }
+
+    protected function orderHasDriver(Order $order): bool
+    {
+        return $order->driver_id !== null && $order->driver_id !== '' && (int) $order->driver_id > 0;
     }
 
     /**

@@ -121,6 +121,7 @@
                                                                 <th> السجل التجارى</th>
                                                                 <th> حاله المتجر</th>
                                                                 <th>  عدد الطلبات</th>
+                                                                <th> السائقون المخصصون</th>
                                                                 @if(!empty($archived))
                                                                 <th> تاريخ الأرشفة</th>
                                                                 @endif
@@ -148,6 +149,13 @@
                                                                 <td> {{$item->commercial_record}} </td>
                                                                 <td>{{($item->active == '1')? 'مفعل' : 'غير مفعل'}}</td>
                                                                 <td>{{$item->Order()->count()}}</td>
+                                                                <td>
+                                                                    @forelse($item->Drivers as $driver)
+                                                                        {{ trim($driver->first_name.' '.$driver->last_name) }}@if(!$loop->last)، @endif
+                                                                    @empty
+                                                                        —
+                                                                    @endforelse
+                                                                </td>
                                                                 @if(!empty($archived))
                                                                 <td>{{ $item->deleted_at ? $item->deleted_at->format('Y-m-d H:i') : '' }}</td>
                                                                 @endif

@@ -24,6 +24,8 @@ class StoreCompanyRequest extends FormRequest
     public function rules()
     {
         return [
+            'driver_ids' => 'nullable|array',
+            'driver_ids.*' => 'integer|exists:drivers,id',
             // 'name'          => 'required|max:255',
             // 'email'         => 'required|email|unique:companies|max:255',
             // 'phone'         => 'required|unique:companies|max:255',

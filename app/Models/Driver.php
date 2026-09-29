@@ -103,6 +103,11 @@ class Driver extends Authenticatable implements JWTSubject
         return $this->Hasmany(Order::class, 'driver_id');
     }
 
+    public function Companies()
+    {
+        return $this->belongsToMany(Company::class, 'company_driver');
+    }
+
     public function Invoice()
     {
         return $this->hasManyThrough(

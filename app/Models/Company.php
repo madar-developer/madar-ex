@@ -103,4 +103,9 @@ class Company extends Authenticatable implements JWTSubject
     {
         return $this->Hasmany(CompanyCityGroup::class, 'company_id');
     }
+
+    public function Drivers()
+    {
+        return $this->belongsToMany(Driver::class, 'company_driver');
+    }
 }

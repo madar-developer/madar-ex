@@ -20,12 +20,14 @@ class MessageTemplate extends Model
         return [
             'recipient_name' => 'اسم المستلم',
             'serial' => 'رقم الشحنة',
-            'refrence_no' => 'رقم المرجع',
+            'refrence_no' => 'رقم الطلب',
             'company_name' => 'اسم المتجر',
-            'order_id' => 'رقم الطلب',
+            // 'order_id' => 'رقم الطلب',
             'status' => 'الحالة',
             'phone' => 'جوال المستلم',
             'address' => 'العنوان',
+            'payment_method' => 'طريقة الدفع',
+            'amount' => 'المبلغ',
         ];
     }
 
@@ -86,6 +88,8 @@ class MessageTemplate extends Model
             'status' => trans('words.'.$status),
             'phone' => $order->phone,
             'address' => $order->adress_details,
+            'payment_method' => optional($order->PaymentMethod)->name,
+            'amount' => $order->price,
         ];
 
         $body = $this->body;

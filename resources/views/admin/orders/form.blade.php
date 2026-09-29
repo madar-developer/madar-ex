@@ -241,6 +241,7 @@
                     <div class=" append">
                         {!! Form::select("driver_id",DriversList(),null,['class'=>"form-control select2 ",
                         "autocomplete"=> 'off' , ])!!}
+                        <p class="help-block text-muted m-b-0">إذا تُرك فارغاً وكان للمتجر سائقون مخصصون، يُسند الطلب تلقائياً للسائق الأقل حملاً من الطلبات غير المسلّمة.</p>
                     </div>
                 </div>
             </div>

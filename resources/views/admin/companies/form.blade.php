@@ -105,6 +105,20 @@
                             </div>
                         </div>
                         <div class="form-group">
+                            <label class="">السائقون المخصصون</label>
+                            <div class="">
+                                @php
+                                    $driverOptions = DriversList();
+                                    unset($driverOptions['']);
+                                    $selectedDrivers = old('driver_ids', isset($company) ? $company->Drivers()->pluck('drivers.id')->all() : []);
+                                @endphp
+                                {!! Form::select('driver_ids[]', $driverOptions, $selectedDrivers, ['class' => 'form-control select2', 'multiple' => 'multiple', 'style' => 'width: 100%;']) !!}
+                                <p class="help-block text-muted m-b-0">
+                                    طلبات هذا المتجر التي تُنشأ بدون سائق محدد تُوزَّع على هؤلاء السائقين، ويُختار في كل مرة السائق الذي لديه أقل عدد من الطلبات غير المسلّمة.
+                                </p>
+                            </div>
+                        </div>
+                        <div class="form-group">
                             <label class=" "> الموقع علي الخريطة </label>
                             <div class="map-content ">
                                 <div style="margin-top: 8px">

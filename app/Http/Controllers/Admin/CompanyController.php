@@ -95,6 +95,7 @@ class CompanyController extends Controller
         }
 
         $companies = $companies->paginate(40);
+        $companies->load('Drivers');
 
         return view('admin.companies.index', compact('companies', 'title', 'search', 'archived'));
     }
@@ -105,6 +106,7 @@ class CompanyController extends Controller
         $title = 'المتاجر المؤرشفة';
         $archived = true;
         $companies = $companies->paginate(40);
+        $companies->load('Drivers');
 
         return view('admin.companies.index', compact('companies', 'title', 'search', 'archived'));
     }
@@ -168,7 +170,14 @@ class CompanyController extends Controller
         $invoices_madar_price = Invoice::latest()->whereHas('Order', function($q) use($company){
             $q->where('company_id', $company->id);
         })->where('active', '0')->sum('madar_price');
-        return view('admin.companies.show', compact('addresses', 'company', 'title', 'orders', 'invoices', 'transfers', 'invoices_company_price', 'invoices_madar_price', 'transfers_get'));
+        $orderStatuses = OrderStatus();
+        $orderCounts = $company->Order()
+            ->selectRaw('status, COUNT(*) as total')
+            ->groupBy('status')
+            ->pluck('total', 'status');
+        $orderTotal = (int) $orderCounts->sum();
+
+        return view('admin.companies.show', compact('addresses', 'company', 'title', 'orders', 'invoices', 'transfers', 'invoices_company_price', 'invoices_madar_price', 'transfers_get', 'orderStatuses', 'orderCounts', 'orderTotal'));
     }
 
     public function exportCompanyOrdersShipments(Request $request, Company $company)

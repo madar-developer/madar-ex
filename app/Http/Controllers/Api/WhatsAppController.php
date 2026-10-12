@@ -61,6 +61,43 @@ class WhatsAppController extends Controller
             'code' => getMsgCode('success'),
         ]);
     }
+    public function sendOrdersByDriver(SendOrdersRequest $request): JsonResponse
+    {
+        if (! config('whatsapp.enabled')) {
+            return response()->json([
+                'data' => new \stdClass,
+                'errors' => ['whatsapp_disabled'],
+                'message' => 'WhatsApp integration is disabled.',
+                'code' => getMsgCode('error'),
+            ], 200);
+        }
+
+        $driver = auth('api-driver')->user();
+        $orderIds = array_map('intval', $request->input('order_ids', []));
+        $async = $request->boolean('async', true);
+        $status = $request->input('status');
+
+        $results = OrderWhatsApp::sendForOrderIdsByDriver(
+            $orderIds,
+            $status,
+            $async,
+            (int) $driver->id
+        );
+
+        $queued = collect($results)->where('queued', true)->count();
+        $skipped = collect($results)->whereNotNull('skipped')->count();
+
+        return response()->json([
+            'data' => [
+                'total' => count($results),
+                'queued' => $queued,
+                'skipped' => $skipped,
+                'results' => $results,
+            ],
+            'message' => 'success',
+            'code' => getMsgCode('success'),
+        ]);
+    }
 
     public function sendTemplate(SendTemplateRequest $request): JsonResponse
     {

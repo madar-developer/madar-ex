@@ -42,6 +42,34 @@ class OrderWhatsApp
 
         return static::sendWithTemplate($order, $template, $status, $async, $idempotencyKey);
     }
+    public static function sendForOrderByDriver(
+        Order $order,
+        ?string $status = null,
+        bool $async = true,
+        ?string $idempotencyKey = null
+    ): array {
+        if (! config('whatsapp.enabled')) {
+            return ['skipped' => 'whatsapp_disabled'];
+        }
+
+        if (! $order->phone) {
+            return ['skipped' => 'phone_missing', 'order_id' => $order->id];
+        }
+
+        $status = $status ?: (string) $order->status;
+        $template = MessageTemplate::forCompanyStatusWhatsApp($order->company_id, $status);
+
+        if (! $template) {
+            return [
+                'skipped' => 'template_not_found',
+                'order_id' => $order->id,
+                'company_id' => $order->company_id,
+                'status' => $status,
+            ];
+        }
+
+        return static::sendWithTemplate($order, $template, $status, $async, $idempotencyKey);
+    }
 
     /**
      * @return array{queued?: bool, success?: bool, skipped?: string, message_id?: string|null, template_id?: int|null, template_name?: string|null}
@@ -144,6 +172,45 @@ class OrderWhatsApp
 
             try {
                 $results[] = static::sendForOrder($order, $status, $async);
+            } catch (\Throwable $e) {
+                $results[] = [
+                    'order_id' => $order->id,
+                    'skipped' => 'error',
+                    'error' => $e->getMessage(),
+                ];
+            }
+        }
+
+        return $results;
+    }
+    public static function sendForOrderIdsByDriver(
+        array $orderIds,
+        ?string $status = null,
+        bool $async = true,
+        ?int $driverId = null
+    ): array {
+        $orders = Order::query()
+            ->with(['Driver', 'PaymentMethod'])
+            ->whereIn('id', $orderIds)
+            ->when($driverId, fn ($q) => $q->where('driver_id', $driverId))
+            ->get()
+            ->keyBy('id');
+
+        $results = [];
+
+        foreach ($orderIds as $orderId) {
+            $order = $orders->get((int) $orderId);
+
+            if (! $order) {
+                $results[] = [
+                    'order_id' => (int) $orderId,
+                    'skipped' => 'order_not_found',
+                ];
+                continue;
+            }
+
+            try {
+                $results[] = static::sendForOrderByDriver($order, $status, $async);
             } catch (\Throwable $e) {
                 $results[] = [
                     'order_id' => $order->id,

@@ -3,6 +3,7 @@
 namespace App\Http\Resources\Api;
 
 use App\Models\MessageTemplate;
+use App\Support\OrderWhatsApp;
 use Illuminate\Http\Resources\Json\JsonResource;
 
 class OrderResource extends JsonResource
@@ -24,7 +25,9 @@ class OrderResource extends JsonResource
         return [
             'id' => $this->id,
             'recipent_name' => $this->recipent_name,
-            'phone' => $this->phone,
+            'phone' => $this->phone
+                ? OrderWhatsApp::internationalPhone($this->resource)
+                : $this->phone,
             'city_id' => $this->city_id,
             'adress_details' => $this->adress_details,
             'payment_method_id' => $this->payment_method_id,

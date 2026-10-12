@@ -54,12 +54,7 @@ class MessageTemplateController extends Controller
 
     public function store(StoreMessageTemplateRequest $request)
     {
-        $template = MessageTemplate::create([
-            'name' => $request->name,
-            'status' => $request->status,
-            'body' => $request->body,
-            'active' => $request->has('active') ? 1 : 0,
-        ]);
+        $template = MessageTemplate::create($this->templateAttributes($request));
         $template->companies()->sync($request->company_ids);
 
         return redirect('/dashboard/message-templates')->with('success', 'تمت الإضافة بنجاح');
@@ -77,12 +72,7 @@ class MessageTemplateController extends Controller
     public function update(UpdateMessageTemplateRequest $request, $id)
     {
         $template = MessageTemplate::findOrFail($id);
-        $template->update([
-            'name' => $request->name,
-            'status' => $request->status,
-            'body' => $request->body,
-            'active' => $request->has('active') ? 1 : 0,
-        ]);
+        $template->update($this->templateAttributes($request));
         $template->companies()->sync($request->company_ids);
 
         return redirect('/dashboard/message-templates')->with('success', 'تم التعديل بنجاح');
@@ -94,5 +84,42 @@ class MessageTemplateController extends Controller
         $message_template->delete();
 
         return 'success';
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    protected function templateAttributes(StoreMessageTemplateRequest $request): array
+    {
+        return [
+            'name' => $request->name,
+            'status' => $request->status,
+            'body' => $request->body,
+            'active' => $request->has('active') ? 1 : 0,
+            'whatsapp_enabled' => $request->has('whatsapp_enabled') ? 1 : 0,
+            'whatsapp_template_name' => $request->input('whatsapp_template_name') ?: null,
+            'whatsapp_template_id' => $request->input('whatsapp_template_id') ?: null,
+            'whatsapp_language' => $request->input('whatsapp_language') ?: 'ar',
+            'whatsapp_variables' => $this->parseWhatsAppVariables($request->input('whatsapp_variables')),
+        ];
+    }
+
+    /**
+     * @param  mixed  $raw
+     * @return list<string>|null
+     */
+    protected function parseWhatsAppVariables($raw): ?array
+    {
+        if ($raw === null || $raw === '') {
+            return null;
+        }
+
+        if (is_array($raw)) {
+            return array_values(array_filter(array_map('trim', $raw)));
+        }
+
+        $parts = preg_split('/[\s,]+/', (string) $raw) ?: [];
+
+        return array_values(array_filter(array_map('trim', $parts)));
     }
 }

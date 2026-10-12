@@ -59,6 +59,7 @@ class Kernel extends HttpKernel
         'guest' => \App\Http\Middleware\RedirectIfAuthenticated::class,
         'Permission' => \App\Http\Middleware\PermissionsMiddleware::class,
         'apilocale' => \App\Http\Middleware\ApiLocaleMiddleWare::class,
+        'whatsapp.sender' => \App\Http\Middleware\EnsureWhatsAppSender::class,
         'signed' => \Illuminate\Routing\Middleware\ValidateSignature::class,
         'throttle' => \Illuminate\Routing\Middleware\ThrottleRequests::class,
         'verified' => \Illuminate\Auth\Middleware\EnsureEmailIsVerified::class,

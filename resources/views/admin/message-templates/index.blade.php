@@ -43,6 +43,7 @@
                         <th>الحالة</th>
                         <th>المتاجر</th>
                         <th>النص</th>
+                        <th>واتساب</th>
                         <th>الحالة</th>
                         <th>العمليات</th>
                     </tr>
@@ -56,6 +57,14 @@
                         <td>{{ OrderStatus()[$item->status] ?? $item->status }}</td>
                         <td>{{ $item->companies->pluck('name')->implode('، ') }}</td>
                         <td style="max-width: 280px; white-space: normal;">{{ \Illuminate\Support\Str::limit($item->body, 100) }}</td>
+                        <td>
+                            @if($item->whatsapp_enabled && $item->whatsapp_template_name)
+                                <span class="label label-info">{{ $item->whatsapp_template_name }}</span>
+                                <div><small>{{ $item->whatsapp_language ?: 'ar' }}</small></div>
+                            @else
+                                <span class="label label-default">—</span>
+                            @endif
+                        </td>
                         <td>
                             @if($item->active)
                                 <span class="label label-success">مفعّل</span>
@@ -76,7 +85,7 @@
                     </tr>
                     @empty
                     <tr>
-                        <td colspan="7" class="text-center">لا توجد قوالب بعد.</td>
+                        <td colspan="8" class="text-center">لا توجد قوالب بعد.</td>
                     </tr>
                     @endforelse
                 </tbody>

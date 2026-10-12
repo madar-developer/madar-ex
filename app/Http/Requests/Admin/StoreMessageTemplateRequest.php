@@ -26,6 +26,11 @@ class StoreMessageTemplateRequest extends FormRequest
             'company_ids' => 'required|array|min:1',
             'company_ids.*' => 'integer|exists:companies,id',
             'active' => 'nullable|boolean',
+            'whatsapp_enabled' => 'nullable|boolean',
+            'whatsapp_template_name' => 'nullable|string|max:255',
+            'whatsapp_template_id' => 'nullable|string|max:255',
+            'whatsapp_language' => 'nullable|string|max:20',
+            'whatsapp_variables' => 'nullable|string|max:1000',
         ];
     }
 
@@ -36,6 +41,10 @@ class StoreMessageTemplateRequest extends FormRequest
             'status' => 'حالة الطلب',
             'body' => 'نص الرسالة',
             'company_ids' => 'المتاجر',
+            'whatsapp_template_name' => 'اسم قالب واتساب',
+            'whatsapp_template_id' => 'معرّف قالب واتساب',
+            'whatsapp_language' => 'لغة قالب واتساب',
+            'whatsapp_variables' => 'متغيرات واتساب',
         ];
     }
 
@@ -58,6 +67,26 @@ class StoreMessageTemplateRequest extends FormRequest
                     'company_ids',
                     'هذه المتاجر لديها قالب آخر لنفس الحالة: '.$names
                 );
+            }
+
+            if ($this->boolean('whatsapp_enabled') && ! $this->filled('whatsapp_template_name')) {
+                $validator->errors()->add(
+                    'whatsapp_template_name',
+                    'اسم قالب واتساب مطلوب عند تفعيل واتساب'
+                );
+            }
+
+            $rawVars = (string) $this->input('whatsapp_variables', '');
+            if ($rawVars !== '') {
+                $keys = array_values(array_filter(array_map('trim', preg_split('/[\s,]+/', $rawVars) ?: [])));
+                $allowed = array_keys(MessageTemplate::placeholders());
+                $invalid = array_values(array_diff($keys, $allowed));
+                if ($invalid !== []) {
+                    $validator->errors()->add(
+                        'whatsapp_variables',
+                        'متغيرات غير معروفة: '.implode(', ', $invalid)
+                    );
+                }
             }
         });
     }

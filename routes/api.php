@@ -17,6 +17,30 @@ Route::middleware('auth:api')->get('/user', function (Request $request) {
     return $request->user();
 });
 
+/*
+|--------------------------------------------------------------------------
+| WhatsApp Cloud API webhooks (signature-verified; no JWT)
+|--------------------------------------------------------------------------
+*/
+Route::get('webhooks/whatsapp', 'Api\WhatsAppWebhookController@verify');
+Route::post('webhooks/whatsapp', 'Api\WhatsAppWebhookController@handle');
+
+/*
+|--------------------------------------------------------------------------
+| WhatsApp Cloud API send endpoints (company JWT + active account)
+|--------------------------------------------------------------------------
+*/
+Route::middleware(['auth:api-company', 'whatsapp.sender', 'throttle:20,1'])
+    ->prefix('whatsapp')
+    ->namespace('Api')
+    ->group(function () {
+        Route::post('send-orders', 'WhatsAppController@sendOrders');
+        Route::post('send-template', 'WhatsAppController@sendTemplate');
+        Route::post('send-text', 'WhatsAppController@sendText');
+        Route::post('send-image', 'WhatsAppController@sendImage');
+        Route::post('send-document', 'WhatsAppController@sendDocument');
+    });
+
 Route::middleware(['apilocale'])->group(function () {
 
     Route::get('get-info', 'Api\ServiceController@info');
@@ -125,6 +149,7 @@ Route::group(['prefix' => '/v1', 'namespace' => 'Api'], function() {
     Route::match(['get', 'post'], '/test-driver-notification/attendance', 'TestDriverNotificationController@attendance');
     Route::match(['get', 'post'], '/test-driver-notification/general', 'TestDriverNotificationController@general');
     Route::match(['get', 'post'], '/test-driver-notification/circular', 'TestDriverNotificationController@circular');
+    Route::match(['get', 'post'], '/test-whatsapp/send-delivery', 'TestWhatsAppController@sendDelivery');
     Route::get('/order-types', 'AppInfoController@OrderType');
     Route::get('/app-info', 'AppInfoController@index');
     Route::get('/about', 'AppInfoController@about');

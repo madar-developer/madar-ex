@@ -8,11 +8,21 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 class MessageTemplate extends Model
 {
     protected $fillable = [
-        'name', 'status', 'body', 'active',
+        'name',
+        'status',
+        'body',
+        'active',
+        'whatsapp_enabled',
+        'whatsapp_template_name',
+        'whatsapp_template_id',
+        'whatsapp_language',
+        'whatsapp_variables',
     ];
 
     protected $casts = [
         'active' => 'boolean',
+        'whatsapp_enabled' => 'boolean',
+        'whatsapp_variables' => 'array',
     ];
 
     public static function placeholders(): array
@@ -22,7 +32,6 @@ class MessageTemplate extends Model
             'serial' => 'رقم الشحنة',
             'refrence_no' => 'رقم الطلب',
             'company_name' => 'اسم المتجر',
-            // 'order_id' => 'رقم الطلب',
             'status' => 'الحالة',
             'phone' => 'جوال المستلم',
             'address' => 'العنوان',
@@ -38,13 +47,35 @@ class MessageTemplate extends Model
 
     public static function forCompanyStatus(?int $companyId, string $status): ?self
     {
-        if (!$companyId) {
+        if (! $companyId) {
             return null;
         }
 
         return static::query()
             ->where('status', $status)
             ->where('active', true)
+            ->whereHas('companies', function ($q) use ($companyId) {
+                $q->where('companies.id', $companyId);
+            })
+            ->latest('id')
+            ->first();
+    }
+
+    /**
+     * Active company+status template that is configured for WhatsApp Cloud API.
+     */
+    public static function forCompanyStatusWhatsApp(?int $companyId, string $status): ?self
+    {
+        if (! $companyId) {
+            return null;
+        }
+
+        return static::query()
+            ->where('status', $status)
+            ->where('active', true)
+            ->where('whatsapp_enabled', true)
+            ->whereNotNull('whatsapp_template_name')
+            ->where('whatsapp_template_name', '!=', '')
             ->whereHas('companies', function ($q) use ($companyId) {
                 $q->where('companies.id', $companyId);
             })
@@ -77,22 +108,93 @@ class MessageTemplate extends Model
             ->all();
     }
 
+    public function supportsWhatsApp(): bool
+    {
+        return (bool) $this->whatsapp_enabled
+            && filled($this->whatsapp_template_name);
+    }
+
+    /**
+     * Resolve placeholder values for an order.
+     *
+     * @return array<string, string>
+     */
+    public function placeholderValues(Order $order, ?string $status = null): array
+    {
+        $order->loadMissing(['Company', 'PaymentMethod']);
+        $status = $status ?: (string) $order->status;
+
+        return [
+            'recipient_name' => (string) ($order->recipent_name ?: '-'),
+            'serial' => (string) ($order->serial ?: '-'),
+            'refrence_no' => (string) ($order->refrence_no ?: $order->serial ?: '-'),
+            'company_name' => (string) (optional($order->Company)->name ?: '-'),
+            'order_id' => (string) $order->id,
+            'status' => (string) (trans('words.'.$status) ?: $status),
+            'phone' => (string) ($order->phone ?: '-'),
+            'address' => (string) ($order->adress_details ?: '-'),
+            'payment_method' => (string) (optional($order->PaymentMethod)->name ?: '-'),
+            'amount' => number_format((float) $order->price, 2, '.', ''),
+        ];
+    }
+
+    /**
+     * Ordered WhatsApp body variable keys configured on this template.
+     *
+     * @return list<string>
+     */
+    public function whatsappVariableKeys(): array
+    {
+        $vars = $this->whatsapp_variables;
+
+        if (is_string($vars)) {
+            $vars = array_filter(array_map('trim', explode(',', $vars)));
+        }
+
+        if (! is_array($vars)) {
+            return [];
+        }
+
+        return array_values(array_filter(array_map(static function ($key) {
+            return is_string($key) ? trim($key) : '';
+        }, $vars)));
+    }
+
+    /**
+     * Build Meta Cloud API template components from configured variables.
+     *
+     * @return list<array<string, mixed>>
+     */
+    public function buildWhatsAppComponents(Order $order, ?string $status = null): array
+    {
+        $keys = $this->whatsappVariableKeys();
+        if ($keys === []) {
+            return [];
+        }
+
+        $values = $this->placeholderValues($order, $status);
+        $parameters = [];
+
+        foreach ($keys as $key) {
+            $parameters[] = [
+                'type' => 'text',
+                'text' => (string) ($values[$key] ?? '-'),
+            ];
+        }
+
+        return [
+            [
+                'type' => 'body',
+                'parameters' => $parameters,
+            ],
+        ];
+    }
+
     public function render(Order $order, string $status): string
     {
-        $replace = [
-            'recipient_name' => $order->recipent_name,
-            'serial' => $order->serial,
-            'refrence_no' => $order->refrence_no ?: $order->serial,
-            'company_name' => optional($order->Company)->name,
-            'order_id' => $order->id,
-            'status' => trans('words.'.$status),
-            'phone' => $order->phone,
-            'address' => $order->adress_details,
-            'payment_method' => optional($order->PaymentMethod)->name,
-            'amount' => $order->price,
-        ];
+        $replace = $this->placeholderValues($order, $status);
+        $body = (string) $this->body;
 
-        $body = $this->body;
         foreach ($replace as $key => $value) {
             $body = str_replace('{'.$key.'}', (string) $value, $body);
         }

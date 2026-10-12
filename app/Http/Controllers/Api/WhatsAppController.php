@@ -6,6 +6,7 @@ use App\Exceptions\WhatsAppException;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Api\WhatsApp\SendDocumentRequest;
 use App\Http\Requests\Api\WhatsApp\SendImageRequest;
+use App\Http\Requests\Api\WhatsApp\SendOrdersByDriverRequest;
 use App\Http\Requests\Api\WhatsApp\SendOrdersRequest;
 use App\Http\Requests\Api\WhatsApp\SendTemplateRequest;
 use App\Http\Requests\Api\WhatsApp\SendTextRequest;
@@ -61,7 +62,7 @@ class WhatsAppController extends Controller
             'code' => getMsgCode('success'),
         ]);
     }
-    public function sendOrdersByDriver(SendOrdersRequest $request): JsonResponse
+    public function sendOrdersByDriver(SendOrdersByDriverRequest $request): JsonResponse
     {
         if (! config('whatsapp.enabled')) {
             return response()->json([

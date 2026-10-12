@@ -44,7 +44,7 @@ Route::middleware(['auth:api-driver', 'throttle:20,1'])
     ->prefix('driver/whatsapp')
     ->namespace('Api')
     ->group(function () {
-        Route::post('send-orders', 'WhatsAppController@sendOrders');
+        Route::post('send-orders', 'WhatsAppController@sendOrdersByDriver');
     });
 
 Route::middleware(['apilocale'])->group(function () {

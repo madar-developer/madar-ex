@@ -40,6 +40,12 @@ Route::middleware(['auth:api-company', 'whatsapp.sender', 'throttle:20,1'])
         Route::post('send-image', 'WhatsAppController@sendImage');
         Route::post('send-document', 'WhatsAppController@sendDocument');
     });
+Route::middleware(['auth:api-driver', 'whatsapp.sender', 'throttle:20,1'])
+    ->prefix('driver/whatsapp')
+    ->namespace('Api')
+    ->group(function () {
+        Route::post('send-orders', 'WhatsAppController@sendOrders');
+    });
 
 Route::middleware(['apilocale'])->group(function () {
 

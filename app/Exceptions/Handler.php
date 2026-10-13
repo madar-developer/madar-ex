@@ -95,7 +95,7 @@ class Handler extends ExceptionHandler
                         'errors'       => [' '],
                         'message'       => trans('words.authFailed'),
                         'code'          => getMsgCode('authFailed'),
-            ]);
+            ], 401);
         }
 
         return redirect()->guest(route('login'));

@@ -65,7 +65,7 @@ class ServiceController extends Controller
                 'errors' => ['token error'],
                 'message' => 'token error',
                 'code' => 103
-            ], 200);
+            ], 401);
         }
         $data = $request->all();
         $rules = [
@@ -98,7 +98,7 @@ class ServiceController extends Controller
                 'errors' => $validator->errors(),
                 'message' => implode(' , ', $validator->errors()->all()),
                 'code' => 103
-            ], 200);
+            ], 401);
         }
         if($request->has('price')){
             $data['price'] = str_replace(',', '', $request->get('price') );
@@ -216,7 +216,7 @@ class ServiceController extends Controller
                 'errors' => ['token error'],
                 'message' => 'token error',
                 'code' => 103,
-            ], 200);
+            ], 401);
         }
 
         $refrenceNo = $request->get('refrence_no', $request->get('order_id'));
@@ -226,7 +226,7 @@ class ServiceController extends Controller
                 'errors' => ['refrence_no is required'],
                 'message' => 'refrence_no is required',
                 'code' => 103,
-            ], 200);
+            ], 401);
         }
 
         $order = $com->Order()
@@ -288,7 +288,7 @@ class ServiceController extends Controller
                     'errors'       => [' '],
                     'message'       => 'authFailed',
                     'code'          => getMsgCode('authFailed'),
-                ]);
+                ], 401);
     }
     public function printPdf(){
         $id = Request()->get('order_id');

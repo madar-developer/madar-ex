@@ -51,7 +51,7 @@ class AuthController extends Controller
                         'errors'       => [' '],
                         'message'       => trans('words.authFailed'),
                         'code'          => getMsgCode('authFailed'),
-                    ]);
+                    ], 401);
     }
     /*public function login(Request $request)
     {

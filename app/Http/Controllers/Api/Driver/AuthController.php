@@ -121,4 +121,13 @@ class AuthController extends Controller
             ], 401);
         }
     }
+    public function return401()
+    {
+        return response()->json([
+            'data' => new \stdClass,
+            'errors' => [' '],
+            'message' => 'authFailed',
+            'code' => getMsgCode('authFailed'),
+        ], 401);
+    }
 }

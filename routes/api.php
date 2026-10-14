@@ -66,6 +66,7 @@ Route::group(['prefix' => '/v1', 'namespace' => 'Api'], function() {
         Route::post('/refresh', 'AuthController@refresh');
         Route::post('forget-password', 'ProfileController@ForgetPassword');
         Route::group(['middleware' => 'auth:api-driver'], function() {
+            Route::post('return-401', 'AuthController@return401');
             Route::post('logout', 'AuthController@logout');
             Route::get('delete-account', 'ProfileController@delete_account');
             Route::post('delete-account', 'ProfileController@delete_account');

@@ -156,6 +156,10 @@ class ProfileController extends Controller
                     'order_delivered_count' => $driver->order_delivered_count,
                     'delivering_orders_count' => $driver->delivering_orders_count,
                     'processing_orders_count' => $driver->Order()->whereIn('status', ['at_office'])->count(),
+                    // اعادة الجدولة
+                    'reschedule_orders_count' => $driver->Order()->where('status', 'reschedule')->where('collected', '<>', 1)->count(),
+                    // تم الاستلام من المتجر
+                    'received_from_store_count' => $driver->Order()->where('status', 'init')->where('collected', '<>', 1)->count(),
                     'not_collected_orders_count' => $driver->Invoice()->where('orders.status', 'delivered')->where('orders.collected', 0)->count(),
                     'finance_total_cost' => $driver_money,
                 ],

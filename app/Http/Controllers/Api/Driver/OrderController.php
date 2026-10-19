@@ -246,6 +246,11 @@ class OrderController extends Controller
     public function changestatus(Request $request)
     {
         $driver = auth('api-driver')->user();
+        if ($request->has('deliver_failed') && $request->get('deliver_failed') != '') {
+                // get delivery id from terms table and add deliver_failed_id to the request
+                $deliver_failed_id = Term::where('group', 'deliver_failed')->where('description', $request->get('deliver_failed'))->first()->id;
+                $request->merge(['deliver_failed_id' => $deliver_failed_id]);
+            }
         $data = [];
         $order = Order::where('id',$request->order_id)->orWhere('serial',$request->order_id)->first();
         $Order = $order;
@@ -386,8 +391,10 @@ class OrderController extends Controller
         }
         // ******************************************************
         $order->update($data);
+        $this->linkOrderImagesToStatus($Order, $request, $status);
         $this->updateDriverLastActivity($driver);
 
+        $order->unsetRelation('Files');
         $order = new OrderResource($order);
         return Response()->json([
             'data'          => [

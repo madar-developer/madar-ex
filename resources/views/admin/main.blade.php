@@ -851,7 +851,7 @@ db.collection("drivers").onSnapshot((querySnapshot) => {
                                     <span class="val">`+(stats.delivered_count || 0)+`</span>
                                 </div>
                                 <div class="item">
-                                    <span class="lbl">لم تسلم : </span>
+                                    <span class="lbl">تعذر التسليم  : </span>
                                     <span class="val">`+(stats.failed_count || 0)+`</span>
                                 </div>
                             </div>

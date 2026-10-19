@@ -395,6 +395,8 @@ class OrderController extends Controller
         $this->updateDriverLastActivity($driver);
 
         $order->unsetRelation('Files');
+
+        
         $order = new OrderResource($order);
         return Response()->json([
             'data'          => [

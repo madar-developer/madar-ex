@@ -252,7 +252,7 @@ class OrderController extends Controller
                 $request->merge(['deliver_failed_id' => $deliver_failed_id]);
             }
         $data = [];
-        $order = Order::where('id',$request->order_id)->orWhere('serial',$request->order_id)->first();
+        $order = Order::where('id',$request->order_id)->orWhere('serial',$request->order_id)->where('status','<>', 'delivered')->first();
         $Order = $order;
         if (!$order) {
             $order = Order::where('serial', $request->order_id)->first();
@@ -548,16 +548,16 @@ class OrderController extends Controller
     {
         $driver = auth('api-driver')->user();
         $data = [];
-        $orders = Order::whereIn('id',$request->order_ids)->orWhereIn('serial',$request->order_ids);
-        $orders_1 = Order::whereIn('id',$request->order_ids)->orWhereIn('serial',$request->order_ids)->get();
+        $orders = Order::whereIn('id',$request->order_ids)->orWhereIn('serial',$request->order_ids)->where('status','<>', 'delivered');
+        $orders_1 = Order::whereIn('id',$request->order_ids)->orWhereIn('serial',$request->order_ids)->where('status','<>', 'delivered')->get();
         if ($orders->count() == 0) {
             $lst = [];
             foreach( $request->order_ids as $el){
                 $lst[] = strtolower($el);
             }
             
-            $orders = Order::whereIn('serial', $lst);
-            $orders_1 = Order::whereIn('serial', $lst)->get();
+            $orders = Order::whereIn('serial', $lst)->where('status','<>', 'delivered');
+            $orders_1 = Order::whereIn('serial', $lst)->where('status','<>', 'delivered')->get();
         }
         if ($orders->count() == 0) {
             return Response()->json([
@@ -683,7 +683,7 @@ class OrderController extends Controller
     {
         $driver = auth('api-driver')->user();
         $data = [];
-        $order = Order::find($request->order_id);
+        $order = Order::where('status','<>', 'delivered')->find($request->order_id);
         if (!$order) {
             return Response()->json([
                 'data' => [

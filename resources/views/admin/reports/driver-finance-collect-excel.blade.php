@@ -117,7 +117,7 @@
             @include('admin.partials.driver-finance-order-cells', ['financeDriver' => $items['driver']])
             <td>{{$item->PaymentMethod->name ?? '' }}</td>
             <td>
-                {{__('words.'.$item->status)}}
+                {{__('words.delivered')}}
             </td>
             <td>{{$item->refrence_no}}</td>
             <td>{{$item->serial}}</td>

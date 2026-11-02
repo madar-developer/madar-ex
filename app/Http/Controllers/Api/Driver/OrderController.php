@@ -248,8 +248,12 @@ class OrderController extends Controller
         $driver = auth('api-driver')->user();
         if ( $request->get('status') == 'deliver_failed' && $request->has('notes') && $request->get('notes') != '') {
                 // get delivery id from terms table and add deliver_failed_id to the request
-                $deliver_failed_id = Term::where('group', 'deliver_failed')->where('description', $request->get('deliver_failed'))->first()->id;
-                $request->merge(['deliver_failed_id' => $deliver_failed_id]);
+                $term = trim($request->get('notes'));
+                $deliver_failed_id = Term::where('group', 'deliver_failed')->where('description', 'LIKE', "%$term%" )->first();
+                if($deliver_failed_id){
+                    $deliver_failed_id = $deliver_failed_id->id;
+                    $request->merge(['deliver_failed_id' => $deliver_failed_id]);
+                }
             }
         $data = [];
         $order = Order::where('id',$request->order_id)->orWhere('serial',$request->order_id)->first();

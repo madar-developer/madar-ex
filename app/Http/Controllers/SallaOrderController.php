@@ -188,11 +188,21 @@ class SallaOrderController extends Controller
                 }
                 
             }catch(\Exception $e){}
+            $shipTo = data_get($payload, 'data.shipments.0.ship_to');
             $order = Order::create([
                 'refrence_no' => (string) $sallaOrderId,
-                'recipent_name' => data_get($payload, 'data.customer.full_name', 'Salla Customer'),
-                'phone' => (string) data_get($payload, 'data.customer.mobile', ''),
-                'adress_details' => data_get($payload, 'data.shipping.address.shipping_address'),
+                'recipent_name' => data_get($shipTo, 'name')
+                    ?? data_get($payload, 'data.shipping.receiver.name')
+                    ?? data_get($payload, 'data.receiver.name')
+                    ?? data_get($payload, 'data.customer.full_name', 'Salla Customer'),
+                'phone' => (string) (
+                    data_get($shipTo, 'phone')
+                    ?? data_get($payload, 'data.shipping.receiver.phone')
+                    ?? data_get($payload, 'data.receiver.phone')
+                    ?? data_get($payload, 'data.customer.mobile', '')
+                ),
+                'adress_details' => data_get($shipTo, 'address_line')
+                    ?? data_get($payload, 'data.shipping.address.shipping_address'),
                 'notes' => data_get($payload, 'event'),
                 'price' =>  data_get($payload, 'data.amounts.total.amount', 0),
                 'payment_method_id' => $payment_method_id,

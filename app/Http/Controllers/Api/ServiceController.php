@@ -57,6 +57,8 @@ class ServiceController extends Controller
     }
     public function addOrder(Request $request)
     {
+        // log request
+        \Log::info('addOrder request: ' ,$request->all() );
         $rest_token = Request()->get('rest_token');
         $com = Company::where('rest_token', $rest_token)->first();
         if (!$com) {
@@ -71,7 +73,7 @@ class ServiceController extends Controller
         $rules = [
             'recipient_name' => 'required|max:255' ,
             'recipient_phone' => 'required|max:255' ,
-            'city_code' => 'required|exists:cities,city_code' ,
+            // 'city_code' => 'required|exists:cities,city_code' ,
             'adress_details' => 'required|max:255' ,
             'packages_number' => 'required|max:11' ,
             'price' => 'required|max:11' ,
@@ -110,7 +112,9 @@ class ServiceController extends Controller
         }
         $data['recipent_name'] = $request->recipient_name;
         $data['phone'] = $request->recipient_phone;
-        $data['city_id'] = City::where('city_code', $request->city_code)->first()->id;
+        if($request->has('city_code')){
+            $data['city_id'] = City::where('city_code', $request->city_code)->first()->id ?? null;
+        }
         if ($request->price > 0) {
             $data['payment_method_id'] = 1;
 

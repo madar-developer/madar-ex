@@ -113,7 +113,12 @@ class ServiceController extends Controller
         $data['recipent_name'] = $request->recipient_name;
         $data['phone'] = $request->recipient_phone;
         if($request->has('city_code')){
-            $data['city_id'] = City::where('city_code', $request->city_code)->first()->id ?? null;
+            if ($request->get('city_code') == 'SA-01-0020') {
+                $data['city_id'] = 2; //RUH
+            } else {
+                $data['city_id'] = City::where('city_code', $request->city_code)->first()->id ?? null;
+            }
+            // $data['city_id'] = City::where('city_code', $request->city_code)->first()->id ?? null;
         }
         if ($request->price > 0) {
             $data['payment_method_id'] = 1;

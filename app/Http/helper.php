@@ -334,6 +334,16 @@ function PaymentMethod()
 
 
 }
+function PaymentMethodsParent()
+{
+    $cats = \App\Models\PaymentMethod::where('parent', '0')->get();
+    $arr = ['0' => 'اختر وسيلة الدفع'];
+    foreach ($cats as $item) {
+        $arr[$item->id] = $item->name;
+    }
+
+    return $arr;
+}
 function ReturnPackages()
 {
     $arr = [

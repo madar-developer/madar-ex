@@ -17,6 +17,8 @@ class PMResource extends JsonResource
         return [
             'id' => $this->id,
             'name' => $this->name,
+            'parent' => (int) ($this->parent ?? 0),
+            'required_action' => $this->required_action,
         ];
     }
 }

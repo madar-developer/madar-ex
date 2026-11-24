@@ -13,6 +13,7 @@ use Auth;
 use App\Models\Driver;
 use App\Models\Order;
 use App\Models\OrderStatus;
+use App\Models\PaymentMethod;
 use App\Models\Term;
 use App\Notifications\GeneralNotification;
 use App\Jobs\SendMadarxWebhookJob;
@@ -988,6 +989,92 @@ class OrderController extends Controller
             ],
             'message'       => 'success',
             'code'          => getMsgCode('success'),
+        ]);
+    }
+
+    public function changePaymentMethod(Request $request)
+    {
+        $driver = auth('api-driver')->user();
+        $order = Order::find($request->order_id);
+        if (!$order) {
+            return Response()->json([
+                'data' => [],
+                'message' => trans('words.no result'),
+                'code' => getMsgCode('notFound'),
+            ]);
+        }
+
+        $paymentMethodId = $request->get('payment_method_id');
+        $paymentMethod = PaymentMethod::find($paymentMethodId);
+        if (!$paymentMethod) {
+            return Response()->json([
+                'data' => [],
+                'message' => 'payment method not found',
+                'code' => getMsgCode('validationErrors'),
+            ]);
+        }
+
+        $currentPaymentMethod = $order->PaymentMethod;
+        $allowedIds = collect([(int) $order->payment_method_id]);
+        if ($currentPaymentMethod) {
+            $allowedIds = $allowedIds->merge(
+                $currentPaymentMethod->Children()->pluck('id')
+            );
+            if ((int) $currentPaymentMethod->parent > 0) {
+                $allowedIds->push((int) $currentPaymentMethod->parent);
+                $allowedIds = $allowedIds->merge(
+                    PaymentMethod::where('parent', $currentPaymentMethod->parent)->pluck('id')
+                );
+            }
+        }
+        if (!$allowedIds->map(fn ($id) => (int) $id)->contains((int) $paymentMethodId)) {
+            return Response()->json([
+                'data' => [],
+                'message' => 'payment method not allowed for this order',
+                'code' => getMsgCode('validationErrors'),
+            ]);
+        }
+
+        if ($paymentMethod->required_action === 'cod_cash_and_online') {
+            if ($request->get('cod_cash_amount') === null || $request->get('cod_cash_amount') === '') {
+                return Response()->json([
+                    'data' => [],
+                    'message' => 'cod_cash_amount is required',
+                    'code' => getMsgCode('validationErrors'),
+                ]);
+            }
+            if ($request->get('cod_online_amount') === null || $request->get('cod_online_amount') === '') {
+                return Response()->json([
+                    'data' => [],
+                    'message' => 'cod_online_amount is required',
+                    'code' => getMsgCode('validationErrors'),
+                ]);
+            }
+        }
+
+        $order->payment_method_id = $paymentMethod->id;
+        if ($request->has('cod_cash_amount') && $request->get('cod_cash_amount') !== '') {
+            $order->cod_cash_amount = $request->get('cod_cash_amount');
+        }
+        if ($request->has('cod_online_amount') && $request->get('cod_online_amount') !== '') {
+            $order->cod_online_amount = $request->get('cod_online_amount');
+        }
+        $order->save();
+
+        $order->OrderLog()->create([
+            'status' => 'payment_method',
+            'details' => $request->get('details') ?: ('payment method updated to #' . $paymentMethod->id),
+            'added_by_type' => 'driver',
+            'added_by_id' => $driver->id,
+        ]);
+        $this->updateDriverLastActivity($driver);
+
+        return Response()->json([
+            'data' => [
+                'order' => new OrderResource($order->fresh()),
+            ],
+            'message' => 'success',
+            'code' => getMsgCode('success'),
         ]);
     }
     

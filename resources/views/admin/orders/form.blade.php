@@ -181,7 +181,23 @@
                 <label class="">طريقه الدفع:</label>
                 <div class=" append">
                     {!! Form::select("payment_method_id",PaymentMethod(),null,['class'=>"form-control select2 ",
-                    "autocomplete"=> 'off'])!!}
+                    "autocomplete"=> 'off', 'id' => 'payment_method_id'])!!}
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-3 cod-cash-online-fields" style="display: none;">
+            <div class="form-group">
+                <label class="">مبلغ الكاش (COD Cash):</label>
+                <div class=" append">
+                    {!! Form::number("cod_cash_amount",null,['class'=>'form-control', 'step' => '.01', 'min' => '0'])!!}
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-3 cod-cash-online-fields" style="display: none;">
+            <div class="form-group">
+                <label class="">مبلغ الاونلاين (COD Online):</label>
+                <div class=" append">
+                    {!! Form::number("cod_online_amount",null,['class'=>'form-control', 'step' => '.01', 'min' => '0'])!!}
                 </div>
             </div>
         </div>
@@ -195,6 +211,30 @@
             </div>
         </div>
         <div class="clearfix"></div>
+        <script>
+            window.paymentMethodRequiredActions = @json(
+                \App\Models\PaymentMethod::query()
+                    ->get(['id', 'required_action'])
+                    ->pluck('required_action', 'id')
+            );
+            (function () {
+                function toggleCodCashOnlineFields() {
+                    var selected = $('#payment_method_id').val();
+                    var action = window.paymentMethodRequiredActions
+                        ? window.paymentMethodRequiredActions[selected]
+                        : null;
+                    if (action === 'cod_cash_and_online') {
+                        $('.cod-cash-online-fields').show();
+                    } else {
+                        $('.cod-cash-online-fields').hide();
+                    }
+                }
+                $(document).on('change', '#payment_method_id', toggleCodCashOnlineFields);
+                $(function () {
+                    toggleCodCashOnlineFields();
+                });
+            })();
+        </script>
     </div>
 </div>
 

@@ -95,6 +95,7 @@ Route::group(['prefix' => '/v1', 'namespace' => 'Api'], function() {
             Route::post('orders/accept', 'OrderController@accept');
             Route::post('orders/refuse', 'OrderController@refuse');
             Route::post('orders/change-cash-type', 'OrderController@changeCashType');
+            Route::post('orders/change-payment-method', 'OrderController@changePaymentMethod');
             Route::post('orders/change-status', 'OrderController@changestatus');
             Route::post('orders/change-orders-status', 'OrderController@changestatusArr');
             Route::post('orders/reschedule', 'OrderController@reschedule');
@@ -206,6 +207,7 @@ Route::group(['prefix' => '/v2', 'namespace' => 'Api\V2'], function() {
             Route::post('orders/refuse', 'OrderController@refuse');
             Route::post('orders/upload-images', 'OrderController@uploadImages');
             Route::post('orders/change-cash-type', 'OrderController@changeCashType');
+            Route::post('orders/change-payment-method', 'OrderController@changePaymentMethod');
             Route::post('orders/change-status', 'OrderController@changestatus');
             Route::post('orders/change-orders-status', 'OrderController@changestatusArr');
             Route::post('orders/reschedule', 'OrderController@reschedule');

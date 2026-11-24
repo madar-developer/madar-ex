@@ -17,6 +17,20 @@
                     null,['class'=>'form-control', 'placeholder' => ""])!!}
                 </div>
             </div>
+            <div class="col-md-6">
+                <div class="form-group">
+                    <label class=""> الاب *</label>
+                    <div class="">
+                        {!! Form::select("parent",PaymentMethodsParent(),null,['class'=>"form-control select2", "autocomplete"=> 'off', 'style' =>"width: 100%; display: inline-block;"])!!}
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="form-group">
+                    <label class=""> Required Action</label>
+                    {!! Form::text("required_action",null,['class'=>'form-control', 'placeholder' => ""])!!}
+                </div>
+            </div>
             <div class="col-lg-12">
                 <div class="panel-footer">
                     <div class="clearfix">

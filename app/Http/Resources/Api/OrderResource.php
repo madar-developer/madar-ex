@@ -28,7 +28,7 @@ class OrderResource extends JsonResource
         $paymentMethod = $this->PaymentMethod()->first();
         $p_m = $paymentMethod
             ? new PMResource($paymentMethod)
-            : (object) ['id' => 0, 'name' => 'no payment method'];
+            : (object) ['id' => 0, 'name' => 'no payment method', 'key' => 'no_payment_method'];
         $availablePaymentMethods = $paymentMethod
             ? PMResource::collection($paymentMethod->Children()->get())
             : [];

@@ -26,6 +26,7 @@
 
                                                                 <th>#</th>
                                                                 <th>  	  طريقه الدفع 	</th>
+                                                                <th> Key</th>
                                                                 <th> الاب</th>
                                                                 <th> Required Action</th>
                                                                 <th>العمليات</th>
@@ -40,6 +41,7 @@
                                                             <tr>
                                                                   <td>{{$item->id}} </td>
                                                                   <td>{{$item->name}} </td>
+                                                                  <td>{{$item->key}} </td>
                                                                   <td>{{$item->Parent->name ?? ''}} </td>
                                                                   <td>{{$item->required_action}} </td>
                                                                 <td class="btns">

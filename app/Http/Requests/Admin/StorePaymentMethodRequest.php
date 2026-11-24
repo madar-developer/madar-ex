@@ -27,6 +27,7 @@ class StorePaymentMethodRequest extends FormRequest
             'name' => 'required|array',
             'name.ar' => 'required|max:255',
             'name.en' => 'nullable|max:255',
+            'key' => 'nullable|string|max:255',
             'parent' => 'nullable|integer',
             'required_action' => 'nullable|string|max:255',
         ];

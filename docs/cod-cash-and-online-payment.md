@@ -106,6 +106,38 @@ Auth: `auth:api-driver`
 | v1 | `POST` | `/api/v1/driver/orders/change-payment-method` |
 | v2 | `POST` | `/api/v2/driver/orders/change-payment-method` |
 
+#### cURL (v1)
+
+```bash
+curl -X POST "https://YOUR_DOMAIN/api/v1/driver/orders/change-payment-method" \
+  -H "Accept: application/json" \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer DRIVER_TOKEN" \
+  -d '{
+    "order_id": 123,
+    "payment_method_id": 5,
+    "cod_cash_amount": 50,
+    "cod_online_amount": 30,
+    "details": "optional note"
+  }'
+```
+
+#### cURL (v2)
+
+```bash
+curl -X POST "https://YOUR_DOMAIN/api/v2/driver/orders/change-payment-method" \
+  -H "Accept: application/json" \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer DRIVER_TOKEN" \
+  -d '{
+    "order_id": 123,
+    "payment_method_id": 5,
+    "cod_cash_amount": 50,
+    "cod_online_amount": 30,
+    "details": "optional note"
+  }'
+```
+
 #### Request body
 
 ```json

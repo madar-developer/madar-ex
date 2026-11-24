@@ -26,6 +26,8 @@
 
                                                                 <th>#</th>
                                                                 <th>  	  طريقه الدفع 	</th>
+                                                                <th> الاب</th>
+                                                                <th> Required Action</th>
                                                                 <th>العمليات</th>
 
 
@@ -38,6 +40,8 @@
                                                             <tr>
                                                                   <td>{{$item->id}} </td>
                                                                   <td>{{$item->name}} </td>
+                                                                  <td>{{$item->Parent->name ?? ''}} </td>
+                                                                  <td>{{$item->required_action}} </td>
                                                                 <td class="btns">
 
                                                                         <a href="/dashboard/payment-methods/{{$item->id}}/edit" type="button" class="btn btn-info   waves-effect waves-light m-b-5 btn-xs"> <i class="fa fa-pencil"></i> تعديل </a>

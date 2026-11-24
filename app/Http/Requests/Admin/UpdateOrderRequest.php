@@ -23,10 +23,17 @@ class UpdateOrderRequest extends FormRequest
      */
     public function rules()
     {
-        return [
-            // 'name_ar'          => 'required|max:255',
-            // 'name_en'          => 'required|max:255',
-            // 'icon'         => 'nullable|image',
+        $rules = [
+            'cod_cash_amount' => 'nullable|numeric|min:0',
+            'cod_online_amount' => 'nullable|numeric|min:0',
         ];
+
+        $paymentMethod = \App\Models\PaymentMethod::find($this->input('payment_method_id'));
+        if ($paymentMethod && $paymentMethod->required_action === 'cod_cash_and_online') {
+            $rules['cod_cash_amount'] = 'required|numeric|min:0';
+            $rules['cod_online_amount'] = 'required|numeric|min:0';
+        }
+
+        return $rules;
     }
 }

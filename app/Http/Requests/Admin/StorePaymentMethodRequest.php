@@ -24,9 +24,11 @@ class StorePaymentMethodRequest extends FormRequest
     public function rules()
     {
         return [
-            // 'sons'          => 'required',
-            // 'name_en'          => 'required|max:255',
-            // 'icon'         => 'nullable|image',
+            'name' => 'required|array',
+            'name.ar' => 'required|max:255',
+            'name.en' => 'nullable|max:255',
+            'parent' => 'nullable|integer',
+            'required_action' => 'nullable|string|max:255',
         ];
     }
 }

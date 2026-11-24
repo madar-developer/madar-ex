@@ -16,12 +16,13 @@ class OrderResource extends JsonResource
      */
     public function toArray($request)
     {
-        $p_m = new PMResource($this->PaymentMethod()->first());
-        if(!$this->PaymentMethod()->first()){
-            $p_m = new \stdClass;
-            $p_m->id = 0;
-            $p_m->name = "no payment method";
-        }
+        $paymentMethod = $this->PaymentMethod()->first();
+        $p_m = $paymentMethod
+            ? new PMResource($paymentMethod)
+            : (object) ['id' => 0, 'name' => 'no payment method'];
+        $availablePaymentMethods = $paymentMethod
+            ? PMResource::collection($paymentMethod->Children()->get())
+            : [];
         return [
             'id' => $this->id,
             'recipent_name' => $this->recipent_name,
@@ -31,6 +32,8 @@ class OrderResource extends JsonResource
             'city_id' => $this->city_id,
             'adress_details' => $this->adress_details,
             'payment_method_id' => $this->payment_method_id,
+            'cod_cash_amount' => $this->cod_cash_amount,
+            'cod_online_amount' => $this->cod_online_amount,
             'packages_number' => $this->packages_number,
             'price' => $this->price,
             'notes' => $this->notes,
@@ -59,6 +62,7 @@ class OrderResource extends JsonResource
             'message_template' => $this->messageTemplatePayload(),
             'company' => new CompanyResource($this->Company()->first()),
             'payment_method' => $p_m,
+            'available_payment_methods' => $availablePaymentMethods,
             'steps' => $this->buildOrderSteps(),
             'images' => $this->Files->map(function ($file) {
                 return [

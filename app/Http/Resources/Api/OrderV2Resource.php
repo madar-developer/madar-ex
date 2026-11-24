@@ -20,6 +20,7 @@ class OrderV2Resource extends JsonResource
             $p_m->id = 0;
             $p_m->name = "no payment method";
         }
+        $is_live = $this->status == 'at_office' ? 1 : 0;
         return [
             'id' => $this->serial,
             'recipent_name' => $this->recipent_name,
@@ -39,6 +40,7 @@ class OrderV2Resource extends JsonResource
             'serial' => $this->serial,
             'serial_no' => $this->serial_no,
             'driver_id' => $this->driver_id,
+            'driver_track_id' => $this->driver_id,
             'collected' => $this->collected,
             'latitude' => $this->latitude,
             'longitude' => $this->longitude,
@@ -53,6 +55,7 @@ class OrderV2Resource extends JsonResource
             'status_image' => $this->status_image,
             'status_color' => $this->status_color,
             'available_statuses' => $this->available_statuses,
+            'is_live' => $is_live,
             'company' => new CompanyResource($this->Company()->first()),
             'payment_method' => $p_m,
         ];
